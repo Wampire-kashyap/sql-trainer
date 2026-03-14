@@ -43,10 +43,9 @@ padding:15px;
 }
 
 .right-panel{
+padding:15px;
 display:flex;
 flex-direction:column;
-padding:15px;
-height:100%;
 }
 
 .card{
@@ -57,16 +56,16 @@ padding:12px;
 margin-bottom:15px;
 }
 
-.editor-container{
-flex:1;
-display:flex;
-flex-direction:column;
+.editor-wrapper{
+height:350px;
+border:1px solid #e5e7eb;
+border-radius:6px;
+overflow:hidden;
 }
 
 #editor{
-flex:1;
-border:1px solid #e5e7eb;
-min-height:300px;
+width:100%;
+height:100%;
 }
 
 .schema-table{
@@ -185,11 +184,13 @@ Autocomplete
 
 <div class="right-panel">
 
-<div class="card editor-container">
+<div class="card">
 
 <h4>Write SQL Query</h4>
 
+<div class="editor-wrapper">
 <div id="editor"></div>
+</div>
 
 </div>
 
@@ -413,45 +414,6 @@ quickSuggestions:true,
 suggestOnTriggerCharacters:true
 }
 )
-
-
-editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,function(){
-runSQL()
-})
-
-
-monaco.languages.registerCompletionItemProvider('sql',{
-provideCompletionItems:()=>{
-
-let keywords=[
-"SELECT","FROM","WHERE","GROUP BY","ORDER BY",
-"INSERT","UPDATE","DELETE","JOIN","LEFT JOIN",
-"RIGHT JOIN","INNER JOIN","COUNT","SUM","AVG",
-"MIN","MAX","LIMIT"
-]
-
-let suggestions=keywords.map(k=>({
-label:k,
-kind:monaco.languages.CompletionItemKind.Keyword,
-insertText:k
-}))
-
-return {suggestions}
-
-}
-})
-
-
-document.getElementById("toggleAutocomplete").addEventListener("change",function(){
-
-let enabled=this.checked
-
-editor.updateOptions({
-quickSuggestions:enabled,
-suggestOnTriggerCharacters:enabled
-})
-
-})
 
 })
 
