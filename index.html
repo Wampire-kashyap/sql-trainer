@@ -4,12 +4,86 @@
 <head>
 
 <meta charset="UTF-8">
-<title>SQL Trainer</title>
-
-<link rel="stylesheet" href="style.css">
+<title>SQL Practice</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#f8fafc;
+}
+
+header{
+background:white;
+border-bottom:1px solid #e5e7eb;
+padding:10px 20px;
+}
+
+.container{
+display:grid;
+grid-template-columns: 350px 1fr;
+height:calc(100vh - 60px);
+}
+
+.panel{
+background:white;
+border-right:1px solid #e5e7eb;
+padding:15px;
+}
+
+.editor{
+height:250px;
+border-bottom:1px solid #e5e7eb;
+}
+
+.result{
+height:200px;
+overflow:auto;
+padding:10px;
+}
+
+.schema-table{
+border-collapse:collapse;
+width:100%;
+}
+
+.schema-table td,
+.schema-table th{
+border:1px solid #e5e7eb;
+padding:6px;
+text-align:left;
+}
+
+.buttons{
+padding:10px;
+}
+
+button{
+padding:6px 12px;
+margin-right:5px;
+background:#2563eb;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+button:hover{
+background:#1d4ed8;
+}
+
+.badge{
+background:#22c55e;
+color:white;
+padding:2px 8px;
+border-radius:4px;
+font-size:12px;
+}
+
+</style>
 
 </head>
 
@@ -17,51 +91,250 @@
 
 <header>
 
-<h2 id="title"></h2>
-<span id="difficulty"></span>
+<h3 id="title"></h3>
+<span id="difficulty" class="badge"></span>
 
 <p id="description"></p>
 
 </header>
 
-<div class="grid">
+
+<div class="container">
 
 <div class="panel">
 
-<h3>Schema</h3>
-<pre id="schema"></pre>
+<h4>Schema</h4>
 
-<h3>Sample Data</h3>
+<table class="schema-table">
+
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+</tr>
+</thead>
+
+<tbody id="schema"></tbody>
+
+</table>
+
+<h4 style="margin-top:10px;">Sample Data</h4>
+
 <div id="sample"></div>
 
 </div>
 
-<div class="panel">
+
+<div>
 
 <div id="editor" class="editor"></div>
 
-</div>
+<div class="result">
 
-</div>
+<h4>Result</h4>
 
-<div class="panel result">
-
-<h3>Query Result</h3>
 <div id="output"></div>
 
 </div>
 
-<div style="padding:10px">
+<div class="buttons">
 
-<button class="btn" onclick="prev()">Prev</button>
-<button class="btn" onclick="runSQL()">Run</button>
-<button class="btn" onclick="submitQuery()">Submit</button>
-<button class="btn" onclick="pin()">Pin</button>
-<button class="btn" onclick="next()">Next</button>
+<button onclick="prev()">Prev</button>
+<button onclick="runSQL()">Run</button>
+<button onclick="submitQuery()">Submit</button>
+<button onclick="next()">Next</button>
 
 </div>
 
-<script src="app.js"></script>
+</div>
+
+</div>
+
+<script>
+
+let db
+let index=0
+
+let questions=[
+
+{
+title:"Users older than 25",
+difficulty:"Easy",
+description:"Find users whose age is greater than 25.",
+schema:[
+["id","INT"],
+["name","TEXT"],
+["age","INT"]
+],
+setup:`
+CREATE TABLE users(id INT,name TEXT,age INT);
+INSERT INTO users VALUES (1,'Alice',30);
+INSERT INTO users VALUES (2,'Bob',20);
+INSERT INTO users VALUES (3,'Charlie',28);
+`,
+solution:"SELECT * FROM users WHERE age>25"
+}
+
+]
+
+
+initSqlJs({
+locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
+}).then(SQL=>{
+window.SQL=SQL
+loadQuestion()
+})
+
+
+function loadQuestion(){
+
+db=new SQL.Database()
+
+let q=questions[index]
+
+db.run(q.setup)
+
+document.getElementById("title").innerText=q.title
+document.getElementById("description").innerText=q.description
+document.getElementById("difficulty").innerText=q.difficulty
+
+renderSchema()
+renderSample()
+
+}
+
+
+function renderSchema(){
+
+let schema=questions[index].schema
+
+let html=""
+
+schema.forEach(c=>{
+html+=`<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`
+})
+
+document.getElementById("schema").innerHTML=html
+
+}
+
+
+function renderSample(){
+
+let res=db.exec("SELECT * FROM users")
+
+render(res)
+
+}
+
+
+function runSQL(){
+
+let q=editor.getValue()
+
+try{
+
+let res=db.exec(q)
+
+render(res)
+
+}catch(e){
+
+document.getElementById("output").innerText=e.message
+
+}
+
+}
+
+
+function render(res){
+
+let html=""
+
+if(res.length){
+
+let cols=res[0].columns
+let rows=res[0].values
+
+html+="<table class='schema-table'>"
+
+html+="<tr>"
+
+cols.forEach(c=>html+=`<th>${c}</th>`)
+
+html+="</tr>"
+
+rows.forEach(r=>{
+
+html+="<tr>"
+
+r.forEach(v=>html+=`<td>${v}</td>`)
+
+html+="</tr>"
+
+})
+
+html+="</table>"
+
+}
+
+document.getElementById("output").innerHTML=html
+
+}
+
+
+function submitQuery(){
+
+let user=editor.getValue()
+
+let correct=questions[index].solution
+
+try{
+
+let r1=db.exec(user)
+let r2=db.exec(correct)
+
+if(JSON.stringify(r1)==JSON.stringify(r2))
+alert("Correct!")
+else
+alert("Try again")
+
+}catch{
+
+alert("SQL Error")
+
+}
+
+}
+
+
+function next(){
+alert("Next question coming soon")
+}
+
+function prev(){
+alert("Previous question coming soon")
+}
+
+
+require.config({
+paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}
+})
+
+require(['vs/editor/editor.main'],function(){
+
+window.editor=monaco.editor.create(
+document.getElementById('editor'),
+{
+value:"SELECT * FROM users;",
+language:"sql",
+theme:"vs"
+}
+)
+
+})
+
+</script>
 
 </body>
 
