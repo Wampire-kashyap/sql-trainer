@@ -43,9 +43,10 @@ padding:15px;
 }
 
 .right-panel{
-padding:15px;
 display:flex;
 flex-direction:column;
+padding:15px;
+height:100%;
 }
 
 .card{
@@ -56,9 +57,16 @@ padding:12px;
 margin-bottom:15px;
 }
 
-.editor{
+.editor-container{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+#editor{
 flex:1;
 border:1px solid #e5e7eb;
+min-height:300px;
 }
 
 .schema-table{
@@ -177,11 +185,11 @@ Autocomplete
 
 <div class="right-panel">
 
-<div class="card">
+<div class="card editor-container">
 
 <h4>Write SQL Query</h4>
 
-<div id="editor" class="editor"></div>
+<div id="editor"></div>
 
 </div>
 
@@ -400,10 +408,12 @@ document.getElementById('editor'),
 value:"SELECT * FROM users;",
 language:"sql",
 theme:"vs",
+automaticLayout:true,
 quickSuggestions:true,
 suggestOnTriggerCharacters:true
 }
 )
+
 
 editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,function(){
 runSQL()
@@ -429,6 +439,18 @@ insertText:k
 return {suggestions}
 
 }
+})
+
+
+document.getElementById("toggleAutocomplete").addEventListener("change",function(){
+
+let enabled=this.checked
+
+editor.updateOptions({
+quickSuggestions:enabled,
+suggestOnTriggerCharacters:enabled
+})
+
 })
 
 })
