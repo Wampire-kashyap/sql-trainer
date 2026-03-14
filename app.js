@@ -1,50 +1,13 @@
 let db
 let editor
-
 let SQL
 
-let problems = []
-let currentIndex = 0
+let problems=[]
+let currentIndex=0
 
 /* DATABASE SCENARIOS */
 
-const scenarios = [
-
-{
-name:"Social Media",
-
-schema:[
-["users","id INT, name TEXT"],
-["posts","id INT, user_id INT, likes INT"]
-],
-
-setup:`
-CREATE TABLE users(id INT,name TEXT);
-INSERT INTO users VALUES
-(1,'Alice'),
-(2,'Bob'),
-(3,'Charlie');
-
-CREATE TABLE posts(id INT,user_id INT,likes INT);
-INSERT INTO posts VALUES
-(1,1,10),
-(2,1,5),
-(3,2,7),
-(4,3,20);
-`,
-
-questions:[
-{
-q:"Find users with more than 1 post",
-sql:`SELECT user_id,COUNT(*) FROM posts GROUP BY user_id HAVING COUNT(*)>1`
-},
-{
-q:"Find most liked post",
-sql:`SELECT * FROM posts ORDER BY likes DESC LIMIT 1`
-}
-]
-
-},
+const scenarios=[
 
 {
 name:"Ecommerce",
@@ -71,12 +34,48 @@ INSERT INTO orders VALUES
 
 questions:[
 {
-q:"Count orders per customer",
-sql:`SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id`
-},
-{
 q:"Find highest order amount",
 sql:`SELECT MAX(amount) FROM orders`
+},
+{
+q:"Count orders per customer",
+sql:`SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id`
+}
+]
+
+},
+
+{
+name:"Social Media",
+
+schema:[
+["users","id INT,name TEXT"],
+["posts","id INT,user_id INT,likes INT"]
+],
+
+setup:`
+CREATE TABLE users(id INT,name TEXT);
+INSERT INTO users VALUES
+(1,'Alice'),
+(2,'Bob'),
+(3,'Charlie');
+
+CREATE TABLE posts(id INT,user_id INT,likes INT);
+INSERT INTO posts VALUES
+(1,1,10),
+(2,1,5),
+(3,2,7),
+(4,3,20);
+`,
+
+questions:[
+{
+q:"Find users with more than one post",
+sql:`SELECT user_id,COUNT(*) FROM posts GROUP BY user_id HAVING COUNT(*)>1`
+},
+{
+q:"Find most liked post",
+sql:`SELECT * FROM posts ORDER BY likes DESC LIMIT 1`
 }
 ]
 
@@ -84,13 +83,13 @@ sql:`SELECT MAX(amount) FROM orders`
 
 ]
 
-/* LOAD SQL ENGINE */
+/* SQL INIT */
 
 initSqlJs({
 locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
 }).then(function(SQLLib){
 
-SQL = SQLLib
+SQL=SQLLib
 
 generateProblems()
 
@@ -100,7 +99,7 @@ initEditor()
 
 })
 
-/* GENERATE PROBLEMS */
+/* GENERATE PROBLEM LIST */
 
 function generateProblems(){
 
@@ -109,11 +108,9 @@ scenarios.forEach(s=>{
 s.questions.forEach(q=>{
 
 problems.push({
-
 scenario:s,
 question:q.q,
 solution:q.sql
-
 })
 
 })
@@ -126,34 +123,41 @@ solution:q.sql
 
 function loadProblem(){
 
-db = new SQL.Database()
+db=new SQL.Database()
 
-let p = problems[currentIndex]
+let p=problems[currentIndex]
 
 db.run(p.scenario.setup)
 
-document.getElementById("description").innerText = p.question
+document.getElementById("description").innerText=p.question
 
 renderSchema(p.scenario.schema)
 
+renderExpected(p.solution)
+
 }
 
-/* RENDER SCHEMA */
+/* SCHEMA */
 
 function renderSchema(schema){
 
 let html=""
 
 schema.forEach(row=>{
-
-html+=`<tr>
-<td>${row[0]}</td>
-<td>${row[1]}</td>
-</tr>`
-
+html+=`<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`
 })
 
-document.getElementById("schema").innerHTML = html
+document.getElementById("schema").innerHTML=html
+
+}
+
+/* EXPECTED OUTPUT */
+
+function renderExpected(sql){
+
+let res=db.exec(sql)
+
+renderTable(res,"expected")
 
 }
 
@@ -161,17 +165,17 @@ document.getElementById("schema").innerHTML = html
 
 function runQuery(){
 
-let sql = editor.getValue()
+let sql=editor.getValue()
 
 try{
 
-let res = db.exec(sql)
+let res=db.exec(sql)
 
-renderTable(res)
+renderTable(res,"output")
 
 }catch(e){
 
-document.getElementById("output").innerText = e.message
+document.getElementById("output").innerText=e.message
 
 }
 
@@ -181,12 +185,12 @@ document.getElementById("output").innerText = e.message
 
 function submitQuery(){
 
-let p = problems[currentIndex]
+let p=problems[currentIndex]
 
 try{
 
-let user = db.exec(editor.getValue())
-let sol = db.exec(p.solution)
+let user=db.exec(editor.getValue())
+let sol=db.exec(p.solution)
 
 if(JSON.stringify(user)===JSON.stringify(sol)){
 
@@ -210,7 +214,7 @@ alert("SQL Error")
 
 /* TABLE RENDER */
 
-function renderTable(res){
+function renderTable(res,target){
 
 let html=""
 
@@ -239,7 +243,7 @@ html+="</table>"
 
 }
 
-document.getElementById("output").innerHTML = html
+document.getElementById(target).innerHTML=html
 
 }
 
@@ -283,10 +287,10 @@ paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}
 
 require(['vs/editor/editor.main'],function(){
 
-editor = monaco.editor.create(
+editor=monaco.editor.create(
 document.getElementById('editor'),
 {
-value:"SELECT * FROM users;",
+value:"SELECT * FROM customers;",
 language:"sql",
 theme:"vs",
 automaticLayout:true
@@ -311,13 +315,13 @@ const keywords=[
 "COUNT","SUM","AVG","MAX","MIN","LIMIT"
 ]
 
-const suggestions = keywords.map(k=>({
+const suggestions=keywords.map(k=>({
 label:k,
 kind:monaco.languages.CompletionItemKind.Keyword,
 insertText:k
 }))
 
-return { suggestions }
+return {suggestions}
 
 }
 })
