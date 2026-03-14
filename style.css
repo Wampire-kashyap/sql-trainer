@@ -12,8 +12,6 @@ header{
 background:white;
 padding:15px;
 border-bottom:1px solid #ddd;
-display:flex;
-justify-content:space-between;
 }
 
 main{
@@ -29,8 +27,6 @@ padding:15px;
 }
 
 .right-panel{
-display:flex;
-flex-direction:column;
 padding:15px;
 }
 
@@ -47,8 +43,6 @@ height:350px;
 border:1px solid #ddd;
 }
 
-/* schema tables */
-
 .schema-table{
 width:100%;
 border-collapse:collapse;
@@ -57,22 +51,13 @@ margin-bottom:10px;
 
 .schema-table th,
 .schema-table td{
-border:1px solid #ddd;
+border:1px solid #ccc;
 padding:6px;
+text-align:left;
 }
 
-.schema-block{
-margin-bottom:15px;
-}
-
-.schema-block h4{
-margin-bottom:5px;
-color:#2563eb;
-}
-
-/* buttons */
-
-.buttons{
+.table-title{
+font-weight:bold;
 margin-top:10px;
 }
 
@@ -84,10 +69,6 @@ padding:6px 12px;
 margin-right:6px;
 border-radius:4px;
 cursor:pointer;
-}
-
-button:hover{
-background:#1d4ed8;
 }
 
 footer{
