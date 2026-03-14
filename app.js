@@ -1,110 +1,133 @@
-/* ===============================
-SMART SQL PRACTICE ENGINE
-PHASE 1 : DATABASE GENERATOR
-================================ */
-
 let db
 let editor
 let SQL
 
+let currentIndex=0
 let currentDatabase="ecommerce"
-
-/* ===============================
-DATABASE DEFINITIONS
-================================ */
 
 const DATABASES={
 
 ecommerce:{
-tables:{
-customers:["id","name"],
-orders:["id","customer_id","amount"],
-products:["id","name","price"],
-payments:["id","order_id","status"]
+
+schema:{
+customers:[
+["id","INT"],
+["name","TEXT"]
+],
+
+orders:[
+["id","INT"],
+["customer_id","INT"],
+["amount","INT"]
+]
+},
+
+setup:`
+CREATE TABLE customers(id INT,name TEXT);
+INSERT INTO customers VALUES
+(1,'Alice'),
+(2,'Bob'),
+(3,'Charlie');
+
+CREATE TABLE orders(id INT,customer_id INT,amount INT);
+INSERT INTO orders VALUES
+(1,1,200),
+(2,1,300),
+(3,2,150),
+(4,3,500);
+`,
+
+questions:[
+{
+q:"Find highest order amount",
+sql:"SELECT MAX(amount) FROM orders"
+},
+{
+q:"Count orders per customer",
+sql:"SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id"
 }
+]
+
 },
 
 social:{
-tables:{
-users:["id","name"],
-posts:["id","user_id","likes"],
-comments:["id","post_id","user_id"]
-}
+
+schema:{
+users:[
+["id","INT"],
+["name","TEXT"]
+],
+
+posts:[
+["id","INT"],
+["user_id","INT"],
+["likes","INT"]
+]
 },
 
-hr:{
-tables:{
-employees:["id","name","salary","dept_id"],
-departments:["id","name"]
+setup:`
+CREATE TABLE users(id INT,name TEXT);
+INSERT INTO users VALUES
+(1,'Alice'),
+(2,'Bob'),
+(3,'Charlie');
+
+CREATE TABLE posts(id INT,user_id INT,likes INT);
+INSERT INTO posts VALUES
+(1,1,10),
+(2,1,5),
+(3,2,7),
+(4,3,20);
+`,
+
+questions:[
+{
+q:"Find most liked post",
+sql:"SELECT MAX(likes) FROM posts"
 }
-}
-
-}
-
-/* ===============================
-RANDOM DATA GENERATORS
-================================ */
-
-function randomName(){
-
-const names=[
-"Alice","Bob","David","Emma","Sophia",
-"James","Daniel","Lucas","Olivia","Noah"
 ]
 
-return names[Math.floor(Math.random()*names.length)]
+}
 
 }
 
-function randomNumber(min,max){
+/* INIT */
 
-return Math.floor(Math.random()*(max-min+1))+min
+initSqlJs({
+locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
+}).then(function(SQLLib){
 
-}
+SQL=SQLLib
 
-/* ===============================
-BUILD DATABASE
-================================ */
+initEditor()
 
-function buildDatabase(){
-
-db=new SQL.Database()
-
-let schema=DATABASES[currentDatabase].tables
-
-for(let table in schema){
-
-let columns=schema[table]
-
-let columnSQL=columns.map(c=>c+" INT").join(",")
-
-db.run(`CREATE TABLE ${table}(${columnSQL})`)
-
-for(let i=1;i<=randomNumber(10,20);i++){
-
-let values=[]
-
-columns.forEach(col=>{
-
-if(col==="id") values.push(i)
-else if(col.includes("name")) values.push("'"+randomName()+"'")
-else values.push(randomNumber(10,500))
+loadProblem()
 
 })
 
-db.run(`INSERT INTO ${table} VALUES(${values.join(",")})`)
+/* LOAD PROBLEM */
+
+function loadProblem(){
+
+let database=DATABASES[currentDatabase]
+
+db=new SQL.Database()
+
+db.run(database.setup)
+
+let problem=database.questions[currentIndex]
+
+document.getElementById("description").innerText=problem.q
+
+renderSchema(database.schema)
+
+renderExpected(problem.sql)
+
+document.getElementById("output").innerHTML=""
 
 }
 
-}
-
-renderSchema(schema)
-
-}
-
-/* ===============================
-RENDER SCHEMA
-================================ */
+/* RENDER SCHEMA */
 
 function renderSchema(schema){
 
@@ -116,11 +139,14 @@ html+=`<b>${table}</b>`
 
 html+=`<table class="schema-table">`
 
-html+=`<tr><th>Column</th></tr>`
+html+=`<tr><th>Column</th><th>Type</th></tr>`
 
 schema[table].forEach(col=>{
 
-html+=`<tr><td>${col}</td></tr>`
+html+=`<tr>
+<td>${col[0]}</td>
+<td>${col[1]}</td>
+</tr>`
 
 })
 
@@ -132,9 +158,17 @@ document.getElementById("schema").innerHTML=html
 
 }
 
-/* ===============================
-RUN QUERY
-================================ */
+/* EXPECTED OUTPUT */
+
+function renderExpected(sql){
+
+let res=db.exec(sql)
+
+renderTable(res,"expected")
+
+}
+
+/* RUN QUERY */
 
 function runQuery(){
 
@@ -144,7 +178,7 @@ try{
 
 let res=db.exec(sql)
 
-renderResult(res)
+renderTable(res,"output")
 
 }catch(e){
 
@@ -154,11 +188,40 @@ document.getElementById("output").innerText=e.message
 
 }
 
-/* ===============================
-RENDER RESULT
-================================ */
+/* SUBMIT */
 
-function renderResult(res){
+function submitQuery(){
+
+let problem=DATABASES[currentDatabase].questions[currentIndex]
+
+try{
+
+let user=db.exec(editor.getValue())
+let sol=db.exec(problem.sql)
+
+if(JSON.stringify(user)===JSON.stringify(sol)){
+
+alert("Correct")
+
+nextProblem()
+
+}else{
+
+alert("Incorrect")
+
+}
+
+}catch{
+
+alert("SQL Error")
+
+}
+
+}
+
+/* RENDER TABLE */
+
+function renderTable(res,target){
 
 let html=""
 
@@ -178,9 +241,7 @@ html+="</tr>"
 rows.forEach(r=>{
 
 html+="<tr>"
-
 r.forEach(v=>html+=`<td>${v}</td>`)
-
 html+="</tr>"
 
 })
@@ -189,25 +250,53 @@ html+="</table>"
 
 }
 
-document.getElementById("output").innerHTML=html
+document.getElementById(target).innerHTML=html
 
 }
 
-/* ===============================
-DATABASE SELECTOR
-================================ */
+/* NAVIGATION */
+
+function nextProblem(){
+
+currentIndex++
+
+if(currentIndex>=DATABASES[currentDatabase].questions.length){
+
+currentIndex=0
+
+}
+
+loadProblem()
+
+}
+
+function prevProblem(){
+
+currentIndex--
+
+if(currentIndex<0){
+
+currentIndex=DATABASES[currentDatabase].questions.length-1
+
+}
+
+loadProblem()
+
+}
+
+/* DATABASE CHANGE */
 
 function changeDatabase(){
 
-currentDatabase=document.getElementById("dbSelector").value
+currentDatabase=document.getElementById("databaseSelector").value
 
-buildDatabase()
+currentIndex=0
+
+loadProblem()
 
 }
 
-/* ===============================
-EDITOR
-================================ */
+/* EDITOR */
 
 function initEditor(){
 
@@ -235,19 +324,3 @@ function(){runQuery()}
 })
 
 }
-
-/* ===============================
-INIT
-================================ */
-
-initSqlJs({
-locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
-}).then(function(SQLLib){
-
-SQL=SQLLib
-
-buildDatabase()
-
-initEditor()
-
-})
