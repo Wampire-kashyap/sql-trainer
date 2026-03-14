@@ -1,17 +1,22 @@
 let db
 let editor
-let currentProblem
-let currentScenario
-let problemIndex = 0
 
-/* -----------------------
-DATABASE SCENARIOS
------------------------*/
+let SQL
+
+let problems = []
+let currentIndex = 0
+
+/* DATABASE SCENARIOS */
 
 const scenarios = [
 
 {
-name:"social",
+name:"Social Media",
+
+schema:[
+["users","id INT, name TEXT"],
+["posts","id INT, user_id INT, likes INT"]
+],
 
 setup:`
 CREATE TABLE users(id INT,name TEXT);
@@ -28,29 +33,26 @@ INSERT INTO posts VALUES
 (4,3,20);
 `,
 
-schema:[
-["users","id INT, name TEXT"],
-["posts","id INT, user_id INT, likes INT"]
-],
-
 questions:[
-
 {
-question:"Find users with more than 1 post",
-solution:`SELECT user_id,COUNT(*) FROM posts GROUP BY user_id HAVING COUNT(*)>1`
+q:"Find users with more than 1 post",
+sql:`SELECT user_id,COUNT(*) FROM posts GROUP BY user_id HAVING COUNT(*)>1`
 },
-
 {
-question:"Find post with highest likes",
-solution:`SELECT * FROM posts ORDER BY likes DESC LIMIT 1`
+q:"Find most liked post",
+sql:`SELECT * FROM posts ORDER BY likes DESC LIMIT 1`
 }
-
 ]
 
 },
 
 {
-name:"ecommerce",
+name:"Ecommerce",
+
+schema:[
+["customers","id INT,name TEXT"],
+["orders","id INT,customer_id INT,amount INT"]
+],
 
 setup:`
 CREATE TABLE customers(id INT,name TEXT);
@@ -67,73 +69,95 @@ INSERT INTO orders VALUES
 (4,3,500);
 `,
 
-schema:[
-["customers","id INT,name TEXT"],
-["orders","id INT,customer_id INT,amount INT"]
-],
-
 questions:[
-
 {
-question:"Count orders per customer",
-solution:`SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id`
+q:"Count orders per customer",
+sql:`SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id`
 },
-
 {
-question:"Find highest order amount",
-solution:`SELECT MAX(amount) FROM orders`
+q:"Find highest order amount",
+sql:`SELECT MAX(amount) FROM orders`
 }
-
 ]
 
 }
 
 ]
 
-/* -----------------------
-LOAD PROBLEM
------------------------*/
+/* LOAD SQL ENGINE */
+
+initSqlJs({
+locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
+}).then(function(SQLLib){
+
+SQL = SQLLib
+
+generateProblems()
+
+loadProblem()
+
+initEditor()
+
+})
+
+/* GENERATE PROBLEMS */
+
+function generateProblems(){
+
+scenarios.forEach(s=>{
+
+s.questions.forEach(q=>{
+
+problems.push({
+
+scenario:s,
+question:q.q,
+solution:q.sql
+
+})
+
+})
+
+})
+
+}
+
+/* LOAD PROBLEM */
 
 function loadProblem(){
 
 db = new SQL.Database()
 
-currentScenario =
-scenarios[Math.floor(Math.random()*scenarios.length)]
+let p = problems[currentIndex]
 
-db.run(currentScenario.setup)
+db.run(p.scenario.setup)
 
-currentProblem =
-currentScenario.questions[
-Math.floor(Math.random()*currentScenario.questions.length)
-]
+document.getElementById("description").innerText = p.question
 
-document.getElementById("description").innerText =
-currentProblem.question
-
-renderSchema()
+renderSchema(p.scenario.schema)
 
 }
 
-/* -----------------------
-SCHEMA
------------------------*/
+/* RENDER SCHEMA */
 
-function renderSchema(){
+function renderSchema(schema){
 
 let html=""
 
-currentScenario.schema.forEach(row=>{
-html += `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`
+schema.forEach(row=>{
+
+html+=`<tr>
+<td>${row[0]}</td>
+<td>${row[1]}</td>
+</tr>`
+
 })
 
 document.getElementById("schema").innerHTML = html
 
 }
 
-/* -----------------------
-RUN QUERY
------------------------*/
+/* RUN QUERY */
 
 function runQuery(){
 
@@ -143,7 +167,7 @@ try{
 
 let res = db.exec(sql)
 
-renderTable(res,"output")
+renderTable(res)
 
 }catch(e){
 
@@ -153,26 +177,26 @@ document.getElementById("output").innerText = e.message
 
 }
 
-/* -----------------------
-SUBMIT
------------------------*/
+/* SUBMIT */
 
 function submitQuery(){
+
+let p = problems[currentIndex]
 
 try{
 
 let user = db.exec(editor.getValue())
-let sol = db.exec(currentProblem.solution)
+let sol = db.exec(p.solution)
 
 if(JSON.stringify(user)===JSON.stringify(sol)){
 
 alert("Correct!")
 
-loadProblem()
+nextProblem()
 
 }else{
 
-alert("Wrong answer")
+alert("Incorrect result")
 
 }
 
@@ -184,11 +208,9 @@ alert("SQL Error")
 
 }
 
-/* -----------------------
-TABLE RENDER
------------------------*/
+/* TABLE RENDER */
 
-function renderTable(res,target){
+function renderTable(res){
 
 let html=""
 
@@ -217,6 +239,89 @@ html+="</table>"
 
 }
 
-document.getElementById(target).innerHTML = html
+document.getElementById("output").innerHTML = html
+
+}
+
+/* NAVIGATION */
+
+function nextProblem(){
+
+currentIndex++
+
+if(currentIndex>=problems.length){
+
+currentIndex=0
+
+}
+
+loadProblem()
+
+}
+
+function prevProblem(){
+
+currentIndex--
+
+if(currentIndex<0){
+
+currentIndex=problems.length-1
+
+}
+
+loadProblem()
+
+}
+
+/* MONACO EDITOR */
+
+function initEditor(){
+
+require.config({
+paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}
+})
+
+require(['vs/editor/editor.main'],function(){
+
+editor = monaco.editor.create(
+document.getElementById('editor'),
+{
+value:"SELECT * FROM users;",
+language:"sql",
+theme:"vs",
+automaticLayout:true
+}
+)
+
+/* CTRL + ENTER */
+
+editor.addCommand(
+monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+function(){runQuery()}
+)
+
+/* AUTOCOMPLETE */
+
+monaco.languages.registerCompletionItemProvider('sql',{
+provideCompletionItems:()=>{
+
+const keywords=[
+"SELECT","FROM","WHERE","GROUP BY","ORDER BY",
+"JOIN","LEFT JOIN","RIGHT JOIN","INNER JOIN",
+"COUNT","SUM","AVG","MAX","MIN","LIMIT"
+]
+
+const suggestions = keywords.map(k=>({
+label:k,
+kind:monaco.languages.CompletionItemKind.Keyword,
+insertText:k
+}))
+
+return { suggestions }
+
+}
+})
+
+})
 
 }
