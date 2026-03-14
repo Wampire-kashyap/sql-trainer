@@ -1,140 +1,160 @@
 let db
-let index=0
-let pinned=[]
+let currentLevel = 1
 
-let questions=[
+const tableTemplates = [
 
 {
-title:"Users older than 25",
-difficulty:"easy",
-description:"Find users with age greater than 25",
-schema:"users(id,name,age)",
-setup:`
-CREATE TABLE users(id INT,name TEXT,age INT);
-INSERT INTO users VALUES (1,'Alice',30);
-INSERT INTO users VALUES (2,'Bob',20);
-INSERT INTO users VALUES (3,'Charlie',28);
-`,
-solution:"SELECT * FROM users WHERE age>25"
+name:"customers",
+columns:[
+["id","INT"],
+["name","TEXT"],
+["city","TEXT"]
+]
 },
 
 {
-title:"Count Orders",
-difficulty:"easy",
-description:"Count total orders",
-schema:"orders(id,user_id)",
-setup:`
-CREATE TABLE orders(id INT,user_id INT);
-INSERT INTO orders VALUES (1,1);
-INSERT INTO orders VALUES (2,1);
-INSERT INTO orders VALUES (3,2);
-`,
-solution:"SELECT COUNT(*) FROM orders"
+name:"orders",
+columns:[
+["id","INT"],
+["customer_id","INT"],
+["amount","INT"]
+]
 }
 
 ]
 
-initSqlJs({
-locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
-}).then(SQL=>{
-window.SQL=SQL
-loadQuestion()
-})
+function generateDatabase(){
 
-function loadQuestion(){
+db = new SQL.Database()
 
-db=new SQL.Database()
+db.run(`
+CREATE TABLE customers(id INT,name TEXT,city TEXT);
+INSERT INTO customers VALUES
+(1,'Alice','NY'),
+(2,'Bob','LA'),
+(3,'Charlie','TX'),
+(4,'David','NY');
+`)
 
-let q=questions[index]
-
-db.run(q.setup)
-
-document.getElementById("title").innerText=q.title
-document.getElementById("description").innerText=q.description
-document.getElementById("schema").innerText=q.schema
-
-let diff=document.getElementById("difficulty")
-diff.className="badge "+q.difficulty
-diff.innerText=q.difficulty
-
-renderSample()
+db.run(`
+CREATE TABLE orders(id INT,customer_id INT,amount INT);
+INSERT INTO orders VALUES
+(1,1,200),
+(2,1,300),
+(3,2,150),
+(4,3,400),
+(5,3,250);
+`)
 
 }
 
-function renderSample(){
+function generateQuestion(){
 
-let table=questions[index].schema.split("(")[0]
+if(currentLevel === 1){
 
-let res=db.exec(`SELECT * FROM ${table}`)
+return {
+question:"Show all customers",
+solution:"SELECT * FROM customers"
+}
 
-render(res)
+}
+
+if(currentLevel === 2){
+
+return {
+question:"Find customers from NY",
+solution:"SELECT * FROM customers WHERE city='NY'"
+}
+
+}
+
+if(currentLevel === 3){
+
+return {
+question:"Count orders per customer",
+solution:"SELECT customer_id, COUNT(*) FROM orders GROUP BY customer_id"
+}
+
+}
+
+}
+
+let currentProblem
+
+function loadNewProblem(){
+
+generateDatabase()
+
+currentProblem = generateQuestion()
+
+document.getElementById("description").innerText = currentProblem.question
+
+renderSchema()
+
+renderExpected()
+
+}
+
+function renderSchema(){
+
+let html=""
+
+tableTemplates[0].columns.forEach(c=>{
+html+=`<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`
+})
+
+document.getElementById("schema").innerHTML = html
+
+}
+
+function renderExpected(){
+
+let res = db.exec(currentProblem.solution)
+
+renderTable(res,"expected")
 
 }
 
 function runSQL(){
 
-let q=editor.getValue()
+let query = editor.getValue()
 
 try{
 
-let res=db.exec(q)
+let res = db.exec(query)
 
-render(res)
+renderTable(res,"output")
 
 }catch(e){
 
-document.getElementById("output").innerText=e.message
+document.getElementById("output").innerText = e.message
 
 }
-
-}
-
-function render(res){
-
-let html=""
-
-if(res.length){
-
-let cols=res[0].columns
-let rows=res[0].values
-
-html+="<table border='1'>"
-
-html+="<tr>"
-
-cols.forEach(c=>html+=`<th>${c}</th>`)
-
-html+="</tr>"
-
-rows.forEach(r=>{
-html+="<tr>"
-r.forEach(v=>html+=`<td>${v}</td>`)
-html+="</tr>"
-})
-
-html+="</table>"
-
-}
-
-document.getElementById("output").innerHTML=html
 
 }
 
 function submitQuery(){
 
-let user=editor.getValue()
-
-let correct=questions[index].solution
+let user = editor.getValue()
 
 try{
 
-let r1=db.exec(user)
-let r2=db.exec(correct)
+let userRes = db.exec(user)
+let solRes = db.exec(currentProblem.solution)
 
-if(JSON.stringify(r1)==JSON.stringify(r2))
-alert("Correct 🎉")
-else
-alert("Wrong")
+if(JSON.stringify(userRes) === JSON.stringify(solRes)){
+
+alert("Correct!")
+
+currentLevel++
+
+loadNewProblem()
+
+}else{
+
+alert("Incorrect")
+
+}
 
 }catch{
 
@@ -144,38 +164,42 @@ alert("SQL Error")
 
 }
 
-function next(){
-if(index<questions.length-1){
-index++
-loadQuestion()
-}
-}
+function renderTable(res,target){
 
-function prev(){
-if(index>0){
-index--
-loadQuestion()
-}
-}
+let html=""
 
-function pin(){
-pinned.push(index)
-alert("Pinned!")
-}
+if(res.length){
 
-require.config({
-paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}
+let cols=res[0].columns
+let rows=res[0].values
+
+html+="<table class='schema-table'>"
+
+html+="<tr>"
+
+cols.forEach(c=>html+=`<th>${c}</th>`)
+
+html+="</tr>"
+
+rows.forEach(r=>{
+
+html+="<tr>"
+r.forEach(v=>html+=`<td>${v}</td>`)
+html+="</tr>"
+
 })
 
-require(['vs/editor/editor.main'],function(){
+html+="</table>"
 
-window.editor=monaco.editor.create(
-document.getElementById('editor'),
-{
-value:"SELECT * FROM users;",
-language:"sql",
-theme:"vs-dark"
 }
-)
 
+document.getElementById(target).innerHTML = html
+
+}
+
+initSqlJs({
+locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
+}).then(SQL=>{
+window.SQL = SQL
+loadNewProblem()
 })
