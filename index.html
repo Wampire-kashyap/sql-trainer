@@ -4,117 +4,12 @@
 <head>
 
 <meta charset="UTF-8">
-<title>SQL Practice Platform</title>
+<title>SQL Practice Engine</title>
+
+<link rel="stylesheet" href="style.css">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
-
-<style>
-
-body{
-margin:0;
-font-family:Arial;
-background:#f3f4f6;
-height:100vh;
-display:flex;
-flex-direction:column;
-overflow:hidden;
-}
-
-header{
-background:white;
-padding:10px 20px;
-border-bottom:1px solid #e5e7eb;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-main{
-flex:1;
-display:grid;
-grid-template-columns:380px 1fr;
-overflow:hidden;
-}
-
-.left-panel{
-overflow-y:auto;
-padding:15px;
-}
-
-.right-panel{
-padding:15px;
-display:flex;
-flex-direction:column;
-}
-
-.card{
-background:white;
-border:1px solid #e5e7eb;
-border-radius:8px;
-padding:12px;
-margin-bottom:15px;
-}
-
-.editor-wrapper{
-height:350px;
-border:1px solid #e5e7eb;
-border-radius:6px;
-overflow:hidden;
-}
-
-#editor{
-width:100%;
-height:100%;
-}
-
-.schema-table{
-border-collapse:collapse;
-width:100%;
-}
-
-.schema-table th,
-.schema-table td{
-border:1px solid #e5e7eb;
-padding:6px;
-}
-
-.buttons{
-margin-top:10px;
-}
-
-button{
-padding:6px 12px;
-margin-right:6px;
-background:#2563eb;
-color:white;
-border:none;
-border-radius:4px;
-cursor:pointer;
-}
-
-button:hover{
-background:#1d4ed8;
-}
-
-.badge{
-background:#22c55e;
-color:white;
-padding:2px 6px;
-border-radius:4px;
-font-size:12px;
-}
-
-footer{
-text-align:center;
-padding:6px;
-font-size:13px;
-color:#6b7280;
-background:white;
-border-top:1px solid #e5e7eb;
-}
-
-</style>
 
 </head>
 
@@ -123,20 +18,18 @@ border-top:1px solid #e5e7eb;
 <header>
 
 <div>
-<h3 id="title"></h3>
-<span id="difficulty" class="badge"></span>
+<h2 id="title">SQL Practice</h2>
 <p id="description"></p>
 </div>
 
 <div>
 <label>
 Autocomplete
-<input type="checkbox" id="toggleAutocomplete" checked>
+<input type="checkbox" id="autoToggle" checked>
 </label>
 </div>
 
 </header>
-
 
 <main>
 
@@ -144,14 +37,14 @@ Autocomplete
 
 <div class="card">
 
-<h4>Table Schema</h4>
+<h3>Table Schema</h3>
 
 <table class="schema-table">
 
 <thead>
 <tr>
-<th>Column</th>
-<th>Type</th>
+<th>Table</th>
+<th>Columns</th>
 </tr>
 </thead>
 
@@ -161,19 +54,9 @@ Autocomplete
 
 </div>
 
-
 <div class="card">
 
-<h4>Expected Output</h4>
-
-<div id="expected"></div>
-
-</div>
-
-
-<div class="card">
-
-<h4>Query Result</h4>
+<h3>Query Result</h3>
 
 <div id="output"></div>
 
@@ -186,21 +69,18 @@ Autocomplete
 
 <div class="card">
 
-<h4>Write SQL Query</h4>
+<h3>Write SQL Query</h3>
 
-<div class="editor-wrapper">
 <div id="editor"></div>
-</div>
 
 </div>
-
 
 <div class="buttons">
 
-<button onclick="prev()">Prev</button>
-<button onclick="runSQL()">Run</button>
+<button onclick="prevProblem()">Prev</button>
+<button onclick="runQuery()">Run</button>
 <button onclick="submitQuery()">Submit</button>
-<button onclick="next()">Next</button>
+<button onclick="nextProblem()">Next</button>
 
 </div>
 
@@ -208,216 +88,14 @@ Autocomplete
 
 </main>
 
-
 <footer>
 
 Developed by <b>Kunal</b> |  
-For any inquiry connect on mail:  
-<b>Kunalkumarshri47@gmail.com</b>
+For inquiries: Kunalkumarshri47@gmail.com
 
 </footer>
 
-
-<script>
-
-let db
-let index=0
-
-let questions=[
-
-{
-title:"Users older than 25",
-difficulty:"Easy",
-description:"Find users whose age is greater than 25.",
-schema:[
-["id","INT"],
-["name","TEXT"],
-["age","INT"]
-],
-setup:`
-CREATE TABLE users(id INT,name TEXT,age INT);
-INSERT INTO users VALUES (1,'Alice',30);
-INSERT INTO users VALUES (2,'Bob',20);
-INSERT INTO users VALUES (3,'Charlie',28);
-`,
-solution:"SELECT * FROM users WHERE age>25"
-}
-
-]
-
-
-initSqlJs({
-locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
-}).then(SQL=>{
-window.SQL=SQL
-loadQuestion()
-})
-
-
-function loadQuestion(){
-
-db=new SQL.Database()
-
-let q=questions[index]
-
-db.run(q.setup)
-
-document.getElementById("title").innerText=q.title
-document.getElementById("description").innerText=q.description
-document.getElementById("difficulty").innerText=q.difficulty
-
-renderSchema()
-renderExpected()
-
-}
-
-
-function renderSchema(){
-
-let schema=questions[index].schema
-
-let html=""
-
-schema.forEach(c=>{
-html+=`<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`
-})
-
-document.getElementById("schema").innerHTML=html
-
-}
-
-
-function renderExpected(){
-
-let res=db.exec(questions[index].solution)
-
-renderTable(res,"expected")
-
-}
-
-
-function runSQL(){
-
-let q=editor.getValue()
-
-try{
-
-let res=db.exec(q)
-
-renderTable(res,"output")
-
-}catch(e){
-
-document.getElementById("output").innerText=e.message
-
-}
-
-}
-
-
-function renderTable(res,target){
-
-let html=""
-
-if(res.length){
-
-let cols=res[0].columns
-let rows=res[0].values
-
-html+="<table class='schema-table'>"
-
-html+="<tr>"
-
-cols.forEach(c=>html+=`<th>${c}</th>`)
-
-html+="</tr>"
-
-rows.forEach(r=>{
-
-html+="<tr>"
-
-r.forEach(v=>html+=`<td>${v}</td>`)
-
-html+="</tr>"
-
-})
-
-html+="</table>"
-
-}
-
-document.getElementById(target).innerHTML=html
-
-}
-
-
-function submitQuery(){
-
-let user=editor.getValue()
-
-let correct=questions[index].solution
-
-try{
-
-let r1=db.exec(user)
-let r2=db.exec(correct)
-
-if(JSON.stringify(r1)==JSON.stringify(r2))
-alert("Correct!")
-else
-alert("Try again")
-
-}catch{
-
-alert("SQL Error")
-
-}
-
-}
-
-
-function next(){
-
-if(index<questions.length-1){
-index++
-loadQuestion()
-}
-
-}
-
-
-function prev(){
-
-if(index>0){
-index--
-loadQuestion()
-}
-
-}
-
-
-require.config({
-paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}
-})
-
-
-require(['vs/editor/editor.main'],function(){
-
-window.editor=monaco.editor.create(
-document.getElementById('editor'),
-{
-value:"SELECT * FROM users;",
-language:"sql",
-theme:"vs",
-automaticLayout:true,
-quickSuggestions:true,
-suggestOnTriggerCharacters:true
-}
-)
-
-})
-
-</script>
+<script src="app.js"></script>
 
 </body>
 
