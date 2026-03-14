@@ -1,3 +1,8 @@
+/* =========================
+SQL PRACTICE ENGINE
+SMART AUTOCOMPLETE VERSION
+========================= */
+
 let db
 let editor
 let SQL
@@ -5,7 +10,9 @@ let SQL
 let problems=[]
 let currentIndex=0
 
-/* DATABASE SCENARIOS */
+/* -------------------------
+DATABASE SCENARIOS
+-------------------------- */
 
 const scenarios=[
 
@@ -46,15 +53,20 @@ sql:`SELECT MAX(amount) FROM orders`
 
 {
 q:"Count orders per customer",
-sql:`SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id`
+sql:`SELECT customer_id,COUNT(*) 
+FROM orders
+GROUP BY customer_id`
 }
+
 ]
 
 }
 
 ]
 
-/* INIT SQL */
+/* -------------------------
+INIT SQL ENGINE
+-------------------------- */
 
 initSqlJs({
 locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
@@ -70,7 +82,9 @@ initEditor()
 
 })
 
-/* GENERATE PROBLEMS */
+/* -------------------------
+GENERATE PROBLEMS
+-------------------------- */
 
 function generateProblems(){
 
@@ -90,7 +104,9 @@ solution:q.sql
 
 }
 
-/* LOAD PROBLEM */
+/* -------------------------
+LOAD PROBLEM
+-------------------------- */
 
 function loadProblem(){
 
@@ -110,7 +126,9 @@ document.getElementById("output").innerHTML=""
 
 }
 
-/* RENDER SCHEMA AS REAL TABLES */
+/* -------------------------
+SCHEMA RENDER
+-------------------------- */
 
 function renderSchema(schema){
 
@@ -121,12 +139,12 @@ for(let table in schema){
 html+=`<div class="table-title">${table}</div>`
 
 html+=`<table class="schema-table">`
-
 html+=`<tr><th>Column</th><th>Type</th></tr>`
 
 schema[table].forEach(col=>{
 
 html+=`<tr>
+
 <td>${col[0]}</td>
 <td>${col[1]}</td>
 </tr>`
@@ -141,7 +159,9 @@ document.getElementById("schema").innerHTML=html
 
 }
 
-/* EXPECTED OUTPUT */
+/* -------------------------
+EXPECTED OUTPUT
+-------------------------- */
 
 function renderExpected(sql){
 
@@ -151,7 +171,9 @@ renderTable(res,"expected")
 
 }
 
-/* RUN QUERY */
+/* -------------------------
+RUN QUERY
+-------------------------- */
 
 function runQuery(){
 
@@ -171,7 +193,9 @@ document.getElementById("output").innerText=e.message
 
 }
 
-/* SUBMIT */
+/* -------------------------
+SUBMIT QUERY
+-------------------------- */
 
 function submitQuery(){
 
@@ -202,7 +226,9 @@ alert("SQL Error")
 
 }
 
-/* TABLE RENDER */
+/* -------------------------
+TABLE RENDER
+-------------------------- */
 
 function renderTable(res,target){
 
@@ -237,7 +263,9 @@ document.getElementById(target).innerHTML=html
 
 }
 
-/* NAVIGATION */
+/* -------------------------
+NAVIGATION
+-------------------------- */
 
 function nextProblem(){
 
@@ -263,7 +291,45 @@ loadProblem()
 
 }
 
-/* MONACO EDITOR */
+/* -------------------------
+SMART AUTOCOMPLETE
+-------------------------- */
+
+function getSchemaSuggestions(){
+
+let p=problems[currentIndex]
+
+let schema=p.scenario.schema
+
+let suggestions=[]
+
+for(let table in schema){
+
+suggestions.push({
+label:table,
+kind:monaco.languages.CompletionItemKind.Field,
+insertText:table
+})
+
+schema[table].forEach(col=>{
+
+suggestions.push({
+label:col,
+kind:monaco.languages.CompletionItemKind.Property,
+insertText:col
+})
+
+})
+
+}
+
+return suggestions
+
+}
+
+/* -------------------------
+SQL EDITOR
+-------------------------- */
 
 function initEditor(){
 
@@ -283,10 +349,48 @@ automaticLayout:true
 }
 )
 
+/* CTRL + ENTER */
+
 editor.addCommand(
 monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
 function(){runQuery()}
 )
+
+/* SQL KEYWORDS */
+
+const keywords=[
+"SELECT","FROM","WHERE","GROUP BY","ORDER BY",
+"JOIN","LEFT JOIN","RIGHT JOIN","INNER JOIN",
+"COUNT","SUM","AVG","MAX","MIN",
+"LIMIT","HAVING","DISTINCT",
+"RANK","DENSE_RANK","ROW_NUMBER",
+"PARTITION BY"
+]
+
+/* AUTOCOMPLETE */
+
+monaco.languages.registerCompletionItemProvider('sql',{
+
+provideCompletionItems:()=>{
+
+let keywordSuggestions=keywords.map(k=>({
+label:k,
+kind:monaco.languages.CompletionItemKind.Keyword,
+insertText:k
+}))
+
+let schemaSuggestions=getSchemaSuggestions()
+
+return {
+suggestions:[
+...keywordSuggestions,
+...schemaSuggestions
+]
+}
+
+}
+
+})
 
 })
 
