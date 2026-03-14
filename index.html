@@ -21,16 +21,23 @@ header{
 background:white;
 padding:15px 25px;
 border-bottom:1px solid #e5e7eb;
+position:relative;
 }
 
 header h2{
 margin:0;
 }
 
+.toggle{
+position:absolute;
+right:25px;
+top:20px;
+}
+
 .container{
 padding:20px;
 display:grid;
-grid-template-columns: 350px 1fr;
+grid-template-columns:350px 1fr;
 gap:20px;
 }
 
@@ -43,12 +50,8 @@ padding:15px;
 }
 
 .editor{
-height:260px;
+height:280px;
 border:1px solid #e5e7eb;
-}
-
-.result{
-margin-top:15px;
 }
 
 .schema-table{
@@ -106,10 +109,16 @@ color:#6b7280;
 <header>
 
 <h2 id="title"></h2>
-
 <span id="difficulty" class="badge"></span>
 
 <p id="description"></p>
+
+<div class="toggle">
+<label>
+Autocomplete
+<input type="checkbox" id="toggleAutocomplete" checked>
+</label>
+</div>
 
 </header>
 
@@ -138,7 +147,16 @@ color:#6b7280;
 </div>
 
 
-<div class="card result">
+<div class="card">
+
+<h3>Expected Output</h3>
+
+<div id="expected"></div>
+
+</div>
+
+
+<div class="card">
 
 <h3>Query Result</h3>
 
@@ -206,6 +224,23 @@ INSERT INTO users VALUES (2,'Bob',20);
 INSERT INTO users VALUES (3,'Charlie',28);
 `,
 solution:"SELECT * FROM users WHERE age>25"
+},
+
+{
+title:"Count Orders",
+difficulty:"Easy",
+description:"Count total orders in the table.",
+schema:[
+["id","INT"],
+["user_id","INT"]
+],
+setup:`
+CREATE TABLE orders(id INT,user_id INT);
+INSERT INTO orders VALUES (1,1);
+INSERT INTO orders VALUES (2,1);
+INSERT INTO orders VALUES (3,2);
+`,
+solution:"SELECT COUNT(*) FROM orders"
 }
 
 ]
@@ -232,6 +267,7 @@ document.getElementById("description").innerText=q.description
 document.getElementById("difficulty").innerText=q.difficulty
 
 renderSchema()
+renderExpected()
 
 }
 
@@ -251,6 +287,15 @@ document.getElementById("schema").innerHTML=html
 }
 
 
+function renderExpected(){
+
+let res=db.exec(questions[index].solution)
+
+renderTable(res,"expected")
+
+}
+
+
 function runSQL(){
 
 let q=editor.getValue()
@@ -259,7 +304,7 @@ try{
 
 let res=db.exec(q)
 
-render(res)
+renderTable(res,"output")
 
 }catch(e){
 
@@ -270,7 +315,7 @@ document.getElementById("output").innerText=e.message
 }
 
 
-function render(res){
+function renderTable(res,target){
 
 let html=""
 
@@ -301,7 +346,7 @@ html+="</table>"
 
 }
 
-document.getElementById("output").innerHTML=html
+document.getElementById(target).innerHTML=html
 
 }
 
@@ -332,11 +377,26 @@ alert("SQL Error")
 
 
 function next(){
-alert("Next question coming soon")
+
+if(index<questions.length-1){
+
+index++
+loadQuestion()
+
 }
 
+}
+
+
 function prev(){
-alert("Previous question coming soon")
+
+if(index>0){
+
+index--
+loadQuestion()
+
+}
+
 }
 
 
@@ -351,9 +411,26 @@ document.getElementById('editor'),
 {
 value:"SELECT * FROM users;",
 language:"sql",
-theme:"vs"
+theme:"vs",
+quickSuggestions:true,
+suggestOnTriggerCharacters:true
 }
 )
+
+editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,function(){
+runSQL()
+})
+
+document.getElementById("toggleAutocomplete").addEventListener("change",function(){
+
+let enabled=this.checked
+
+editor.updateOptions({
+quickSuggestions:enabled,
+suggestOnTriggerCharacters:enabled
+})
+
+})
 
 })
 
