@@ -5,23 +5,21 @@ let SQL
 let currentDatabase="ecommerce"
 let currentProblem=null
 
+
 const DATABASES={
 
 ecommerce:{
-
 schema:{
 customers:[
 ["id","INT"],
 ["name","TEXT"]
 ],
-
 orders:[
 ["id","INT"],
 ["customer_id","INT"],
 ["amount","INT"]
 ]
 },
-
 setup:`
 CREATE TABLE customers(id INT,name TEXT);
 INSERT INTO customers VALUES
@@ -39,7 +37,6 @@ INSERT INTO orders VALUES
 },
 
 hr:{
-
 schema:{
 employees:[
 ["id","INT"],
@@ -47,13 +44,11 @@ employees:[
 ["salary","INT"],
 ["dept_id","INT"]
 ],
-
 departments:[
 ["id","INT"],
 ["name","TEXT"]
 ]
 },
-
 setup:`
 CREATE TABLE employees(id INT,name TEXT,salary INT,dept_id INT);
 INSERT INTO employees VALUES
@@ -80,7 +75,7 @@ return arr[Math.floor(Math.random()*arr.length)]
 }
 
 
-/* QUESTION GENERATOR */
+/* PROBLEM GENERATOR */
 
 function generateProblem(){
 
@@ -94,9 +89,7 @@ let columns=schema[table]
 
 let column=randomItem(columns)[0]
 
-let tasks=["max","count"]
-
-let task=randomItem(tasks)
+let task=randomItem(["max","count"])
 
 let question=""
 let solution=""
@@ -224,7 +217,7 @@ let sol=db.exec(currentProblem.solution)
 
 if(JSON.stringify(user)===JSON.stringify(sol)){
 
-alert("Correct!")
+alert("Correct")
 
 loadProblem()
 
@@ -279,7 +272,7 @@ document.getElementById(target).innerHTML=html
 }
 
 
-/* DATABASE CHANGE */
+/* DATABASE SWITCH */
 
 function changeDatabase(){
 
