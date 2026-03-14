@@ -10,55 +10,18 @@ let currentIndex=0
 const scenarios=[
 
 {
-name:"Social Media",
-
-schema:[
-["users","id INT, name TEXT"],
-["posts","id INT, user_id INT, likes INT"]
+schema:{
+customers:[
+["id","INT"],
+["name","TEXT"]
 ],
 
-setup:`
-CREATE TABLE users(id INT,name TEXT);
-INSERT INTO users VALUES
-(1,'Alice'),
-(2,'Bob'),
-(3,'Charlie');
-
-CREATE TABLE posts(id INT,user_id INT,likes INT);
-INSERT INTO posts VALUES
-(1,1,10),
-(2,1,5),
-(3,2,7),
-(4,3,20);
-`,
-
-questions:[
-{
-q:"Find users with more than 1 post",
-sql:`SELECT user_id, COUNT(*) AS total_posts
-FROM posts
-GROUP BY user_id
-HAVING COUNT(*) > 1`
-},
-
-{
-q:"Find most liked post",
-sql:`SELECT * FROM posts
-ORDER BY likes DESC
-LIMIT 1`
-}
-
+orders:[
+["id","INT"],
+["customer_id","INT"],
+["amount","INT"]
 ]
-
 },
-
-{
-name:"Ecommerce",
-
-schema:[
-["customers","id INT,name TEXT"],
-["orders","id INT,customer_id INT,amount INT"]
-],
 
 setup:`
 CREATE TABLE customers(id INT,name TEXT);
@@ -78,16 +41,13 @@ INSERT INTO orders VALUES
 questions:[
 {
 q:"Find highest order amount",
-sql:`SELECT MAX(amount) AS highest_order FROM orders`
+sql:`SELECT MAX(amount) FROM orders`
 },
 
 {
 q:"Count orders per customer",
-sql:`SELECT customer_id, COUNT(*) AS total_orders
-FROM orders
-GROUP BY customer_id`
+sql:`SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id`
 }
-
 ]
 
 }
@@ -110,7 +70,7 @@ initEditor()
 
 })
 
-/* GENERATE PROBLEM LIST */
+/* GENERATE PROBLEMS */
 
 function generateProblems(){
 
@@ -150,37 +110,32 @@ document.getElementById("output").innerHTML=""
 
 }
 
-/* SCHEMA RENDER */
+/* RENDER SCHEMA AS REAL TABLES */
 
 function renderSchema(schema){
 
 let html=""
 
-schema.forEach(table=>{
+for(let table in schema){
 
-let tableName=table[0]
-let columns=table[1].split(",")
-
-html+=`<div class="schema-block">`
-html+=`<h4>${tableName}</h4>`
+html+=`<div class="table-title">${table}</div>`
 
 html+=`<table class="schema-table">`
+
 html+=`<tr><th>Column</th><th>Type</th></tr>`
 
-columns.forEach(col=>{
-
-let parts=col.trim().split(" ")
+schema[table].forEach(col=>{
 
 html+=`<tr>
-<td>${parts[0]}</td>
-<td>${parts[1]}</td>
+<td>${col[0]}</td>
+<td>${col[1]}</td>
 </tr>`
 
 })
 
-html+=`</table></div>`
+html+=`</table>`
 
-})
+}
 
 document.getElementById("schema").innerHTML=html
 
@@ -235,7 +190,7 @@ nextProblem()
 
 }else{
 
-alert("Incorrect result")
+alert("Incorrect")
 
 }
 
@@ -289,9 +244,7 @@ function nextProblem(){
 currentIndex++
 
 if(currentIndex>=problems.length){
-
 currentIndex=0
-
 }
 
 loadProblem()
@@ -303,9 +256,7 @@ function prevProblem(){
 currentIndex--
 
 if(currentIndex<0){
-
 currentIndex=problems.length-1
-
 }
 
 loadProblem()
@@ -325,41 +276,17 @@ require(['vs/editor/editor.main'],function(){
 editor=monaco.editor.create(
 document.getElementById('editor'),
 {
-value:"SELECT * FROM users;",
+value:"SELECT * FROM customers;",
 language:"sql",
 theme:"vs",
 automaticLayout:true
 }
 )
 
-/* CTRL + ENTER */
-
 editor.addCommand(
 monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
 function(){runQuery()}
 )
-
-/* AUTOCOMPLETE */
-
-monaco.languages.registerCompletionItemProvider('sql',{
-provideCompletionItems:()=>{
-
-const keywords=[
-"SELECT","FROM","WHERE","GROUP BY","ORDER BY",
-"JOIN","LEFT JOIN","RIGHT JOIN","INNER JOIN",
-"COUNT","SUM","AVG","MAX","MIN","LIMIT"
-]
-
-const suggestions=keywords.map(k=>({
-label:k,
-kind:monaco.languages.CompletionItemKind.Keyword,
-insertText:k
-}))
-
-return {suggestions}
-
-}
-})
 
 })
 
