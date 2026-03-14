@@ -5,9 +5,54 @@ let SQL
 let problems=[]
 let currentIndex=0
 
-/* DATABASE SCENARIOS */
+/* -------------------------
+DATABASE SCENARIOS
+--------------------------*/
 
 const scenarios=[
+
+{
+name:"Social Media",
+
+schema:[
+["users","id INT, name TEXT"],
+["posts","id INT, user_id INT, likes INT"]
+],
+
+setup:`
+CREATE TABLE users(id INT,name TEXT);
+INSERT INTO users VALUES
+(1,'Alice'),
+(2,'Bob'),
+(3,'Charlie');
+
+CREATE TABLE posts(id INT,user_id INT,likes INT);
+INSERT INTO posts VALUES
+(1,1,10),
+(2,1,5),
+(3,2,7),
+(4,3,20);
+`,
+
+questions:[
+{
+q:"Find users with more than 1 post",
+sql:`SELECT user_id, COUNT(*) AS total_posts
+FROM posts
+GROUP BY user_id
+HAVING COUNT(*) > 1`
+},
+
+{
+q:"Find most liked post",
+sql:`SELECT * FROM posts
+ORDER BY likes DESC
+LIMIT 1`
+}
+
+]
+
+},
 
 {
 name:"Ecommerce",
@@ -35,55 +80,25 @@ INSERT INTO orders VALUES
 questions:[
 {
 q:"Find highest order amount",
-sql:`SELECT MAX(amount) FROM orders`
+sql:`SELECT MAX(amount) AS highest_order FROM orders`
 },
+
 {
 q:"Count orders per customer",
-sql:`SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id`
+sql:`SELECT customer_id, COUNT(*) AS total_orders
+FROM orders
+GROUP BY customer_id`
 }
-]
 
-},
-
-{
-name:"Social Media",
-
-schema:[
-["users","id INT,name TEXT"],
-["posts","id INT,user_id INT,likes INT"]
-],
-
-setup:`
-CREATE TABLE users(id INT,name TEXT);
-INSERT INTO users VALUES
-(1,'Alice'),
-(2,'Bob'),
-(3,'Charlie');
-
-CREATE TABLE posts(id INT,user_id INT,likes INT);
-INSERT INTO posts VALUES
-(1,1,10),
-(2,1,5),
-(3,2,7),
-(4,3,20);
-`,
-
-questions:[
-{
-q:"Find users with more than one post",
-sql:`SELECT user_id,COUNT(*) FROM posts GROUP BY user_id HAVING COUNT(*)>1`
-},
-{
-q:"Find most liked post",
-sql:`SELECT * FROM posts ORDER BY likes DESC LIMIT 1`
-}
 ]
 
 }
 
 ]
 
-/* SQL INIT */
+/* -------------------------
+INIT SQL ENGINE
+--------------------------*/
 
 initSqlJs({
 locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
@@ -99,7 +114,9 @@ initEditor()
 
 })
 
-/* GENERATE PROBLEM LIST */
+/* -------------------------
+GENERATE PROBLEM LIST
+--------------------------*/
 
 function generateProblems(){
 
@@ -119,7 +136,9 @@ solution:q.sql
 
 }
 
-/* LOAD PROBLEM */
+/* -------------------------
+LOAD PROBLEM
+--------------------------*/
 
 function loadProblem(){
 
@@ -135,33 +154,54 @@ renderSchema(p.scenario.schema)
 
 renderExpected(p.solution)
 
+/* clear result */
+
+document.getElementById("output").innerHTML=""
+
 }
 
-/* SCHEMA */
+/* -------------------------
+SCHEMA RENDER
+--------------------------*/
 
 function renderSchema(schema){
 
 let html=""
 
 schema.forEach(row=>{
-html+=`<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`
+html+=`<tr>
+<td>${row[0]}</td>
+<td>${row[1]}</td>
+</tr>`
 })
 
 document.getElementById("schema").innerHTML=html
 
 }
 
-/* EXPECTED OUTPUT */
+/* -------------------------
+EXPECTED OUTPUT
+--------------------------*/
 
 function renderExpected(sql){
+
+try{
 
 let res=db.exec(sql)
 
 renderTable(res,"expected")
 
+}catch{
+
+document.getElementById("expected").innerHTML=""
+
 }
 
-/* RUN QUERY */
+}
+
+/* -------------------------
+RUN USER QUERY
+--------------------------*/
 
 function runQuery(){
 
@@ -181,7 +221,9 @@ document.getElementById("output").innerText=e.message
 
 }
 
-/* SUBMIT */
+/* -------------------------
+SUBMIT SOLUTION
+--------------------------*/
 
 function submitQuery(){
 
@@ -212,7 +254,9 @@ alert("SQL Error")
 
 }
 
-/* TABLE RENDER */
+/* -------------------------
+TABLE RENDER
+--------------------------*/
 
 function renderTable(res,target){
 
@@ -247,7 +291,9 @@ document.getElementById(target).innerHTML=html
 
 }
 
-/* NAVIGATION */
+/* -------------------------
+NAVIGATION
+--------------------------*/
 
 function nextProblem(){
 
@@ -277,7 +323,9 @@ loadProblem()
 
 }
 
-/* MONACO EDITOR */
+/* -------------------------
+MONACO EDITOR
+--------------------------*/
 
 function initEditor(){
 
@@ -290,7 +338,7 @@ require(['vs/editor/editor.main'],function(){
 editor=monaco.editor.create(
 document.getElementById('editor'),
 {
-value:"SELECT * FROM customers;",
+value:"SELECT * FROM users;",
 language:"sql",
 theme:"vs",
 automaticLayout:true
