@@ -15,64 +15,64 @@ body{
 margin:0;
 font-family:Arial;
 background:#f3f4f6;
+height:100vh;
+overflow:hidden;
+display:flex;
+flex-direction:column;
 }
 
 header{
 background:white;
-padding:15px 25px;
+padding:10px 20px;
 border-bottom:1px solid #e5e7eb;
-position:relative;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
-header h2{
-margin:0;
-}
-
-.toggle{
-position:absolute;
-right:25px;
-top:20px;
-}
-
-.container{
-padding:20px;
+main{
+flex:1;
 display:grid;
 grid-template-columns:350px 1fr;
-gap:20px;
+gap:15px;
+padding:15px;
+overflow:hidden;
 }
 
 .card{
 background:white;
 border:1px solid #e5e7eb;
 border-radius:8px;
-box-shadow:0 1px 3px rgba(0,0,0,0.1);
-padding:15px;
+padding:12px;
 }
 
 .editor{
-height:280px;
+height:40vh;
 border:1px solid #e5e7eb;
+}
+
+.result{
+height:20vh;
+overflow:auto;
 }
 
 .schema-table{
 border-collapse:collapse;
 width:100%;
-margin-top:8px;
 }
 
 .schema-table th,
 .schema-table td{
 border:1px solid #e5e7eb;
 padding:6px;
-text-align:left;
 }
 
 .buttons{
-margin-top:15px;
+margin-top:10px;
 }
 
 button{
-padding:7px 14px;
+padding:6px 12px;
 margin-right:6px;
 background:#2563eb;
 color:white;
@@ -88,15 +88,15 @@ background:#1d4ed8;
 .badge{
 background:#22c55e;
 color:white;
-padding:3px 8px;
+padding:2px 6px;
 border-radius:4px;
 font-size:12px;
 }
 
 footer{
-margin-top:25px;
 text-align:center;
-font-size:14px;
+padding:6px;
+font-size:13px;
 color:#6b7280;
 }
 
@@ -108,28 +108,33 @@ color:#6b7280;
 
 <header>
 
-<h2 id="title"></h2>
-<span id="difficulty" class="badge"></span>
+<div>
 
+<h3 id="title"></h3>
+<span id="difficulty" class="badge"></span>
 <p id="description"></p>
 
-<div class="toggle">
+</div>
+
+<div>
+
 <label>
 Autocomplete
 <input type="checkbox" id="toggleAutocomplete" checked>
 </label>
+
 </div>
 
 </header>
 
 
-<div class="container">
+<main>
 
 <div>
 
 <div class="card">
 
-<h3>Table Schema</h3>
+<h4>Table Schema</h4>
 
 <table class="schema-table">
 
@@ -149,16 +154,16 @@ Autocomplete
 
 <div class="card">
 
-<h3>Expected Output</h3>
+<h4>Expected Output</h4>
 
 <div id="expected"></div>
 
 </div>
 
 
-<div class="card">
+<div class="card result">
 
-<h3>Query Result</h3>
+<h4>Query Result</h4>
 
 <div id="output"></div>
 
@@ -171,7 +176,7 @@ Autocomplete
 
 <div class="card">
 
-<h3>Write SQL Query</h3>
+<h4>Write SQL Query</h4>
 
 <div id="editor" class="editor"></div>
 
@@ -189,7 +194,7 @@ Autocomplete
 
 </div>
 
-</div>
+</main>
 
 
 <footer>
@@ -224,23 +229,6 @@ INSERT INTO users VALUES (2,'Bob',20);
 INSERT INTO users VALUES (3,'Charlie',28);
 `,
 solution:"SELECT * FROM users WHERE age>25"
-},
-
-{
-title:"Count Orders",
-difficulty:"Easy",
-description:"Count total orders in the table.",
-schema:[
-["id","INT"],
-["user_id","INT"]
-],
-setup:`
-CREATE TABLE orders(id INT,user_id INT);
-INSERT INTO orders VALUES (1,1);
-INSERT INTO orders VALUES (2,1);
-INSERT INTO orders VALUES (3,2);
-`,
-solution:"SELECT COUNT(*) FROM orders"
 }
 
 ]
@@ -379,10 +367,8 @@ alert("SQL Error")
 function next(){
 
 if(index<questions.length-1){
-
 index++
 loadQuestion()
-
 }
 
 }
@@ -391,10 +377,8 @@ loadQuestion()
 function prev(){
 
 if(index>0){
-
 index--
 loadQuestion()
-
 }
 
 }
@@ -403,6 +387,7 @@ loadQuestion()
 require.config({
 paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}
 })
+
 
 require(['vs/editor/editor.main'],function(){
 
@@ -420,6 +405,35 @@ suggestOnTriggerCharacters:true
 editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,function(){
 runSQL()
 })
+
+
+/* SQL KEYWORD AUTOCOMPLETE */
+
+monaco.languages.registerCompletionItemProvider('sql',{
+
+provideCompletionItems:()=>{
+
+let suggestions=[
+
+"SELECT","FROM","WHERE","GROUP BY","ORDER BY",
+"INSERT","UPDATE","DELETE","JOIN","LEFT JOIN",
+"RIGHT JOIN","INNER JOIN","COUNT","SUM","AVG",
+"MIN","MAX","LIMIT"
+
+].map(word=>({
+
+label:word,
+kind:monaco.languages.CompletionItemKind.Keyword,
+insertText:word
+
+}))
+
+return {suggestions}
+
+}
+
+})
+
 
 document.getElementById("toggleAutocomplete").addEventListener("change",function(){
 
