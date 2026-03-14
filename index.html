@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+
 <meta charset="UTF-8">
 
 <title>SQL Trainer</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
-
 <script src="https://cdn.tailwindcss.com"></script>
 
 </head>
@@ -18,104 +16,134 @@
 
 <div class="flex h-screen">
 
-<div class="w-1/3 bg-white p-4 border-r overflow-auto">
+<!-- LEFT PANEL -->
 
-<h2 class="text-xl font-bold mb-3">SQL Questions</h2>
+<div class="w-1/3 bg-white border-r overflow-auto p-4">
 
-<button onclick="loadQuestion(0)" class="block mb-2 text-blue-600">Question 1</button>
-<button onclick="loadQuestion(1)" class="block mb-2 text-blue-600">Question 2</button>
-<button onclick="loadQuestion(2)" class="block mb-2 text-blue-600">Question 3</button>
+<h2 class="text-2xl font-bold mb-3">SQL Problems</h2>
+
+<div class="space-y-2">
+
+<button onclick="loadQuestion(0)" class="text-blue-600">1. Users older than 25</button>
+<button onclick="loadQuestion(1)" class="text-blue-600">2. Expensive products</button>
+<button onclick="loadQuestion(2)" class="text-blue-600">3. Count orders</button>
+
+</div>
 
 <hr class="my-4">
 
-<div id="questionText"></div>
+<h3 class="font-semibold">Question</h3>
+
+<div id="questionText" class="mb-4"></div>
+
+<h3 class="font-semibold">Database Schema</h3>
+
+<div id="schemaBox" class="text-sm bg-gray-100 p-2 rounded"></div>
 
 </div>
 
-<div class="w-2/3 flex flex-col">
+
+<!-- RIGHT PANEL -->
+
+<div class="flex flex-col w-2/3">
 
 <div id="editor" class="h-2/3"></div>
 
-<button onclick="runSQL()" class="bg-green-500 text-white p-3">
+<div class="flex">
+
+<button onclick="runSQL()" class="bg-green-500 text-white px-6 py-2">
 Run Query
 </button>
 
-<div id="output" class="bg-white p-4 h-1/3 overflow-auto"></div>
+<button onclick="checkAnswer()" class="bg-blue-500 text-white px-6 py-2">
+Submit
+</button>
+
+</div>
+
+<div id="output" class="bg-white h-1/3 overflow-auto p-4"></div>
 
 </div>
 
 </div>
+
 
 <script>
 
 let db;
 
-let questions = [
+let questions=[
 
 {
 text:"Find users older than 25",
+schema:"users(id,name,age)",
 setup:`
 CREATE TABLE users(id INT,name TEXT,age INT);
 INSERT INTO users VALUES (1,'Alice',30);
 INSERT INTO users VALUES (2,'Bob',20);
 INSERT INTO users VALUES (3,'Charlie',28);
 `,
-solution:"SELECT * FROM users WHERE age > 25;"
+solution:"SELECT * FROM users WHERE age > 25"
 },
 
 {
-text:"Show all products with price > 100",
+text:"Find products with price greater than 100",
+schema:"products(id,name,price)",
 setup:`
 CREATE TABLE products(id INT,name TEXT,price INT);
 INSERT INTO products VALUES (1,'Laptop',900);
 INSERT INTO products VALUES (2,'Mouse',20);
 INSERT INTO products VALUES (3,'Phone',500);
 `,
-solution:"SELECT * FROM products WHERE price > 100;"
+solution:"SELECT * FROM products WHERE price > 100"
 },
 
 {
-text:"Count number of orders",
+text:"Count total orders",
+schema:"orders(id,user_id)",
 setup:`
 CREATE TABLE orders(id INT,user_id INT);
 INSERT INTO orders VALUES (1,1);
 INSERT INTO orders VALUES (2,1);
 INSERT INTO orders VALUES (3,2);
 `,
-solution:"SELECT COUNT(*) FROM orders;"
+solution:"SELECT COUNT(*) FROM orders"
 }
 
 ];
 
 initSqlJs({
-locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
-}).then(SQL => {
+locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
+}).then(SQL=>{
 
-window.SQL = SQL;
+window.SQL=SQL;
 
 loadQuestion(0);
 
 });
 
-function loadQuestion(index){
 
-db = new SQL.Database();
+function loadQuestion(i){
 
-db.run(questions[index].setup);
+db=new SQL.Database();
 
-document.getElementById("questionText").innerText = questions[index].text;
+db.run(questions[i].setup);
+
+document.getElementById("questionText").innerText=questions[i].text;
+
+document.getElementById("schemaBox").innerText=questions[i].schema;
 
 }
+
 
 require.config({
-paths:{
-vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'
-}
+paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}
 });
+
 
 require(['vs/editor/editor.main'],function(){
 
-window.editor = monaco.editor.create(
+window.editor=monaco.editor.create(
 document.getElementById('editor'),
 {
 value:"SELECT * FROM users;",
@@ -126,13 +154,27 @@ theme:"vs-dark"
 
 });
 
+
 function runSQL(){
 
-let query = editor.getValue();
+let query=editor.getValue();
 
 try{
 
-let res = db.exec(query);
+let res=db.exec(query);
+
+render(res);
+
+}catch(e){
+
+document.getElementById("output").innerHTML="Error: "+e.message;
+
+}
+
+}
+
+
+function render(res){
 
 let html="";
 
@@ -144,7 +186,9 @@ let rows=res[0].values;
 html+="<table border='1'>";
 
 html+="<tr>";
+
 cols.forEach(c=>html+="<th>"+c+"</th>");
+
 html+="</tr>";
 
 rows.forEach(r=>{
@@ -159,7 +203,9 @@ html+="</tr>";
 
 html+="</table>";
 
-}else{
+}
+
+else{
 
 html="No results";
 
@@ -167,9 +213,33 @@ html="No results";
 
 document.getElementById("output").innerHTML=html;
 
+}
+
+
+function checkAnswer(){
+
+let userQuery=editor.getValue();
+
+let correctQuery=questions.find(q=>q.solution).solution;
+
+try{
+
+let user=db.exec(userQuery);
+let correct=db.exec(correctQuery);
+
+if(JSON.stringify(user)==JSON.stringify(correct)){
+
+alert("Correct Answer 🎉");
+
+}else{
+
+alert("Incorrect Answer");
+
+}
+
 }catch(e){
 
-document.getElementById("output").innerHTML="Error: "+e.message;
+alert("Error in Query");
 
 }
 
