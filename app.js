@@ -5,9 +5,7 @@ let SQL
 let problems=[]
 let currentIndex=0
 
-/* -------------------------
-DATABASE SCENARIOS
---------------------------*/
+/* DATABASE SCENARIOS */
 
 const scenarios=[
 
@@ -96,9 +94,7 @@ GROUP BY customer_id`
 
 ]
 
-/* -------------------------
-INIT SQL ENGINE
---------------------------*/
+/* INIT SQL */
 
 initSqlJs({
 locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
@@ -114,9 +110,7 @@ initEditor()
 
 })
 
-/* -------------------------
-GENERATE PROBLEM LIST
---------------------------*/
+/* GENERATE PROBLEM LIST */
 
 function generateProblems(){
 
@@ -136,9 +130,7 @@ solution:q.sql
 
 }
 
-/* -------------------------
-LOAD PROBLEM
---------------------------*/
+/* LOAD PROBLEM */
 
 function loadProblem(){
 
@@ -154,54 +146,57 @@ renderSchema(p.scenario.schema)
 
 renderExpected(p.solution)
 
-/* clear result */
-
 document.getElementById("output").innerHTML=""
 
 }
 
-/* -------------------------
-SCHEMA RENDER
---------------------------*/
+/* SCHEMA RENDER */
 
 function renderSchema(schema){
 
 let html=""
 
-schema.forEach(row=>{
+schema.forEach(table=>{
+
+let tableName=table[0]
+let columns=table[1].split(",")
+
+html+=`<div class="schema-block">`
+html+=`<h4>${tableName}</h4>`
+
+html+=`<table class="schema-table">`
+html+=`<tr><th>Column</th><th>Type</th></tr>`
+
+columns.forEach(col=>{
+
+let parts=col.trim().split(" ")
+
 html+=`<tr>
-<td>${row[0]}</td>
-<td>${row[1]}</td>
+<td>${parts[0]}</td>
+<td>${parts[1]}</td>
 </tr>`
+
+})
+
+html+=`</table></div>`
+
 })
 
 document.getElementById("schema").innerHTML=html
 
 }
 
-/* -------------------------
-EXPECTED OUTPUT
---------------------------*/
+/* EXPECTED OUTPUT */
 
 function renderExpected(sql){
-
-try{
 
 let res=db.exec(sql)
 
 renderTable(res,"expected")
 
-}catch{
-
-document.getElementById("expected").innerHTML=""
-
 }
 
-}
-
-/* -------------------------
-RUN USER QUERY
---------------------------*/
+/* RUN QUERY */
 
 function runQuery(){
 
@@ -221,9 +216,7 @@ document.getElementById("output").innerText=e.message
 
 }
 
-/* -------------------------
-SUBMIT SOLUTION
---------------------------*/
+/* SUBMIT */
 
 function submitQuery(){
 
@@ -254,9 +247,7 @@ alert("SQL Error")
 
 }
 
-/* -------------------------
-TABLE RENDER
---------------------------*/
+/* TABLE RENDER */
 
 function renderTable(res,target){
 
@@ -291,9 +282,7 @@ document.getElementById(target).innerHTML=html
 
 }
 
-/* -------------------------
-NAVIGATION
---------------------------*/
+/* NAVIGATION */
 
 function nextProblem(){
 
@@ -323,9 +312,7 @@ loadProblem()
 
 }
 
-/* -------------------------
-MONACO EDITOR
---------------------------*/
+/* MONACO EDITOR */
 
 function initEditor(){
 
