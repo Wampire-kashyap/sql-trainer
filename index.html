@@ -16,9 +16,9 @@ margin:0;
 font-family:Arial;
 background:#f3f4f6;
 height:100vh;
-overflow:hidden;
 display:flex;
 flex-direction:column;
+overflow:hidden;
 }
 
 header{
@@ -33,10 +33,19 @@ align-items:center;
 main{
 flex:1;
 display:grid;
-grid-template-columns:350px 1fr;
-gap:15px;
-padding:15px;
+grid-template-columns:380px 1fr;
 overflow:hidden;
+}
+
+.left-panel{
+overflow-y:auto;
+padding:15px;
+}
+
+.right-panel{
+padding:15px;
+display:flex;
+flex-direction:column;
 }
 
 .card{
@@ -44,16 +53,12 @@ background:white;
 border:1px solid #e5e7eb;
 border-radius:8px;
 padding:12px;
+margin-bottom:15px;
 }
 
 .editor{
-height:40vh;
+flex:1;
 border:1px solid #e5e7eb;
-}
-
-.result{
-height:20vh;
-overflow:auto;
 }
 
 .schema-table{
@@ -98,6 +103,8 @@ text-align:center;
 padding:6px;
 font-size:13px;
 color:#6b7280;
+background:white;
+border-top:1px solid #e5e7eb;
 }
 
 </style>
@@ -109,20 +116,16 @@ color:#6b7280;
 <header>
 
 <div>
-
 <h3 id="title"></h3>
 <span id="difficulty" class="badge"></span>
 <p id="description"></p>
-
 </div>
 
 <div>
-
 <label>
 Autocomplete
 <input type="checkbox" id="toggleAutocomplete" checked>
 </label>
-
 </div>
 
 </header>
@@ -130,7 +133,7 @@ Autocomplete
 
 <main>
 
-<div>
+<div class="left-panel">
 
 <div class="card">
 
@@ -161,7 +164,7 @@ Autocomplete
 </div>
 
 
-<div class="card result">
+<div class="card">
 
 <h4>Query Result</h4>
 
@@ -172,7 +175,7 @@ Autocomplete
 </div>
 
 
-<div>
+<div class="right-panel">
 
 <div class="card">
 
@@ -407,43 +410,25 @@ runSQL()
 })
 
 
-/* SQL KEYWORD AUTOCOMPLETE */
-
 monaco.languages.registerCompletionItemProvider('sql',{
-
 provideCompletionItems:()=>{
 
-let suggestions=[
-
+let keywords=[
 "SELECT","FROM","WHERE","GROUP BY","ORDER BY",
 "INSERT","UPDATE","DELETE","JOIN","LEFT JOIN",
 "RIGHT JOIN","INNER JOIN","COUNT","SUM","AVG",
 "MIN","MAX","LIMIT"
+]
 
-].map(word=>({
-
-label:word,
+let suggestions=keywords.map(k=>({
+label:k,
 kind:monaco.languages.CompletionItemKind.Keyword,
-insertText:word
-
+insertText:k
 }))
 
 return {suggestions}
 
 }
-
-})
-
-
-document.getElementById("toggleAutocomplete").addEventListener("change",function(){
-
-let enabled=this.checked
-
-editor.updateOptions({
-quickSuggestions:enabled,
-suggestOnTriggerCharacters:enabled
-})
-
 })
 
 })
