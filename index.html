@@ -4,7 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>SQL Practice</title>
+<title>SQL Practice Platform</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
@@ -14,60 +14,67 @@
 body{
 margin:0;
 font-family:Arial;
-background:#f8fafc;
+background:#f3f4f6;
 }
 
 header{
 background:white;
+padding:15px 25px;
 border-bottom:1px solid #e5e7eb;
-padding:10px 20px;
+}
+
+header h2{
+margin:0;
 }
 
 .container{
+padding:20px;
 display:grid;
 grid-template-columns: 350px 1fr;
-height:calc(100vh - 60px);
+gap:20px;
 }
 
-.panel{
+.card{
 background:white;
-border-right:1px solid #e5e7eb;
+border:1px solid #e5e7eb;
+border-radius:8px;
+box-shadow:0 1px 3px rgba(0,0,0,0.1);
 padding:15px;
 }
 
 .editor{
-height:250px;
-border-bottom:1px solid #e5e7eb;
+height:260px;
+border:1px solid #e5e7eb;
 }
 
 .result{
-height:200px;
-overflow:auto;
-padding:10px;
+margin-top:15px;
 }
 
 .schema-table{
 border-collapse:collapse;
 width:100%;
+margin-top:8px;
 }
 
-.schema-table td,
-.schema-table th{
+.schema-table th,
+.schema-table td{
 border:1px solid #e5e7eb;
 padding:6px;
 text-align:left;
 }
 
 .buttons{
-padding:10px;
+margin-top:15px;
 }
 
 button{
-padding:6px 12px;
-margin-right:5px;
+padding:7px 14px;
+margin-right:6px;
 background:#2563eb;
 color:white;
 border:none;
+border-radius:4px;
 cursor:pointer;
 }
 
@@ -78,9 +85,16 @@ background:#1d4ed8;
 .badge{
 background:#22c55e;
 color:white;
-padding:2px 8px;
+padding:3px 8px;
 border-radius:4px;
 font-size:12px;
+}
+
+footer{
+margin-top:25px;
+text-align:center;
+font-size:14px;
+color:#6b7280;
 }
 
 </style>
@@ -91,7 +105,8 @@ font-size:12px;
 
 <header>
 
-<h3 id="title"></h3>
+<h2 id="title"></h2>
+
 <span id="difficulty" class="badge"></span>
 
 <p id="description"></p>
@@ -101,9 +116,11 @@ font-size:12px;
 
 <div class="container">
 
-<div class="panel">
+<div>
 
-<h4>Schema</h4>
+<div class="card">
+
+<h3>Table Schema</h3>
 
 <table class="schema-table">
 
@@ -118,24 +135,30 @@ font-size:12px;
 
 </table>
 
-<h4 style="margin-top:10px;">Sample Data</h4>
+</div>
 
-<div id="sample"></div>
+
+<div class="card result">
+
+<h3>Query Result</h3>
+
+<div id="output"></div>
+
+</div>
 
 </div>
 
 
 <div>
 
+<div class="card">
+
+<h3>Write SQL Query</h3>
+
 <div id="editor" class="editor"></div>
 
-<div class="result">
-
-<h4>Result</h4>
-
-<div id="output"></div>
-
 </div>
+
 
 <div class="buttons">
 
@@ -149,6 +172,16 @@ font-size:12px;
 </div>
 
 </div>
+
+
+<footer>
+
+Developed by <b>Kunal</b> |  
+For any inquiry connect on mail:  
+<b>Kunalkumarshri47@gmail.com</b>
+
+</footer>
+
 
 <script>
 
@@ -199,7 +232,6 @@ document.getElementById("description").innerText=q.description
 document.getElementById("difficulty").innerText=q.difficulty
 
 renderSchema()
-renderSample()
 
 }
 
@@ -215,15 +247,6 @@ html+=`<tr><td>${c[0]}</td><td>${c[1]}</td></tr>`
 })
 
 document.getElementById("schema").innerHTML=html
-
-}
-
-
-function renderSample(){
-
-let res=db.exec("SELECT * FROM users")
-
-render(res)
 
 }
 
