@@ -1,17 +1,17 @@
 let db
-let currentLevel = 1
-
-let currentScenario
+let editor
 let currentProblem
+let currentScenario
+let problemIndex = 0
 
-/* -------------------------
+/* -----------------------
 DATABASE SCENARIOS
---------------------------*/
+-----------------------*/
 
 const scenarios = [
 
 {
-name:"social_media",
+name:"social",
 
 setup:`
 CREATE TABLE users(id INT,name TEXT);
@@ -28,7 +28,7 @@ INSERT INTO posts VALUES
 (4,3,20);
 `,
 
-tables:[
+schema:[
 ["users","id INT, name TEXT"],
 ["posts","id INT, user_id INT, likes INT"]
 ],
@@ -36,17 +36,13 @@ tables:[
 questions:[
 
 {
-q:"Find users with more than 1 post",
-sql:`SELECT user_id,COUNT(*) 
-FROM posts 
-GROUP BY user_id 
-HAVING COUNT(*) > 1`
+question:"Find users with more than 1 post",
+solution:`SELECT user_id,COUNT(*) FROM posts GROUP BY user_id HAVING COUNT(*)>1`
 },
 
 {
-q:"Find post with highest likes",
-sql:`SELECT * FROM posts 
-ORDER BY likes DESC LIMIT 1`
+question:"Find post with highest likes",
+solution:`SELECT * FROM posts ORDER BY likes DESC LIMIT 1`
 }
 
 ]
@@ -71,7 +67,7 @@ INSERT INTO orders VALUES
 (4,3,500);
 `,
 
-tables:[
+schema:[
 ["customers","id INT,name TEXT"],
 ["orders","id INT,customer_id INT,amount INT"]
 ],
@@ -79,15 +75,13 @@ tables:[
 questions:[
 
 {
-q:"Find total orders per customer",
-sql:`SELECT customer_id,COUNT(*) 
-FROM orders 
-GROUP BY customer_id`
+question:"Count orders per customer",
+solution:`SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id`
 },
 
 {
-q:"Find highest order amount",
-sql:`SELECT MAX(amount) FROM orders`
+question:"Find highest order amount",
+solution:`SELECT MAX(amount) FROM orders`
 }
 
 ]
@@ -96,63 +90,58 @@ sql:`SELECT MAX(amount) FROM orders`
 
 ]
 
-/* -------------------------
-LOAD NEW PROBLEM
---------------------------*/
+/* -----------------------
+LOAD PROBLEM
+-----------------------*/
 
-function loadNewProblem(){
+function loadProblem(){
 
 db = new SQL.Database()
 
-currentScenario = scenarios[
-Math.floor(Math.random()*scenarios.length)
-]
+currentScenario =
+scenarios[Math.floor(Math.random()*scenarios.length)]
 
 db.run(currentScenario.setup)
 
-currentProblem = currentScenario.questions[
+currentProblem =
+currentScenario.questions[
 Math.floor(Math.random()*currentScenario.questions.length)
 ]
 
 document.getElementById("description").innerText =
-currentProblem.q
+currentProblem.question
 
 renderSchema()
 
 }
 
-/* -------------------------
-SCHEMA RENDER
---------------------------*/
+/* -----------------------
+SCHEMA
+-----------------------*/
 
 function renderSchema(){
 
 let html=""
 
-currentScenario.tables.forEach(t=>{
-
-html += `<tr>
-<td>${t[0]}</td>
-<td>${t[1]}</td>
-</tr>`
-
+currentScenario.schema.forEach(row=>{
+html += `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`
 })
 
 document.getElementById("schema").innerHTML = html
 
 }
 
-/* -------------------------
+/* -----------------------
 RUN QUERY
---------------------------*/
+-----------------------*/
 
-function runSQL(){
+function runQuery(){
 
-let query = editor.getValue()
+let sql = editor.getValue()
 
 try{
 
-let res = db.exec(query)
+let res = db.exec(sql)
 
 renderTable(res,"output")
 
@@ -164,30 +153,26 @@ document.getElementById("output").innerText = e.message
 
 }
 
-/* -------------------------
-VALIDATE QUERY
---------------------------*/
+/* -----------------------
+SUBMIT
+-----------------------*/
 
 function submitQuery(){
 
-let userQuery = editor.getValue()
-
 try{
 
-let userRes = db.exec(userQuery)
-let solRes = db.exec(currentProblem.sql)
+let user = db.exec(editor.getValue())
+let sol = db.exec(currentProblem.solution)
 
-if(JSON.stringify(userRes) === JSON.stringify(solRes)){
+if(JSON.stringify(user)===JSON.stringify(sol)){
 
 alert("Correct!")
 
-currentLevel++
-
-loadNewProblem()
+loadProblem()
 
 }else{
 
-alert("Incorrect result")
+alert("Wrong answer")
 
 }
 
@@ -199,9 +184,9 @@ alert("SQL Error")
 
 }
 
-/* -------------------------
+/* -----------------------
 TABLE RENDER
---------------------------*/
+-----------------------*/
 
 function renderTable(res,target){
 
@@ -235,14 +220,3 @@ html+="</table>"
 document.getElementById(target).innerHTML = html
 
 }
-
-/* -------------------------
-INIT SQL
---------------------------*/
-
-initSqlJs({
-locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
-}).then(SQL=>{
-window.SQL = SQL
-loadNewProblem()
-})
