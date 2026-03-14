@@ -17,21 +17,18 @@
 
 <header>
 
-<div>
+<div class="header-top">
 
 <h2>SQL Practice</h2>
 
 <select id="databaseSelector" onchange="changeDatabase()">
-
 <option value="ecommerce">Ecommerce</option>
-<option value="social">Social Media</option>
 <option value="hr">HR</option>
-
 </select>
 
-<p id="description"></p>
-
 </div>
+
+<p id="description"></p>
 
 </header>
 
@@ -41,26 +38,18 @@
 <div class="left-panel">
 
 <div class="card">
-
 <h3>Table Schema</h3>
 <div id="schema"></div>
-
 </div>
 
-
 <div class="card">
-
 <h3>Expected Output</h3>
 <div id="expected"></div>
-
 </div>
 
-
 <div class="card">
-
 <h3>Query Result</h3>
 <div id="output"></div>
-
 </div>
 
 </div>
@@ -69,20 +58,14 @@
 <div class="right-panel">
 
 <div class="card">
-
 <h3>Write SQL Query</h3>
 <div id="editor"></div>
-
 </div>
 
-
 <div class="buttons">
-
-<button onclick="prevProblem()">Prev</button>
 <button onclick="runQuery()">Run</button>
 <button onclick="submitQuery()">Submit</button>
 <button onclick="nextProblem()">Next</button>
-
 </div>
 
 </div>
@@ -92,13 +75,11 @@
 
 <footer>
 
-Developed by <b>Kunal</b> |  
-For inquiries: Kunalkumarshri47@gmail.com
+Developed by <b>Kunal</b> | For inquiries: Kunalkumarshri47@gmail.com
 
 </footer>
 
 <script src="app.js"></script>
 
 </body>
-
 </html>
