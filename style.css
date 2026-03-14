@@ -14,6 +14,12 @@ padding:15px;
 border-bottom:1px solid #ddd;
 }
 
+.header-top{
+display:flex;
+align-items:center;
+gap:20px;
+}
+
 main{
 flex:1;
 display:grid;
@@ -54,11 +60,6 @@ margin-bottom:10px;
 border:1px solid #ccc;
 padding:6px;
 text-align:left;
-}
-
-.table-title{
-font-weight:bold;
-margin-top:10px;
 }
 
 button{
