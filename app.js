@@ -9,11 +9,13 @@ let currentProblem=null
 const DATABASES={
 
 ecommerce:{
+
 schema:{
 customers:[
 ["id","INT"],
 ["name","TEXT"]
 ],
+
 orders:[
 ["id","INT"],
 ["customer_id","INT"],
@@ -22,22 +24,28 @@ orders:[
 },
 
 setup:`
+
 CREATE TABLE customers(id INT,name TEXT);
+
 INSERT INTO customers VALUES
 (1,'Alice'),
 (2,'Bob'),
 (3,'Charlie');
 
 CREATE TABLE orders(id INT,customer_id INT,amount INT);
+
 INSERT INTO orders VALUES
 (1,1,200),
 (2,1,300),
 (3,2,150),
 (4,3,500);
+
 `
+
 },
 
 hr:{
+
 schema:{
 employees:[
 ["id","INT"],
@@ -45,6 +53,7 @@ employees:[
 ["salary","INT"],
 ["dept_id","INT"]
 ],
+
 departments:[
 ["id","INT"],
 ["name","TEXT"]
@@ -52,7 +61,9 @@ departments:[
 },
 
 setup:`
+
 CREATE TABLE employees(id INT,name TEXT,salary INT,dept_id INT);
+
 INSERT INTO employees VALUES
 (1,'Alice',72000,1),
 (2,'Bob',65000,1),
@@ -60,24 +71,25 @@ INSERT INTO employees VALUES
 (4,'Emma',91000,3);
 
 CREATE TABLE departments(id INT,name TEXT);
+
 INSERT INTO departments VALUES
 (1,'Engineering'),
 (2,'Sales'),
 (3,'Marketing');
+
 `
-}
 
 }
 
+}
 
-/* RANDOM HELPER */
+
 
 function randomItem(arr){
 return arr[Math.floor(Math.random()*arr.length)]
 }
 
 
-/* PROBLEM GENERATOR */
 
 function generateProblem(){
 
@@ -120,7 +132,6 @@ solution
 }
 
 
-/* LOAD PROBLEM */
 
 function loadProblem(){
 
@@ -143,7 +154,6 @@ document.getElementById("output").innerHTML=""
 }
 
 
-/* SCHEMA RENDER */
 
 function renderSchema(schema){
 
@@ -160,8 +170,10 @@ html+=`<tr><th>Column</th><th>Type</th></tr>`
 schema[table].forEach(col=>{
 
 html+=`<tr>
+
 <td>${col[0]}</td>
 <td>${col[1]}</td>
+
 </tr>`
 
 })
@@ -175,7 +187,6 @@ document.getElementById("schema").innerHTML=html
 }
 
 
-/* EXPECTED OUTPUT */
 
 function renderExpected(sql){
 
@@ -186,7 +197,6 @@ renderTable(res,"expected")
 }
 
 
-/* RUN QUERY */
 
 function runQuery(){
 
@@ -207,7 +217,6 @@ document.getElementById("output").innerText=e.message
 }
 
 
-/* SUBMIT */
 
 function submitQuery(){
 
@@ -216,13 +225,8 @@ try{
 let user=db.exec(editor.getValue())
 let sol=db.exec(currentProblem.solution)
 
-if(user.length===0 || sol.length===0){
-alert("Incorrect")
-return
-}
-
-let userRows=user[0].values
-let solRows=sol[0].values
+let userRows=user[0]?.values
+let solRows=sol[0]?.values
 
 if(JSON.stringify(userRows)===JSON.stringify(solRows)){
 
@@ -245,7 +249,6 @@ alert("SQL Error")
 }
 
 
-/* TABLE RENDER */
 
 function renderTable(res,target){
 
@@ -267,7 +270,9 @@ html+="</tr>"
 rows.forEach(r=>{
 
 html+="<tr>"
+
 r.forEach(v=>html+=`<td>${v}</td>`)
+
 html+="</tr>"
 
 })
@@ -281,7 +286,6 @@ document.getElementById(target).innerHTML=html
 }
 
 
-/* DATABASE SWITCH */
 
 function changeDatabase(){
 
@@ -292,7 +296,6 @@ loadProblem()
 }
 
 
-/* NEXT QUESTION */
 
 function nextProblem(){
 
@@ -301,7 +304,6 @@ loadProblem()
 }
 
 
-/* EDITOR */
 
 function initEditor(){
 
@@ -321,7 +323,7 @@ automaticLayout:true
 }
 )
 
-/* SQL AUTOCOMPLETE */
+
 
 monaco.languages.registerCompletionItemProvider('sql',{
 
@@ -329,16 +331,16 @@ provideCompletionItems:()=>{
 
 const suggestions=[
 
-{label:'SELECT',kind:monaco.languages.CompletionItemKind.Keyword,insertText:'SELECT '},
-{label:'FROM',kind:monaco.languages.CompletionItemKind.Keyword,insertText:'FROM '},
-{label:'WHERE',kind:monaco.languages.CompletionItemKind.Keyword,insertText:'WHERE '},
-{label:'GROUP BY',kind:monaco.languages.CompletionItemKind.Keyword,insertText:'GROUP BY '},
-{label:'ORDER BY',kind:monaco.languages.CompletionItemKind.Keyword,insertText:'ORDER BY '},
-{label:'COUNT()',kind:monaco.languages.CompletionItemKind.Function,insertText:'COUNT(*)'},
-{label:'MAX()',kind:monaco.languages.CompletionItemKind.Function,insertText:'MAX()'},
-{label:'MIN()',kind:monaco.languages.CompletionItemKind.Function,insertText:'MIN()'},
-{label:'SUM()',kind:monaco.languages.CompletionItemKind.Function,insertText:'SUM()'},
-{label:'AVG()',kind:monaco.languages.CompletionItemKind.Function,insertText:'AVG()'}
+{label:'SELECT',kind:1,insertText:'SELECT '},
+{label:'FROM',kind:1,insertText:'FROM '},
+{label:'WHERE',kind:1,insertText:'WHERE '},
+{label:'GROUP BY',kind:1,insertText:'GROUP BY '},
+{label:'ORDER BY',kind:1,insertText:'ORDER BY '},
+{label:'COUNT()',kind:2,insertText:'COUNT(*)'},
+{label:'MAX()',kind:2,insertText:'MAX()'},
+{label:'MIN()',kind:2,insertText:'MIN()'},
+{label:'SUM()',kind:2,insertText:'SUM()'},
+{label:'AVG()',kind:2,insertText:'AVG()'}
 
 ]
 
@@ -358,7 +360,6 @@ function(){runQuery()}
 }
 
 
-/* INIT */
 
 initSqlJs({
 locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
