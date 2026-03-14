@@ -2,191 +2,213 @@ let db
 let editor
 let SQL
 
-let currentDatabase="ecommerce"
-let currentProblem=null
+let currentDatabase = "ecommerce"
+let currentProblem = null
 
 
-const DATABASES={
+/* =========================
+DATABASE DEFINITIONS
+========================= */
+
+const DATABASE_TEMPLATES = {
 
 ecommerce:{
-
-schema:{
-customers:[
-["id","INT"],
-["name","TEXT"]
-],
-
-orders:[
-["id","INT"],
-["customer_id","INT"],
-["amount","INT"]
-]
-},
-
-setup:`
-
-CREATE TABLE customers(id INT,name TEXT);
-
-INSERT INTO customers VALUES
-(1,'Alice'),
-(2,'Bob'),
-(3,'Charlie');
-
-CREATE TABLE orders(id INT,customer_id INT,amount INT);
-
-INSERT INTO orders VALUES
-(1,1,200),
-(2,1,300),
-(3,2,150),
-(4,3,500);
-
-`
-
+tables:{
+customers:["id","name"],
+orders:["id","customer_id","amount"],
+products:["id","name","price"]
+}
 },
 
 hr:{
-
-schema:{
-employees:[
-["id","INT"],
-["name","TEXT"],
-["salary","INT"],
-["dept_id","INT"]
-],
-
-departments:[
-["id","INT"],
-["name","TEXT"]
-]
+tables:{
+employees:["id","name","salary","dept_id"],
+departments:["id","name"]
+}
 },
 
-setup:`
-
-CREATE TABLE employees(id INT,name TEXT,salary INT,dept_id INT);
-
-INSERT INTO employees VALUES
-(1,'Alice',72000,1),
-(2,'Bob',65000,1),
-(3,'David',88000,2),
-(4,'Emma',91000,3);
-
-CREATE TABLE departments(id INT,name TEXT);
-
-INSERT INTO departments VALUES
-(1,'Engineering'),
-(2,'Sales'),
-(3,'Marketing');
-
-`
-
+social:{
+tables:{
+users:["id","name"],
+posts:["id","user_id","likes"],
+comments:["id","post_id","user_id"]
+}
 }
 
 }
 
 
 
-function randomItem(arr){
-return arr[Math.floor(Math.random()*arr.length)]
+/* =========================
+RANDOM HELPERS
+========================= */
+
+function rand(min,max){
+return Math.floor(Math.random()*(max-min+1))+min
+}
+
+function pick(arr){
+return arr[rand(0,arr.length-1)]
 }
 
 
 
-function generateProblem(){
+/* =========================
+DATABASE GENERATOR
+========================= */
 
-let schema=DATABASES[currentDatabase].schema
+function generateDatabase(){
 
-let tables=Object.keys(schema)
+let template = DATABASE_TEMPLATES[currentDatabase]
 
-let table=randomItem(tables)
+db = new SQL.Database()
 
-let columns=schema[table]
+let schemaHTML=""
 
-let column=randomItem(columns)[0]
+for(let table in template.tables){
 
-let task=randomItem(["max","count"])
+let cols = template.tables[table]
 
-let question=""
-let solution=""
+let createSQL = `CREATE TABLE ${table}(`
 
-if(task==="max"){
+cols.forEach((c,i)=>{
 
-question=`Find highest ${column} from ${table}`
+createSQL += `${c} INT`
 
-solution=`SELECT MAX(${column}) FROM ${table}`
+if(c==="name") createSQL = createSQL.replace("INT","TEXT")
 
-}
-
-if(task==="count"){
-
-question=`Count rows in ${table}`
-
-solution=`SELECT COUNT(*) FROM ${table}`
-
-}
-
-return{
-question,
-solution
-}
-
-}
-
-
-
-function loadProblem(){
-
-let dbInfo=DATABASES[currentDatabase]
-
-db=new SQL.Database()
-
-db.run(dbInfo.setup)
-
-currentProblem=generateProblem()
-
-document.getElementById("description").innerText=currentProblem.question
-
-renderSchema(dbInfo.schema)
-
-renderExpected(currentProblem.solution)
-
-document.getElementById("output").innerHTML=""
-
-}
-
-
-
-function renderSchema(schema){
-
-let html=""
-
-for(let table in schema){
-
-html+=`<b>${table}</b>`
-
-html+=`<table class="schema-table">`
-
-html+=`<tr><th>Column</th><th>Type</th></tr>`
-
-schema[table].forEach(col=>{
-
-html+=`<tr>
-
-<td>${col[0]}</td>
-<td>${col[1]}</td>
-
-</tr>`
+if(i<cols.length-1) createSQL+=","
 
 })
 
-html+=`</table>`
+createSQL+=");"
+
+db.run(createSQL)
+
+
+
+/* insert random rows */
+
+let rows = rand(10,30)
+
+for(let i=1;i<=rows;i++){
+
+let values=[]
+
+cols.forEach(col=>{
+
+if(col==="id") values.push(i)
+
+else if(col.includes("name")) values.push(`'User${rand(1,999)}'`)
+
+else values.push(rand(10,500))
+
+})
+
+db.run(`INSERT INTO ${table} VALUES(${values.join(",")})`)
 
 }
 
-document.getElementById("schema").innerHTML=html
+
+
+/* render schema */
+
+schemaHTML+=`<b>${table}</b>`
+schemaHTML+=`<table class="schema-table">`
+schemaHTML+=`<tr><th>Column</th></tr>`
+
+cols.forEach(c=>{
+schemaHTML+=`<tr><td>${c}</td></tr>`
+})
+
+schemaHTML+=`</table>`
+
+}
+
+document.getElementById("schema").innerHTML=schemaHTML
 
 }
 
 
+
+/* =========================
+QUESTION ENGINE
+========================= */
+
+const QUESTION_TEMPLATES=[
+
+{
+difficulty:"easy",
+question:(table,col)=>`Find highest ${col} in ${table}`,
+solution:(table,col)=>`SELECT MAX(${col}) FROM ${table}`,
+hint:"Use MAX() aggregate function"
+},
+
+{
+difficulty:"easy",
+question:(table)=>`Count rows in ${table}`,
+solution:(table)=>`SELECT COUNT(*) FROM ${table}`,
+hint:"Use COUNT(*)"
+},
+
+{
+difficulty:"medium",
+question:(table,col)=>`Find average ${col} from ${table}`,
+solution:(table,col)=>`SELECT AVG(${col}) FROM ${table}`,
+hint:"Use AVG()"
+},
+
+{
+difficulty:"medium",
+question:(table,col)=>`Find top 3 ${col} values`,
+solution:(table,col)=>`SELECT ${col} FROM ${table} ORDER BY ${col} DESC LIMIT 3`,
+hint:"Use ORDER BY + LIMIT"
+}
+
+]
+
+
+
+/* =========================
+PROBLEM GENERATOR
+========================= */
+
+function generateProblem(){
+
+let template = DATABASE_TEMPLATES[currentDatabase]
+
+let tables = Object.keys(template.tables)
+
+let table = pick(tables)
+
+let columns = template.tables[table]
+
+let column = pick(columns)
+
+let q = pick(QUESTION_TEMPLATES)
+
+let question = q.question(table,column)
+let solution = q.solution(table,column)
+
+currentProblem={
+question,
+solution,
+hint:q.hint,
+difficulty:q.difficulty
+}
+
+document.getElementById("description").innerHTML=
+`${question} <br><small>Difficulty: ${q.difficulty}</small>`
+
+renderExpected(solution)
+
+}
+
+
+
+/* =========================
+EXPECTED OUTPUT
+========================= */
 
 function renderExpected(sql){
 
@@ -197,6 +219,10 @@ renderTable(res,"expected")
 }
 
 
+
+/* =========================
+RUN QUERY
+========================= */
 
 function runQuery(){
 
@@ -218,6 +244,10 @@ document.getElementById("output").innerText=e.message
 
 
 
+/* =========================
+SUBMIT
+========================= */
+
 function submitQuery(){
 
 try{
@@ -232,11 +262,11 @@ if(JSON.stringify(userRows)===JSON.stringify(solRows)){
 
 alert("Correct!")
 
-loadProblem()
+nextProblem()
 
 }else{
 
-alert("Incorrect")
+alert("Incorrect. Hint: "+currentProblem.hint)
 
 }
 
@@ -250,6 +280,10 @@ alert("SQL Error")
 
 
 
+/* =========================
+TABLE RENDER
+========================= */
+
 function renderTable(res,target){
 
 let html=""
@@ -262,19 +296,13 @@ let rows=res[0].values
 html+="<table class='schema-table'>"
 
 html+="<tr>"
-
 cols.forEach(c=>html+=`<th>${c}</th>`)
-
 html+="</tr>"
 
 rows.forEach(r=>{
-
 html+="<tr>"
-
 r.forEach(v=>html+=`<td>${v}</td>`)
-
 html+="</tr>"
-
 })
 
 html+="</table>"
@@ -287,23 +315,37 @@ document.getElementById(target).innerHTML=html
 
 
 
+/* =========================
+NEXT QUESTION
+========================= */
+
+function nextProblem(){
+
+generateDatabase()
+
+generateProblem()
+
+}
+
+
+
+/* =========================
+DATABASE SWITCH
+========================= */
+
 function changeDatabase(){
 
 currentDatabase=document.getElementById("databaseSelector").value
 
-loadProblem()
+nextProblem()
 
 }
 
 
 
-function nextProblem(){
-
-loadProblem()
-
-}
-
-
+/* =========================
+EDITOR
+========================= */
 
 function initEditor(){
 
@@ -323,33 +365,6 @@ automaticLayout:true
 }
 )
 
-
-
-monaco.languages.registerCompletionItemProvider('sql',{
-
-provideCompletionItems:()=>{
-
-const suggestions=[
-
-{label:'SELECT',kind:1,insertText:'SELECT '},
-{label:'FROM',kind:1,insertText:'FROM '},
-{label:'WHERE',kind:1,insertText:'WHERE '},
-{label:'GROUP BY',kind:1,insertText:'GROUP BY '},
-{label:'ORDER BY',kind:1,insertText:'ORDER BY '},
-{label:'COUNT()',kind:2,insertText:'COUNT(*)'},
-{label:'MAX()',kind:2,insertText:'MAX()'},
-{label:'MIN()',kind:2,insertText:'MIN()'},
-{label:'SUM()',kind:2,insertText:'SUM()'},
-{label:'AVG()',kind:2,insertText:'AVG()'}
-
-]
-
-return{suggestions}
-
-}
-
-})
-
 editor.addCommand(
 monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
 function(){runQuery()}
@@ -361,6 +376,10 @@ function(){runQuery()}
 
 
 
+/* =========================
+INIT
+========================= */
+
 initSqlJs({
 locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
 }).then(function(SQLLib){
@@ -369,6 +388,6 @@ SQL=SQLLib
 
 initEditor()
 
-loadProblem()
+nextProblem()
 
 })
