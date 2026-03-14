@@ -1,83 +1,78 @@
-<!DOCTYPE html>
-<html>
+body{
+margin:0;
+font-family:Arial;
+background:#f3f4f6;
+}
 
-<head>
+header{
+background:white;
+padding:15px;
+border-bottom:1px solid #ddd;
+}
 
-<meta charset="UTF-8">
-<title>SQL Practice</title>
+.header-row{
+display:flex;
+align-items:center;
+gap:20px;
+}
 
-<link rel="stylesheet" href="style.css">
+.layout{
+display:grid;
+grid-template-columns:350px 1fr;
+min-height:calc(100vh - 140px);
+}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
+.left-panel{
+padding:15px;
+overflow-y:auto;
+}
 
-</head>
+.right-panel{
+padding:15px;
+}
 
-<body>
+.card{
+background:white;
+padding:15px;
+border-radius:6px;
+border:1px solid #ddd;
+margin-bottom:15px;
+}
 
-<header>
+#editor{
+height:350px;
+border:1px solid #ddd;
+}
 
-<div class="header-row">
+.schema-table{
+width:100%;
+border-collapse:collapse;
+margin-bottom:10px;
+}
 
-<h2>SQL Practice</h2>
+.schema-table th,
+.schema-table td{
+border:1px solid #ccc;
+padding:6px;
+}
 
-<select id="databaseSelector" onchange="changeDatabase()">
-<option value="ecommerce">Ecommerce</option>
-<option value="hr">HR</option>
-</select>
+.buttons{
+margin-top:10px;
+}
 
-</div>
+button{
+background:#2563eb;
+color:white;
+border:none;
+padding:6px 12px;
+margin-right:6px;
+border-radius:4px;
+cursor:pointer;
+}
 
-<p id="description"></p>
-
-</header>
-
-
-<div class="layout">
-
-<div class="left-panel">
-
-<div class="card">
-<h3>Table Schema</h3>
-<div id="schema"></div>
-</div>
-
-<div class="card">
-<h3>Expected Output</h3>
-<div id="expected"></div>
-</div>
-
-<div class="card">
-<h3>Query Result</h3>
-<div id="output"></div>
-</div>
-
-</div>
-
-
-<div class="right-panel">
-
-<div class="card">
-<h3>Write SQL Query</h3>
-<div id="editor"></div>
-</div>
-
-<div class="buttons">
-<button onclick="runQuery()">Run</button>
-<button onclick="submitQuery()">Submit</button>
-<button onclick="nextProblem()">Next</button>
-</div>
-
-</div>
-
-</div>
-
-
-<footer>
-Developed by <b>Kunal</b> | For inquiries: Kunalkumarshri47@gmail.com
-</footer>
-
-<script src="app.js"></script>
-
-</body>
-</html>
+footer{
+background:white;
+padding:10px;
+border-top:1px solid #ddd;
+text-align:center;
+}
