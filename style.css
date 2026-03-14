@@ -23,14 +23,10 @@ grid-template-columns:350px 1fr;
 overflow:hidden;
 }
 
-/* LEFT PANEL SCROLL */
-
 .left-panel{
 overflow-y:auto;
 padding:15px;
 }
-
-/* RIGHT PANEL */
 
 .right-panel{
 display:flex;
@@ -51,9 +47,12 @@ height:350px;
 border:1px solid #ddd;
 }
 
+/* schema tables */
+
 .schema-table{
 width:100%;
 border-collapse:collapse;
+margin-bottom:10px;
 }
 
 .schema-table th,
@@ -61,6 +60,17 @@ border-collapse:collapse;
 border:1px solid #ddd;
 padding:6px;
 }
+
+.schema-block{
+margin-bottom:15px;
+}
+
+.schema-block h4{
+margin-bottom:5px;
+color:#2563eb;
+}
+
+/* buttons */
 
 .buttons{
 margin-top:10px;
