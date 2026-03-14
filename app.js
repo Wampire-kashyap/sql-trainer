@@ -1,134 +1,110 @@
-/* =========================
-SQL PRACTICE ENGINE
-SMART AUTOCOMPLETE VERSION
-========================= */
+/* ===============================
+SMART SQL PRACTICE ENGINE
+PHASE 1 : DATABASE GENERATOR
+================================ */
 
 let db
 let editor
 let SQL
 
-let problems=[]
-let currentIndex=0
+let currentDatabase="ecommerce"
 
-/* -------------------------
-DATABASE SCENARIOS
--------------------------- */
+/* ===============================
+DATABASE DEFINITIONS
+================================ */
 
-const scenarios=[
+const DATABASES={
 
-{
-schema:{
-customers:[
-["id","INT"],
-["name","TEXT"]
-],
-
-orders:[
-["id","INT"],
-["customer_id","INT"],
-["amount","INT"]
-]
+ecommerce:{
+tables:{
+customers:["id","name"],
+orders:["id","customer_id","amount"],
+products:["id","name","price"],
+payments:["id","order_id","status"]
+}
 },
 
-setup:`
-CREATE TABLE customers(id INT,name TEXT);
-INSERT INTO customers VALUES
-(1,'Alice'),
-(2,'Bob'),
-(3,'Charlie');
-
-CREATE TABLE orders(id INT,customer_id INT,amount INT);
-INSERT INTO orders VALUES
-(1,1,200),
-(2,1,300),
-(3,2,150),
-(4,3,500);
-`,
-
-questions:[
-{
-q:"Find highest order amount",
-sql:`SELECT MAX(amount) FROM orders`
+social:{
+tables:{
+users:["id","name"],
+posts:["id","user_id","likes"],
+comments:["id","post_id","user_id"]
+}
 },
 
-{
-q:"Count orders per customer",
-sql:`SELECT customer_id,COUNT(*) 
-FROM orders
-GROUP BY customer_id`
+hr:{
+tables:{
+employees:["id","name","salary","dept_id"],
+departments:["id","name"]
+}
 }
 
+}
+
+/* ===============================
+RANDOM DATA GENERATORS
+================================ */
+
+function randomName(){
+
+const names=[
+"Alice","Bob","David","Emma","Sophia",
+"James","Daniel","Lucas","Olivia","Noah"
 ]
 
-}
-
-]
-
-/* -------------------------
-INIT SQL ENGINE
--------------------------- */
-
-initSqlJs({
-locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
-}).then(function(SQLLib){
-
-SQL=SQLLib
-
-generateProblems()
-
-loadProblem()
-
-initEditor()
-
-})
-
-/* -------------------------
-GENERATE PROBLEMS
--------------------------- */
-
-function generateProblems(){
-
-scenarios.forEach(s=>{
-
-s.questions.forEach(q=>{
-
-problems.push({
-scenario:s,
-question:q.q,
-solution:q.sql
-})
-
-})
-
-})
+return names[Math.floor(Math.random()*names.length)]
 
 }
 
-/* -------------------------
-LOAD PROBLEM
--------------------------- */
+function randomNumber(min,max){
 
-function loadProblem(){
+return Math.floor(Math.random()*(max-min+1))+min
+
+}
+
+/* ===============================
+BUILD DATABASE
+================================ */
+
+function buildDatabase(){
 
 db=new SQL.Database()
 
-let p=problems[currentIndex]
+let schema=DATABASES[currentDatabase].tables
 
-db.run(p.scenario.setup)
+for(let table in schema){
 
-document.getElementById("description").innerText=p.question
+let columns=schema[table]
 
-renderSchema(p.scenario.schema)
+let columnSQL=columns.map(c=>c+" INT").join(",")
 
-renderExpected(p.solution)
+db.run(`CREATE TABLE ${table}(${columnSQL})`)
 
-document.getElementById("output").innerHTML=""
+for(let i=1;i<=randomNumber(10,20);i++){
+
+let values=[]
+
+columns.forEach(col=>{
+
+if(col==="id") values.push(i)
+else if(col.includes("name")) values.push("'"+randomName()+"'")
+else values.push(randomNumber(10,500))
+
+})
+
+db.run(`INSERT INTO ${table} VALUES(${values.join(",")})`)
 
 }
 
-/* -------------------------
-SCHEMA RENDER
--------------------------- */
+}
+
+renderSchema(schema)
+
+}
+
+/* ===============================
+RENDER SCHEMA
+================================ */
 
 function renderSchema(schema){
 
@@ -136,18 +112,15 @@ let html=""
 
 for(let table in schema){
 
-html+=`<div class="table-title">${table}</div>`
+html+=`<b>${table}</b>`
 
 html+=`<table class="schema-table">`
-html+=`<tr><th>Column</th><th>Type</th></tr>`
+
+html+=`<tr><th>Column</th></tr>`
 
 schema[table].forEach(col=>{
 
-html+=`<tr>
-
-<td>${col[0]}</td>
-<td>${col[1]}</td>
-</tr>`
+html+=`<tr><td>${col}</td></tr>`
 
 })
 
@@ -159,21 +132,9 @@ document.getElementById("schema").innerHTML=html
 
 }
 
-/* -------------------------
-EXPECTED OUTPUT
--------------------------- */
-
-function renderExpected(sql){
-
-let res=db.exec(sql)
-
-renderTable(res,"expected")
-
-}
-
-/* -------------------------
+/* ===============================
 RUN QUERY
--------------------------- */
+================================ */
 
 function runQuery(){
 
@@ -183,7 +144,7 @@ try{
 
 let res=db.exec(sql)
 
-renderTable(res,"output")
+renderResult(res)
 
 }catch(e){
 
@@ -193,44 +154,11 @@ document.getElementById("output").innerText=e.message
 
 }
 
-/* -------------------------
-SUBMIT QUERY
--------------------------- */
+/* ===============================
+RENDER RESULT
+================================ */
 
-function submitQuery(){
-
-let p=problems[currentIndex]
-
-try{
-
-let user=db.exec(editor.getValue())
-let sol=db.exec(p.solution)
-
-if(JSON.stringify(user)===JSON.stringify(sol)){
-
-alert("Correct!")
-
-nextProblem()
-
-}else{
-
-alert("Incorrect")
-
-}
-
-}catch{
-
-alert("SQL Error")
-
-}
-
-}
-
-/* -------------------------
-TABLE RENDER
--------------------------- */
-
-function renderTable(res,target){
+function renderResult(res){
 
 let html=""
 
@@ -250,7 +178,9 @@ html+="</tr>"
 rows.forEach(r=>{
 
 html+="<tr>"
+
 r.forEach(v=>html+=`<td>${v}</td>`)
+
 html+="</tr>"
 
 })
@@ -259,77 +189,25 @@ html+="</table>"
 
 }
 
-document.getElementById(target).innerHTML=html
+document.getElementById("output").innerHTML=html
 
 }
 
-/* -------------------------
-NAVIGATION
--------------------------- */
+/* ===============================
+DATABASE SELECTOR
+================================ */
 
-function nextProblem(){
+function changeDatabase(){
 
-currentIndex++
+currentDatabase=document.getElementById("dbSelector").value
 
-if(currentIndex>=problems.length){
-currentIndex=0
-}
-
-loadProblem()
+buildDatabase()
 
 }
 
-function prevProblem(){
-
-currentIndex--
-
-if(currentIndex<0){
-currentIndex=problems.length-1
-}
-
-loadProblem()
-
-}
-
-/* -------------------------
-SMART AUTOCOMPLETE
--------------------------- */
-
-function getSchemaSuggestions(){
-
-let p=problems[currentIndex]
-
-let schema=p.scenario.schema
-
-let suggestions=[]
-
-for(let table in schema){
-
-suggestions.push({
-label:table,
-kind:monaco.languages.CompletionItemKind.Field,
-insertText:table
-})
-
-schema[table].forEach(col=>{
-
-suggestions.push({
-label:col,
-kind:monaco.languages.CompletionItemKind.Property,
-insertText:col
-})
-
-})
-
-}
-
-return suggestions
-
-}
-
-/* -------------------------
-SQL EDITOR
--------------------------- */
+/* ===============================
+EDITOR
+================================ */
 
 function initEditor(){
 
@@ -349,49 +227,27 @@ automaticLayout:true
 }
 )
 
-/* CTRL + ENTER */
-
 editor.addCommand(
 monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
 function(){runQuery()}
 )
 
-/* SQL KEYWORDS */
-
-const keywords=[
-"SELECT","FROM","WHERE","GROUP BY","ORDER BY",
-"JOIN","LEFT JOIN","RIGHT JOIN","INNER JOIN",
-"COUNT","SUM","AVG","MAX","MIN",
-"LIMIT","HAVING","DISTINCT",
-"RANK","DENSE_RANK","ROW_NUMBER",
-"PARTITION BY"
-]
-
-/* AUTOCOMPLETE */
-
-monaco.languages.registerCompletionItemProvider('sql',{
-
-provideCompletionItems:()=>{
-
-let keywordSuggestions=keywords.map(k=>({
-label:k,
-kind:monaco.languages.CompletionItemKind.Keyword,
-insertText:k
-}))
-
-let schemaSuggestions=getSchemaSuggestions()
-
-return {
-suggestions:[
-...keywordSuggestions,
-...schemaSuggestions
-]
-}
-
-}
-
-})
-
 })
 
 }
+
+/* ===============================
+INIT
+================================ */
+
+initSqlJs({
+locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
+}).then(function(SQLLib){
+
+SQL=SQLLib
+
+buildDatabase()
+
+initEditor()
+
+})
