@@ -1,27 +1,33 @@
+/* =========================================
+SMART SQL PRACTICE ENGINE
+AUTO QUESTION GENERATOR
+========================================= */
+
 let db
 let editor
 let SQL
 
-let currentIndex=0
 let currentDatabase="ecommerce"
+let currentProblem=null
+
+/* =========================================
+DATABASE DEFINITIONS
+========================================= */
 
 const DATABASES={
 
 ecommerce:{
-
 schema:{
 customers:[
 ["id","INT"],
 ["name","TEXT"]
 ],
-
 orders:[
 ["id","INT"],
 ["customer_id","INT"],
 ["amount","INT"]
 ]
 },
-
 setup:`
 CREATE TABLE customers(id INT,name TEXT);
 INSERT INTO customers VALUES
@@ -35,99 +41,158 @@ INSERT INTO orders VALUES
 (2,1,300),
 (3,2,150),
 (4,3,500);
-`,
-
-questions:[
-{
-q:"Find highest order amount",
-sql:"SELECT MAX(amount) FROM orders"
-},
-{
-q:"Count orders per customer",
-sql:"SELECT customer_id,COUNT(*) FROM orders GROUP BY customer_id"
-}
-]
-
+`
 },
 
-social:{
-
+hr:{
 schema:{
-users:[
+employees:[
+["id","INT"],
+["name","TEXT"],
+["salary","INT"],
+["dept_id","INT"]
+],
+departments:[
 ["id","INT"],
 ["name","TEXT"]
-],
-
-posts:[
-["id","INT"],
-["user_id","INT"],
-["likes","INT"]
 ]
 },
-
 setup:`
-CREATE TABLE users(id INT,name TEXT);
-INSERT INTO users VALUES
-(1,'Alice'),
-(2,'Bob'),
-(3,'Charlie');
+CREATE TABLE employees(id INT,name TEXT,salary INT,dept_id INT);
+INSERT INTO employees VALUES
+(1,'Alice',72000,1),
+(2,'Bob',65000,1),
+(3,'David',88000,2),
+(4,'Emma',91000,3);
 
-CREATE TABLE posts(id INT,user_id INT,likes INT);
-INSERT INTO posts VALUES
-(1,1,10),
-(2,1,5),
-(3,2,7),
-(4,3,20);
-`,
-
-questions:[
-{
-q:"Find most liked post",
-sql:"SELECT MAX(likes) FROM posts"
+CREATE TABLE departments(id INT,name TEXT);
+INSERT INTO departments VALUES
+(1,'Engineering'),
+(2,'Sales'),
+(3,'Marketing');
+`
 }
+
+}
+
+/* =========================================
+QUESTION LOGIC TASKS
+========================================= */
+
+const TASKS=[
+
+"find_max",
+"find_min",
+"count_rows",
+"group_count"
+
 ]
 
+/* =========================================
+RANDOM HELPERS
+========================================= */
+
+function randomItem(arr){
+
+return arr[Math.floor(Math.random()*arr.length)]
+
+}
+
+/* =========================================
+PROBLEM GENERATOR
+========================================= */
+
+function generateProblem(){
+
+let schema=DATABASES[currentDatabase].schema
+
+let tables=Object.keys(schema)
+
+let table=randomItem(tables)
+
+let columns=schema[table]
+
+let column=randomItem(columns)[0]
+
+let task=randomItem(TASKS)
+
+let question=""
+let solution=""
+
+/* MAX */
+
+if(task==="find_max"){
+
+question=`Find the highest value of ${column} from ${table}.`
+
+solution=`SELECT MAX(${column}) FROM ${table}`
+
+}
+
+/* MIN */
+
+if(task==="find_min"){
+
+question=`Find the lowest value of ${column} from ${table}.`
+
+solution=`SELECT MIN(${column}) FROM ${table}`
+
+}
+
+/* COUNT */
+
+if(task==="count_rows"){
+
+question=`Count total rows in the ${table} table.`
+
+solution=`SELECT COUNT(*) FROM ${table}`
+
+}
+
+/* GROUP COUNT */
+
+if(task==="group_count"){
+
+question=`Count how many records exist for each ${column} in ${table}.`
+
+solution=`SELECT ${column}, COUNT(*) 
+FROM ${table}
+GROUP BY ${column}`
+
+}
+
+return{
+question,
+solution
 }
 
 }
 
-/* INIT */
-
-initSqlJs({
-locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
-}).then(function(SQLLib){
-
-SQL=SQLLib
-
-initEditor()
-
-loadProblem()
-
-})
-
-/* LOAD PROBLEM */
+/* =========================================
+LOAD PROBLEM
+========================================= */
 
 function loadProblem(){
 
-let database=DATABASES[currentDatabase]
-
 db=new SQL.Database()
 
-db.run(database.setup)
+db.run(DATABASES[currentDatabase].setup)
 
-let problem=database.questions[currentIndex]
+currentProblem=generateProblem()
 
-document.getElementById("description").innerText=problem.q
+document.getElementById("description").innerText=currentProblem.question
 
-renderSchema(database.schema)
+renderSchema(DATABASES[currentDatabase].schema)
 
-renderExpected(problem.sql)
+renderExpected(currentProblem.solution)
 
 document.getElementById("output").innerHTML=""
 
 }
 
-/* RENDER SCHEMA */
+/* =========================================
+RENDER SCHEMA
+========================================= */
 
 function renderSchema(schema){
 
@@ -144,6 +209,7 @@ html+=`<tr><th>Column</th><th>Type</th></tr>`
 schema[table].forEach(col=>{
 
 html+=`<tr>
+
 <td>${col[0]}</td>
 <td>${col[1]}</td>
 </tr>`
@@ -158,7 +224,9 @@ document.getElementById("schema").innerHTML=html
 
 }
 
-/* EXPECTED OUTPUT */
+/* =========================================
+EXPECTED OUTPUT
+========================================= */
 
 function renderExpected(sql){
 
@@ -168,7 +236,9 @@ renderTable(res,"expected")
 
 }
 
-/* RUN QUERY */
+/* =========================================
+RUN QUERY
+========================================= */
 
 function runQuery(){
 
@@ -188,26 +258,26 @@ document.getElementById("output").innerText=e.message
 
 }
 
-/* SUBMIT */
+/* =========================================
+SUBMIT ANSWER
+========================================= */
 
 function submitQuery(){
-
-let problem=DATABASES[currentDatabase].questions[currentIndex]
 
 try{
 
 let user=db.exec(editor.getValue())
-let sol=db.exec(problem.sql)
+let sol=db.exec(currentProblem.solution)
 
 if(JSON.stringify(user)===JSON.stringify(sol)){
 
-alert("Correct")
+alert("Correct Answer!")
 
-nextProblem()
+loadProblem()
 
 }else{
 
-alert("Incorrect")
+alert("Incorrect result")
 
 }
 
@@ -219,7 +289,9 @@ alert("SQL Error")
 
 }
 
-/* RENDER TABLE */
+/* =========================================
+TABLE RENDER
+========================================= */
 
 function renderTable(res,target){
 
@@ -241,7 +313,9 @@ html+="</tr>"
 rows.forEach(r=>{
 
 html+="<tr>"
+
 r.forEach(v=>html+=`<td>${v}</td>`)
+
 html+="</tr>"
 
 })
@@ -254,49 +328,21 @@ document.getElementById(target).innerHTML=html
 
 }
 
-/* NAVIGATION */
-
-function nextProblem(){
-
-currentIndex++
-
-if(currentIndex>=DATABASES[currentDatabase].questions.length){
-
-currentIndex=0
-
-}
-
-loadProblem()
-
-}
-
-function prevProblem(){
-
-currentIndex--
-
-if(currentIndex<0){
-
-currentIndex=DATABASES[currentDatabase].questions.length-1
-
-}
-
-loadProblem()
-
-}
-
-/* DATABASE CHANGE */
+/* =========================================
+DATABASE SWITCH
+========================================= */
 
 function changeDatabase(){
 
 currentDatabase=document.getElementById("databaseSelector").value
 
-currentIndex=0
-
 loadProblem()
 
 }
 
-/* EDITOR */
+/* =========================================
+EDITOR
+========================================= */
 
 function initEditor(){
 
@@ -324,3 +370,19 @@ function(){runQuery()}
 })
 
 }
+
+/* =========================================
+INIT
+========================================= */
+
+initSqlJs({
+locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
+}).then(function(SQLLib){
+
+SQL=SQLLib
+
+initEditor()
+
+loadProblem()
+
+})
