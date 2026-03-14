@@ -19,7 +19,7 @@ gap:20px;
 .layout{
 display:grid;
 grid-template-columns:350px 1fr;
-min-height:calc(100vh - 140px);
+height:calc(100vh - 140px);
 }
 
 .left-panel{
@@ -54,10 +54,7 @@ margin-bottom:10px;
 .schema-table td{
 border:1px solid #ccc;
 padding:6px;
-}
-
-.buttons{
-margin-top:10px;
+text-align:left;
 }
 
 button{
