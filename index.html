@@ -4,64 +4,102 @@
 
 <meta charset="UTF-8">
 
-<title>SQL Trainer</title>
+<title>SQL Cyber Trainer</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/sql-wasm.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+
+body{
+background:#0f0f1a;
+color:#fff;
+font-family:monospace;
+}
+
+.neon{
+color:#00ffff;
+text-shadow:0 0 8px #00ffff;
+}
+
+.cyber-btn{
+background:#111;
+border:1px solid #00ffff;
+color:#00ffff;
+padding:8px 14px;
+transition:0.3s;
+}
+
+.cyber-btn:hover{
+background:#00ffff;
+color:black;
+box-shadow:0 0 12px #00ffff;
+}
+
+.panel{
+background:#161629;
+border:1px solid #2a2a40;
+}
+
+</style>
 
 </head>
 
-<body class="bg-gray-100">
+<body>
 
 <div class="flex h-screen">
 
 <!-- LEFT PANEL -->
 
-<div class="w-1/3 bg-white border-r overflow-auto p-4">
+<div class="w-1/5 panel p-4 overflow-auto">
 
-<h2 class="text-2xl font-bold mb-3">SQL Problems</h2>
+<h2 class="neon text-xl mb-3">PROBLEMS</h2>
 
 <div class="space-y-2">
 
-<button onclick="loadQuestion(0)" class="text-blue-600">1. Users older than 25</button>
-<button onclick="loadQuestion(1)" class="text-blue-600">2. Expensive products</button>
-<button onclick="loadQuestion(2)" class="text-blue-600">3. Count orders</button>
+<div onclick="loadQuestion(0)" class="cursor-pointer">1 Users older than 25</div>
+<div onclick="loadQuestion(1)" class="cursor-pointer">2 Expensive products</div>
+<div onclick="loadQuestion(2)" class="cursor-pointer">3 Count orders</div>
 
 </div>
 
-<hr class="my-4">
+<hr class="my-4 border-gray-700">
 
-<h3 class="font-semibold">Question</h3>
+<h3 class="neon">DESCRIPTION</h3>
 
-<div id="questionText" class="mb-4"></div>
-
-<h3 class="font-semibold">Database Schema</h3>
-
-<div id="schemaBox" class="text-sm bg-gray-100 p-2 rounded"></div>
+<div id="questionText" class="text-sm mt-2"></div>
 
 </div>
 
 
-<!-- RIGHT PANEL -->
+<!-- DATABASE PANEL -->
 
-<div class="flex flex-col w-2/3">
+<div class="w-1/5 panel p-4">
+
+<h2 class="neon mb-3">DATABASE</h2>
+
+<div id="dbExplorer"></div>
+
+</div>
+
+
+<!-- EDITOR PANEL -->
+
+<div class="w-3/5 flex flex-col">
 
 <div id="editor" class="h-2/3"></div>
 
-<div class="flex">
+<div class="flex space-x-2 p-2">
 
-<button onclick="runSQL()" class="bg-green-500 text-white px-6 py-2">
-Run Query
-</button>
+<button onclick="runSQL()" class="cyber-btn">RUN</button>
 
-<button onclick="checkAnswer()" class="bg-blue-500 text-white px-6 py-2">
-Submit
-</button>
+<button onclick="checkAnswer()" class="cyber-btn">SUBMIT</button>
 
 </div>
 
-<div id="output" class="bg-white h-1/3 overflow-auto p-4"></div>
+<div id="output" class="panel h-1/3 overflow-auto p-4"></div>
 
 </div>
 
@@ -70,13 +108,12 @@ Submit
 
 <script>
 
-let db;
+let db
 
 let questions=[
 
 {
 text:"Find users older than 25",
-schema:"users(id,name,age)",
 setup:`
 CREATE TABLE users(id INT,name TEXT,age INT);
 INSERT INTO users VALUES (1,'Alice',30);
@@ -87,8 +124,7 @@ solution:"SELECT * FROM users WHERE age > 25"
 },
 
 {
-text:"Find products with price greater than 100",
-schema:"products(id,name,price)",
+text:"Find products price > 100",
 setup:`
 CREATE TABLE products(id INT,name TEXT,price INT);
 INSERT INTO products VALUES (1,'Laptop',900);
@@ -100,7 +136,6 @@ solution:"SELECT * FROM products WHERE price > 100"
 
 {
 text:"Count total orders",
-schema:"orders(id,user_id)",
 setup:`
 CREATE TABLE orders(id INT,user_id INT);
 INSERT INTO orders VALUES (1,1);
@@ -110,36 +145,63 @@ INSERT INTO orders VALUES (3,2);
 solution:"SELECT COUNT(*) FROM orders"
 }
 
-];
+]
+
 
 initSqlJs({
 locateFile:file=>`https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.6.2/${file}`
 }).then(SQL=>{
 
-window.SQL=SQL;
+window.SQL=SQL
+loadQuestion(0)
 
-loadQuestion(0);
-
-});
-
+})
 
 function loadQuestion(i){
 
-db=new SQL.Database();
+db=new SQL.Database()
 
-db.run(questions[i].setup);
+db.run(questions[i].setup)
 
-document.getElementById("questionText").innerText=questions[i].text;
+document.getElementById("questionText").innerText=questions[i].text
 
-document.getElementById("schemaBox").innerText=questions[i].schema;
+renderExplorer()
 
 }
 
+function renderExplorer(){
+
+let tables=db.exec("SELECT name FROM sqlite_master WHERE type='table'")
+
+let html=""
+
+if(tables.length){
+
+tables[0].values.forEach(t=>{
+
+let table=t[0]
+
+html+=`<div class="cursor-pointer neon" onclick="preview('${table}')">${table}</div>`
+
+})
+
+}
+
+document.getElementById("dbExplorer").innerHTML=html
+
+}
+
+function preview(table){
+
+let res=db.exec(`SELECT * FROM ${table}`)
+
+render(res)
+
+}
 
 require.config({
 paths:{vs:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs'}
-});
-
+})
 
 require(['vs/editor/editor.main'],function(){
 
@@ -150,96 +212,91 @@ value:"SELECT * FROM users;",
 language:"sql",
 theme:"vs-dark"
 }
-);
+)
 
-});
-
+})
 
 function runSQL(){
 
-let query=editor.getValue();
+let q=editor.getValue()
 
 try{
 
-let res=db.exec(query);
+let res=db.exec(q)
 
-render(res);
+render(res)
 
-}catch(e){
+}
 
-document.getElementById("output").innerHTML="Error: "+e.message;
+catch(e){
+
+document.getElementById("output").innerHTML=e.message
 
 }
 
 }
-
 
 function render(res){
 
-let html="";
+let html=""
 
 if(res.length){
 
-let cols=res[0].columns;
-let rows=res[0].values;
+let cols=res[0].columns
+let rows=res[0].values
 
-html+="<table border='1'>";
+html+="<table border='1'>"
 
-html+="<tr>";
+html+="<tr>"
 
-cols.forEach(c=>html+="<th>"+c+"</th>");
+cols.forEach(c=>html+=`<th>${c}</th>`)
 
-html+="</tr>";
+html+="</tr>"
 
 rows.forEach(r=>{
 
-html+="<tr>";
+html+="<tr>"
 
-r.forEach(v=>html+="<td>"+v+"</td>");
+r.forEach(v=>html+=`<td>${v}</td>`)
 
-html+="</tr>";
+html+="</tr>"
 
-});
+})
 
-html+="</table>";
-
-}
-
-else{
-
-html="No results";
+html+="</table>"
 
 }
 
-document.getElementById("output").innerHTML=html;
+document.getElementById("output").innerHTML=html
 
 }
-
 
 function checkAnswer(){
 
-let userQuery=editor.getValue();
+let user=editor.getValue()
 
-let correctQuery=questions.find(q=>q.solution).solution;
+let correct=questions.find(q=>q.solution).solution
 
 try{
 
-let user=db.exec(userQuery);
-let correct=db.exec(correctQuery);
+let r1=db.exec(user)
+let r2=db.exec(correct)
 
-if(JSON.stringify(user)==JSON.stringify(correct)){
+if(JSON.stringify(r1)==JSON.stringify(r2)){
 
-alert("Correct Answer 🎉");
+alert("Correct")
 
 }else{
 
-alert("Incorrect Answer");
+alert("Wrong")
 
 }
 
-}catch(e){
+}
 
-alert("Error in Query");
+catch{
+
+alert("SQL Error")
 
 }
 
