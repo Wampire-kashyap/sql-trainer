@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Mastery Pro - Ultimate SQL Training Platform</title>
+    <title>SQL Interview Pro - Crack Top Tech Interviews</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
@@ -44,6 +44,8 @@
             height: 100vh;
             overflow: hidden;
             line-height: 1.5;
+            display: flex;
+            flex-direction: column;
         }
 
         /* Header */
@@ -58,12 +60,13 @@
             box-shadow: var(--shadow-sm);
             z-index: 100;
             position: relative;
+            flex-shrink: 0;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 20px;
         }
 
         .logo {
@@ -79,6 +82,11 @@
             font-size: 24px;
         }
 
+        /* Database Dropdown */
+        .db-dropdown-container {
+            position: relative;
+        }
+
         .database-selector {
             display: flex;
             align-items: center;
@@ -90,10 +98,65 @@
             transition: all 0.2s;
             font-size: 14px;
             font-weight: 500;
+            border: 1px solid transparent;
+            min-width: 180px;
         }
 
         .database-selector:hover {
             background: var(--border);
+        }
+
+        .database-selector.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .db-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .db-dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .db-dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .db-dropdown-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .db-dropdown-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .db-dropdown-item i {
+            width: 20px;
+            text-align: center;
         }
 
         .difficulty-badge {
@@ -112,23 +175,27 @@
         .header-center {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
+            background: var(--bg-tertiary);
+            padding: 4px;
+            border-radius: var(--radius);
         }
 
         .nav-tab {
-            padding: 8px 20px;
-            border-radius: var(--radius);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            white-space: nowrap;
         }
 
         .nav-tab:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-secondary);
         }
 
         .nav-tab.active {
@@ -136,24 +203,36 @@
             color: white;
         }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
+        .nav-tab .badge {
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
         }
 
-        .stats-bar {
+        .header-right {
             display: flex;
             align-items: center;
             gap: 16px;
         }
 
+        .stats-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 13px;
+            gap: 4px;
+            font-size: 12px;
             color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 6px 10px;
+            border-radius: 20px;
         }
 
         .stat-value {
@@ -161,62 +240,23 @@
             color: var(--text-primary);
         }
 
-        .toggle-autocomplete {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: var(--radius);
-            transition: all 0.2s;
-        }
-
-        .toggle-autocomplete:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .toggle-switch {
-            width: 36px;
-            height: 20px;
-            background: var(--border);
-            border-radius: 10px;
-            position: relative;
-            transition: all 0.2s;
-        }
-
-        .toggle-switch.active {
-            background: var(--primary);
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .toggle-switch.active::after {
-            left: 18px;
-        }
-
         /* Main Layout */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
         .main-container {
             display: flex;
-            height: calc(100vh - 64px);
+            flex: 1;
             overflow: hidden;
         }
 
         .left-panel {
-            width: 40%;
-            min-width: 400px;
+            width: 38%;
+            min-width: 380px;
             background: var(--bg-secondary);
             border-right: 1px solid var(--border);
             display: flex;
@@ -236,8 +276,10 @@
         .panel-section {
             flex: 1;
             overflow: auto;
-            padding: 20px;
+            padding: 16px;
             border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
         }
 
         .panel-section:last-child {
@@ -248,27 +290,54 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
         }
 
         .section-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .section-title i {
             color: var(--primary);
         }
 
+        .section-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
         /* Schema Table */
         .schema-container {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .schema-table {
@@ -280,9 +349,9 @@
 
         .schema-table-header {
             background: var(--bg-tertiary);
-            padding: 10px 14px;
+            padding: 10px 12px;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -294,15 +363,15 @@
         }
 
         .schema-columns {
-            padding: 8px 0;
+            padding: 6px 0;
         }
 
         .schema-column {
-            padding: 6px 14px;
+            padding: 5px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .schema-column:nth-child(even) {
@@ -316,7 +385,7 @@
 
         .column-type {
             color: var(--text-tertiary);
-            font-size: 11px;
+            font-size: 10px;
         }
 
         /* Data Table */
@@ -324,18 +393,19 @@
             overflow: auto;
             border-radius: var(--radius);
             border: 1px solid var(--border);
-            max-height: 300px;
+            flex: 1;
+            background: var(--bg-primary);
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .data-table th {
             background: var(--bg-tertiary);
-            padding: 10px 12px;
+            padding: 8px 10px;
             text-align: left;
             font-weight: 600;
             color: var(--text-secondary);
@@ -344,16 +414,18 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            font-size: 10px;
+            text-transform: uppercase;
         }
 
         .data-table td {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-bottom: 1px solid var(--border);
             color: var(--text-primary);
         }
 
         .data-table tr:hover td {
-            background: var(--bg-primary);
+            background: rgba(99, 102, 241, 0.05);
         }
 
         .data-table tr:last-child td {
@@ -364,8 +436,8 @@
         .question-card {
             background: var(--bg-secondary);
             border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
         }
@@ -374,16 +446,26 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
-        .question-category {
+        .question-meta {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+        }
+
+        .question-company {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             font-size: 12px;
             color: var(--text-secondary);
             font-weight: 500;
+        }
+
+        .question-company i {
+            color: var(--primary);
         }
 
         .question-number {
@@ -396,15 +478,15 @@
         }
 
         .question-text {
-            font-size: 16px;
+            font-size: 15px;
             line-height: 1.6;
             color: var(--text-primary);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .question-tags {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
 
@@ -417,6 +499,11 @@
             font-weight: 500;
         }
 
+        .tag.company {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
         /* Editor Container */
         .editor-container {
             flex: 1;
@@ -427,14 +514,15 @@
             overflow: hidden;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            min-height: 200px;
         }
 
         .editor-toolbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 16px;
+            padding: 8px 12px;
             background: var(--bg-tertiary);
             border-bottom: 1px solid var(--border);
         }
@@ -442,7 +530,7 @@
         .toolbar-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .toolbar-btn {
@@ -450,7 +538,7 @@
             border: none;
             background: transparent;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-secondary);
             border-radius: var(--radius-sm);
             transition: all 0.2s;
@@ -472,27 +560,27 @@
 
         #sql-editor {
             flex: 1;
-            min-height: 300px;
+            min-height: 200px;
         }
 
         /* Action Buttons */
         .action-bar {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             padding: 0 4px;
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: var(--radius);
             border: none;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .btn:disabled {
@@ -503,23 +591,21 @@
         .btn-primary {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 6px -1px rgb(99 102 241 / 0.2);
         }
 
         .btn-primary:hover:not(:disabled) {
             background: var(--primary-dark);
             transform: translateY(-1px);
-            box-shadow: 0 6px 8px -1px rgb(99 102 241 / 0.3);
         }
 
         .btn-secondary {
-            background: var(--bg-secondary);
+            background: var(--bg-tertiary);
             color: var(--text-primary);
             border: 1px solid var(--border);
         }
 
         .btn-secondary:hover:not(:disabled) {
-            background: var(--bg-tertiary);
+            background: var(--border);
         }
 
         .btn-success {
@@ -527,15 +613,141 @@
             color: white;
         }
 
-        .btn-warning {
-            background: var(--warning);
+        /* Interview Section Styles */
+        .interview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .interview-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .interview-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .interview-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .interview-company {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .company-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius);
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .company-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .question-count {
+            background: var(--primary);
             color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .interview-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Success Animation */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(34, 197, 94, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 3000;
+            color: white;
+            text-align: center;
+        }
+
+        .success-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+        }
+
+        .success-text {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .success-xp {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        .success-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .success-btn {
+            background: white;
+            color: var(--success);
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .success-btn:hover {
+            transform: scale(1.05);
         }
 
         /* Feedback Panel */
         .feedback-panel {
             position: fixed;
-            bottom: 24px;
+            bottom: 80px;
             right: 24px;
             padding: 16px 20px;
             border-radius: var(--radius);
@@ -567,19 +779,13 @@
             color: #991b1b;
         }
 
-        .feedback-info {
-            background: #dbeafe;
-            border: 1px solid #93c5fd;
-            color: #1e40af;
-        }
-
         /* Hint Panel */
         .hint-panel {
             background: #fef3c7;
             border: 1px solid #fcd34d;
             border-radius: var(--radius);
-            padding: 16px;
-            margin-top: 16px;
+            padding: 14px;
+            margin-top: 12px;
             display: none;
         }
 
@@ -593,258 +799,73 @@
             gap: 8px;
             font-weight: 600;
             color: #92400e;
-            margin-bottom: 8px;
-        }
-
-        .hint-text {
-            color: #78350f;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        /* Project Mode Styles */
-        .project-sidebar {
-            width: 280px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .project-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .project-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .project-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-        }
-
-        .project-progress {
-            margin-top: 16px;
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: var(--bg-tertiary);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--primary);
-            transition: width 0.3s;
-        }
-
-        .progress-text {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 6px;
-        }
-
-        .question-list {
-            flex: 1;
-            overflow: auto;
-            padding: 12px;
-        }
-
-        .question-item {
-            padding: 12px;
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border: 1px solid transparent;
-        }
-
-        .question-item:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .question-item.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .question-item.completed {
-            background: #dcfce7;
-            border-color: #86efac;
-        }
-
-        .question-item.completed .question-item-title {
-            color: #166534;
-        }
-
-        .question-item-number {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--bg-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .question-item.active .question-item-number {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .question-item.completed .question-item-number {
-            background: var(--success);
-            color: white;
-        }
-
-        .question-item-info {
-            flex: 1;
-        }
-
-        .question-item-title {
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 2px;
-        }
-
-        .question-item-difficulty {
-            font-size: 11px;
-            opacity: 0.7;
-        }
-
-        /* Dashboard */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            padding: 24px;
-            overflow: auto;
-        }
-
-        .dashboard-card {
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .dashboard-card.large {
-            grid-column: span 2;
-        }
-
-        .dashboard-card-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-big {
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .skill-bar {
-            margin-bottom: 16px;
-        }
-
-        .skill-header {
-            display: flex;
-            justify-content: space-between;
             margin-bottom: 6px;
             font-size: 13px;
         }
 
-        .skill-track {
-            height: 8px;
-            background: var(--bg-tertiary);
-            border-radius: 4px;
-            overflow: hidden;
+        .hint-text {
+            color: #78350f;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
-        .skill-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
         }
 
-        .skill-fill.high { background: var(--success); }
-        .skill-fill.medium { background: var(--warning); }
-        .skill-fill.low { background: var(--danger); }
-
-        /* Daily Challenge */
-        .daily-challenge {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            border-radius: var(--radius);
-            padding: 24px;
-            margin: 24px;
-            position: relative;
-            overflow: hidden;
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
 
-        .daily-challenge::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 300px;
-            height: 300px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-        }
-
-        .daily-challenge-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            position: relative;
-        }
-
-        .daily-challenge-desc {
-            opacity: 0.9;
-            margin-bottom: 16px;
-            position: relative;
-        }
-
-        .daily-challenge-btn {
-            background: white;
-            color: var(--primary);
-            border: none;
-            padding: 10px 20px;
-            border-radius: var(--radius);
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-weight: 600;
-            cursor: pointer;
-            position: relative;
-            transition: transform 0.2s;
+            color: var(--text-primary);
         }
 
-        .daily-challenge-btn:hover {
-            transform: translateY(-2px);
+        .footer-creator a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer-creator a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--primary);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         /* Empty State */
@@ -894,105 +915,10 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Success Animation */
-        .success-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(34, 197, 94, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            z-index: 3000;
-            color: white;
-            text-align: center;
-        }
-
-        .success-overlay.show {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .success-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: scaleIn 0.5s ease;
-        }
-
-        .success-text {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .success-xp {
-            font-size: 20px;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-
-        .success-next-btn {
-            background: white;
-            color: var(--success);
-            border: none;
-            padding: 16px 32px;
-            border-radius: var(--radius);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .success-next-btn:hover {
-            transform: scale(1.05);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes scaleIn {
-            from { transform: scale(0); }
-            to { transform: scale(1); }
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-tertiary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-tertiary);
-        }
-
         /* Responsive */
         @media (max-width: 1200px) {
             .left-panel {
-                width: 35%;
+                width: 40%;
             }
         }
 
@@ -1002,15 +928,7 @@
             }
             .left-panel {
                 width: 100%;
-                height: 40%;
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-            }
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            .dashboard-card.large {
-                grid-column: span 1;
+                height: 35%;
             }
         }
     </style>
@@ -1019,17 +937,18 @@
     <!-- Loading Overlay -->
     <div id="loading" class="loading-overlay">
         <div class="spinner"></div>
-        <div>Initializing SQL Engine...</div>
+        <div>Loading SQL Interview Pro...</div>
     </div>
 
     <!-- Success Overlay -->
     <div id="successOverlay" class="success-overlay">
         <div class="success-icon"><i class="fas fa-check-circle"></i></div>
-        <div class="success-text">Correct!</div>
-        <div class="success-xp" id="successXP">+10 XP</div>
-        <button class="success-next-btn" onclick="uiEngine.nextQuestion()">
-            Next Question <i class="fas fa-arrow-right"></i>
-        </button>
+        <div class="success-text">Correct Answer!</div>
+        <div class="success-xp" id="successXP">+25 XP</div>
+        <div class="success-actions">
+            <button class="success-btn" onclick="uiEngine.nextQuestion()">Next Question</button>
+            <button class="success-btn" onclick="uiEngine.showSolution()" style="background: transparent; color: white; border: 2px solid white;">View Solution</button>
+        </div>
     </div>
 
     <!-- Header -->
@@ -1037,239 +956,239 @@
         <div class="header-left">
             <div class="logo">
                 <i class="fas fa-database"></i>
-                <span>SQL Mastery Pro</span>
+                <span>SQL Interview Pro</span>
             </div>
-            <div class="database-selector" id="dbSelector">
-                <i class="fas fa-server"></i>
-                <span id="currentDb">E-Commerce</span>
-                <i class="fas fa-chevron-down" style="margin-left: 4px; font-size: 10px;"></i>
+            
+            <div class="db-dropdown-container">
+                <div class="database-selector" id="dbSelector" onclick="uiEngine.toggleDbDropdown(event)">
+                    <i class="fas fa-server"></i>
+                    <span id="currentDb">E-Commerce</span>
+                    <i class="fas fa-chevron-down" style="margin-left: auto;"></i>
+                </div>
+                <div class="db-dropdown-menu" id="dbDropdownMenu">
+                    <div class="db-dropdown-item active" data-db="ecommerce" onclick="uiEngine.selectDatabase('ecommerce')">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>E-Commerce</span>
+                    </div>
+                    <div class="db-dropdown-item" data-db="hr" onclick="uiEngine.selectDatabase('hr')">
+                        <i class="fas fa-users"></i>
+                        <span>HR Management</span>
+                    </div>
+                    <div class="db-dropdown-item" data-db="social" onclick="uiEngine.selectDatabase('social')">
+                        <i class="fas fa-share-nodes"></i>
+                        <span>Social Network</span>
+                    </div>
+                    <div class="db-dropdown-item" data-db="finance" onclick="uiEngine.selectDatabase('finance')">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Finance</span>
+                    </div>
+                    <div class="db-dropdown-item" data-db="logistics" onclick="uiEngine.selectDatabase('logistics')">
+                        <i class="fas fa-truck"></i>
+                        <span>Logistics</span>
+                    </div>
+                </div>
             </div>
+
             <span class="difficulty-badge difficulty-easy" id="difficultyBadge">Easy</span>
         </div>
         
         <div class="header-center">
-            <div class="nav-tab active" data-mode="practice">
+            <div class="nav-tab active" data-mode="practice" onclick="uiEngine.switchMode('practice')">
                 <i class="fas fa-code"></i>
-                Practice Mode
+                Practice
             </div>
-            <div class="nav-tab" data-mode="project">
-                <i class="fas fa-project-diagram"></i>
-                Project Mode
+            <div class="nav-tab" data-mode="interview" onclick="uiEngine.switchMode('interview')">
+                <i class="fas fa-briefcase"></i>
+                Interviews
+                <span class="badge">Hot</span>
             </div>
-            <div class="nav-tab" data-mode="dashboard">
+            <div class="nav-tab" data-mode="dashboard" onclick="uiEngine.switchMode('dashboard')">
                 <i class="fas fa-chart-line"></i>
-                Dashboard
+                Progress
             </div>
         </div>
 
         <div class="header-right">
             <div class="stats-bar">
                 <div class="stat-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Solved: <span class="stat-value" id="statSolved">0</span></span>
+                    <i class="fas fa-fire" style="color: var(--warning);"></i>
+                    <span class="stat-value" id="statStreak">0</span>
                 </div>
                 <div class="stat-item">
-                    <i class="fas fa-bullseye"></i>
-                    <span>Accuracy: <span class="stat-value" id="statAccuracy">0%</span></span>
+                    <i class="fas fa-star" style="color: var(--warning);"></i>
+                    <span class="stat-value" id="statXP">0</span>
                 </div>
-                <div class="stat-item">
-                    <i class="fas fa-fire"></i>
-                    <span>Streak: <span class="stat-value" id="statStreak">0</span></span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-star"></i>
-                    <span>XP: <span class="stat-value" id="statXP">0</span></span>
-                </div>
-            </div>
-            <div class="toggle-autocomplete" id="toggleAutocomplete">
-                <span>Autocomplete</span>
-                <div class="toggle-switch active" id="autocompleteSwitch"></div>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <div class="main-container" id="mainContainer">
-        <!-- Practice Mode Layout -->
-        <div class="left-panel" id="practiceLeftPanel">
-            <div class="panel-section">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-table"></i>
-                        Table Schema
-                    </div>
-                </div>
-                <div class="schema-container" id="schemaContainer">
-                    <!-- Dynamic schema content -->
-                </div>
-            </div>
-            
-            <div class="panel-section">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-eye"></i>
-                        Expected Output
-                    </div>
-                </div>
-                <div class="data-table-container" id="expectedOutput">
-                    <div class="empty-state">
-                        <i class="fas fa-play-circle"></i>
-                        <div>Run your query to see results</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="panel-section">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-terminal"></i>
-                        Your Result
-                    </div>
-                </div>
-                <div class="data-table-container" id="queryResult">
-                    <div class="empty-state">
-                        <i class="fas fa-code"></i>
-                        <div>Execute a query to see output</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="right-panel" id="practiceRightPanel">
-            <div style="padding: 24px; height: 100%; display: flex; flex-direction: column;">
-                <div class="question-card animate-fade-in">
-                    <div class="question-header">
-                        <div class="question-category">
-                            <i class="fas fa-tag"></i>
-                            <span id="questionCategory">Aggregation</span>
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <div class="main-container" id="mainContainer">
+            <!-- Practice Mode -->
+            <div class="left-panel" id="practiceLeftPanel">
+                <div class="panel-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-table"></i>
+                            Database Schema
                         </div>
-                        <span class="question-number" id="questionNumber">Q1</span>
                     </div>
-                    <div class="question-text" id="questionText">
-                        Loading question...
-                    </div>
-                    <div class="question-tags" id="questionTags">
-                        <!-- Dynamic tags -->
-                    </div>
+                    <div class="schema-container" id="schemaContainer"></div>
                 </div>
-
-                <div class="editor-container">
-                    <div class="editor-toolbar">
-                        <div class="toolbar-left">
-                            <button class="toolbar-btn" id="formatBtn">
-                                <i class="fas fa-align-left"></i>
-                                Format
-                            </button>
-                            <button class="toolbar-btn" id="clearBtn">
-                                <i class="fas fa-trash"></i>
-                                Clear
+                
+                <div class="panel-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-eye"></i>
+                            Expected Output
+                        </div>
+                        <div class="section-actions">
+                            <button class="icon-btn" onclick="uiEngine.refreshExpectedOutput()" title="Refresh">
+                                <i class="fas fa-sync-alt"></i>
                             </button>
                         </div>
-                        <div class="toolbar-right">
-                            <span style="font-size: 12px; color: var(--text-tertiary);">Press Ctrl+Enter to run</span>
+                    </div>
+                    <div class="data-table-container" id="expectedOutput">
+                        <div class="empty-state">
+                            <i class="fas fa-table"></i>
+                            <div>Expected output will appear here</div>
                         </div>
                     </div>
-                    <div id="sql-editor"></div>
                 </div>
-
-                <div class="hint-panel" id="hintPanel">
-                    <div class="hint-header">
-                        <i class="fas fa-lightbulb"></i>
-                        <span>Hint</span>
+                
+                <div class="panel-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-terminal"></i>
+                            Your Output
+                        </div>
                     </div>
-                    <div class="hint-text" id="hintText"></div>
+                    <div class="data-table-container" id="queryResult">
+                        <div class="empty-state">
+                            <i class="fas fa-code"></i>
+                            <div>Run your query to see results</div>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <div class="action-bar">
-                    <button class="btn btn-primary" id="runBtn">
-                        <i class="fas fa-play"></i>
-                        Run Query
-                    </button>
-                    <button class="btn btn-success" id="submitBtn">
-                        <i class="fas fa-check"></i>
-                        Submit
-                    </button>
-                    <button class="btn btn-secondary" id="hintBtn">
-                        <i class="fas fa-lightbulb"></i>
-                        Hint
-                    </button>
-                    <button class="btn btn-secondary" id="skipBtn">
-                        <i class="fas fa-forward"></i>
-                        Skip
-                    </button>
+            <div class="right-panel" id="practiceRightPanel">
+                <div style="padding: 20px; height: 100%; display: flex; flex-direction: column;">
+                    <div class="question-card animate-fade-in">
+                        <div class="question-header">
+                            <div class="question-meta">
+                                <div class="question-company" id="questionCompany">
+                                    <i class="fas fa-building"></i>
+                                    <span>General Practice</span>
+                                </div>
+                                <span class="question-number" id="questionNumber">Q1</span>
+                            </div>
+                        </div>
+                        <div class="question-text" id="questionText">
+                            Loading question...
+                        </div>
+                        <div class="question-tags" id="questionTags"></div>
+                    </div>
+
+                    <div class="editor-container">
+                        <div class="editor-toolbar">
+                            <div class="toolbar-left">
+                                <button class="toolbar-btn" onclick="uiEngine.formatCode()">
+                                    <i class="fas fa-align-left"></i>
+                                    Format
+                                </button>
+                                <button class="toolbar-btn" onclick="uiEngine.clearEditor()">
+                                    <i class="fas fa-trash"></i>
+                                    Clear
+                                </button>
+                            </div>
+                            <div class="toolbar-right">
+                                <span style="font-size: 11px; color: var(--text-tertiary);">Ctrl+Enter to run</span>
+                            </div>
+                        </div>
+                        <div id="sql-editor"></div>
+                    </div>
+
+                    <div class="hint-panel" id="hintPanel">
+                        <div class="hint-header">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Hint</span>
+                        </div>
+                        <div class="hint-text" id="hintText"></div>
+                    </div>
+
+                    <div class="action-bar">
+                        <button class="btn btn-primary" onclick="uiEngine.runQuery()">
+                            <i class="fas fa-play"></i>
+                            Run
+                        </button>
+                        <button class="btn btn-success" id="submitBtn" onclick="uiEngine.submitAnswer()">
+                            <i class="fas fa-check"></i>
+                            Submit
+                        </button>
+                        <button class="btn btn-secondary" onclick="uiEngine.showHint()">
+                            <i class="fas fa-lightbulb"></i>
+                            Hint
+                        </button>
+                        <button class="btn btn-secondary" onclick="uiEngine.skipQuestion()">
+                            <i class="fas fa-forward"></i>
+                            Skip
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview Mode (Hidden) -->
+            <div class="interview-grid" id="interviewView" style="display: none; width: 100%;">
+                <!-- Interview cards will be rendered here -->
+            </div>
+
+            <!-- Dashboard (Hidden) -->
+            <div class="interview-grid" id="dashboardView" style="display: none; width: 100%;">
+                <div class="dashboard-card" style="grid-column: span 2;">
+                    <div style="padding: 24px;">
+                        <h3 style="margin-bottom: 16px;">Your Progress</h3>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="dashSolved">0</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Solved</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 32px; font-weight: 700; color: var(--success);" id="dashAccuracy">0%</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Accuracy</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 32px; font-weight: 700; color: var(--warning);" id="dashStreak">0</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">Streak</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="dashXP">0</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">XP</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Project Mode Layout (Hidden by default) -->
-        <div class="project-sidebar" id="projectSidebar" style="display: none;">
-            <div class="project-header">
-                <div class="project-title" id="projectTitle">E-Commerce Analytics</div>
-                <div class="project-desc" id="projectDesc">Analyze sales, customers, and revenue trends for an online retail store.</div>
-                <div class="project-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="projectProgress" style="width: 0%"></div>
-                    </div>
-                    <div class="progress-text" id="progressText">0 of 20 completed</div>
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <div class="footer-brand">
+                    <i class="fas fa-code"></i>
+                    <span>SQL Interview Pro</span>
+                </div>
+                <div class="footer-creator">
+                    Created by <a href="mailto:Kunalkumarshri47@gmail.com">KunalKumar</a>
                 </div>
             </div>
-            <div class="question-list" id="projectQuestionList">
-                <!-- Dynamic question list -->
+            <div class="footer-right">
+                <span id="cycleInfo">Next update: Daily</span>
+                <a href="mailto:Kunalkumarshri47@gmail.com" class="footer-link">Contact</a>
+                <a href="#" class="footer-link">GitHub</a>
             </div>
-        </div>
-
-        <!-- Dashboard Layout (Hidden by default) -->
-        <div class="dashboard-grid" id="dashboardView" style="display: none; width: 100%;">
-            <div class="daily-challenge">
-                <div class="daily-challenge-title">
-                    <i class="fas fa-calendar-day"></i>
-                    Daily Challenge
-                </div>
-                <div class="daily-challenge-desc">Complete today's SQL challenge to earn bonus XP and maintain your streak!</div>
-                <button class="daily-challenge-btn" id="dailyChallengeBtn">Start Challenge</button>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="dashboard-card-title">Total Solved</div>
-                <div class="stat-big" id="dashSolved">0</div>
-                <div class="stat-label">Questions completed</div>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="dashboard-card-title">Current Level</div>
-                <div class="stat-big" id="dashLevel">Beginner</div>
-                <div class="stat-label" id="dashXP">0 XP</div>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="dashboard-card-title">Accuracy Rate</div>
-                <div class="stat-big" id="dashAccuracy">0%</div>
-                <div class="stat-label">Correct submissions</div>
-            </div>
-
-            <div class="dashboard-card">
-                <div class="dashboard-card-title">Current Streak</div>
-                <div class="stat-big" id="dashStreak">0</div>
-                <div class="stat-label">Days in a row</div>
-            </div>
-
-            <div class="dashboard-card large">
-                <div class="dashboard-card-title">Skill Analysis</div>
-                <div id="skillsContainer">
-                    <!-- Dynamic skills -->
-                </div>
-            </div>
-
-            <div class="dashboard-card large">
-                <div class="dashboard-card-title">Recent Activity</div>
-                <div id="activityContainer">
-                    <div class="empty-state" style="padding: 40px 0;">
-                        <i class="fas fa-history"></i>
-                        <div>No recent activity</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </footer>
     </div>
 
     <!-- Feedback Panel -->
@@ -1280,376 +1199,193 @@
 
     <script>
         // ==========================================
-        // SQL MASTERY PRO - ULTIMATE SQL TRAINER
-        // Fixed Version: Natural Questions + Anti-Cheat + Auto-Advance
+        // SQL INTERVIEW PRO - ULTIMATE EDITION
+        // Created by: KunalKumar (Kunalkumarshri47@gmail.com)
+        // Features: Real Interview Questions, Auto-Update, Working Expected Output
         // ==========================================
 
-        // Global State
         const state = {
             SQL: null,
             db: null,
             editor: null,
             currentMode: 'practice',
             currentQuestion: null,
-            currentProject: null,
-            currentProjectQuestion: 0,
             autocompleteEnabled: true,
-            questionSolved: false, // ANTI-CHEAT: Track if current question already solved
+            questionSolved: false,
             userProgress: {
                 solved: 0,
                 correct: 0,
                 streak: 0,
                 xp: 0,
-                level: 'Beginner',
-                skills: {
-                    aggregation: 0,
-                    joins: 0,
-                    subqueries: 0,
-                    windowFunctions: 0
-                },
-                history: [],
-                solvedQuestionIds: new Set() // Track solved question IDs to prevent re-solving
+                solvedQuestionIds: new Set()
             },
-            difficulty: {
-                current: 'easy',
-                easyStreak: 0,
-                mediumStreak: 0,
-                hardStreak: 0
-            },
+            difficulty: { current: 'easy', easyStreak: 0, mediumStreak: 0, hardStreak: 0 },
             currentDatabase: 'ecommerce'
         };
 
         // ==========================================
-        // NATURAL LANGUAGE QUESTION BANK
-        // Questions that describe BUSINESS PROBLEMS, not SQL syntax
+        // REAL INTERVIEW QUESTIONS FROM TOP COMPANIES
+        // Auto-refreshing question bank
         // ==========================================
 
-        const questionBank = {
+        const interviewQuestions = {
+            google: [
+                {
+                    id: 'g1',
+                    company: 'Google',
+                    difficulty: 'hard',
+                    text: "Write a SQL query to find the second highest salary from the employees table without using LIMIT or TOP.",
+                    hint: "Use a subquery with MAX() to exclude the highest salary, then find max of remaining.",
+                    solution: "SELECT MAX(salary) as second_highest FROM employees WHERE salary < (SELECT MAX(salary) FROM employees)",
+                    skill: 'subqueries'
+                },
+                {
+                    id: 'g2',
+                    company: 'Google',
+                    difficulty: 'hard',
+                    text: "Find all employees who earn more than their managers. Return employee name and salary.",
+                    hint: "Self-join employees table where employee's salary > manager's salary.",
+                    solution: "SELECT e.name, e.salary FROM employees e JOIN employees m ON e.manager_id = m.id WHERE e.salary > m.salary",
+                    skill: 'joins'
+                }
+            ],
+            amazon: [
+                {
+                    id: 'a1',
+                    company: 'Amazon',
+                    difficulty: 'medium',
+                    text: "Find the top 3 products by revenue in each category using window functions.",
+                    hint: "Use DENSE_RANK() or ROW_NUMBER() partitioned by category, ordered by revenue DESC.",
+                    solution: "SELECT category, product_name, revenue FROM (SELECT category, product_name, SUM(price*quantity) as revenue, DENSE_RANK() OVER (PARTITION BY category ORDER BY SUM(price*quantity) DESC) as rnk FROM products GROUP BY category, product_name) WHERE rnk <= 3",
+                    skill: 'windowFunctions'
+                },
+                {
+                    id: 'a2',
+                    company: 'Amazon',
+                    difficulty: 'medium',
+                    text: "Calculate the click-through rate (CTR) for each ad. CTR = clicks / impressions * 100",
+                    hint: "Join impressions and clicks tables, calculate percentage.",
+                    solution: "SELECT a.ad_id, a.ad_name, COUNT(DISTINCT c.user_id) * 100.0 / COUNT(DISTINCT i.user_id) as ctr FROM ads a LEFT JOIN impressions i ON a.ad_id = i.ad_id LEFT JOIN clicks c ON a.ad_id = c.ad_id GROUP BY a.ad_id",
+                    skill: 'joins'
+                }
+            ],
+            meta: [
+                {
+                    id: 'm1',
+                    company: 'Meta',
+                    difficulty: 'hard',
+                    text: "Find friend recommendations using mutual friends. If A is friends with B and B is friends with C, recommend C to A.",
+                    hint: "Self-join friendships table twice to find second-degree connections.",
+                    solution: "SELECT DISTINCT f1.user_id as user, f2.friend_id as recommended_friend FROM friendships f1 JOIN friendships f2 ON f1.friend_id = f2.user_id WHERE f1.user_id != f2.friend_id",
+                    skill: 'joins'
+                }
+            ],
+            netflix: [
+                {
+                    id: 'n1',
+                    company: 'Netflix',
+                    difficulty: 'medium',
+                    text: "Find users who watched a movie from start to end (progress = 100) within 24 hours of starting.",
+                    hint: "Filter where progress = 100 and timestamp difference is within 24 hours.",
+                    solution: "SELECT user_id, movie_id FROM watch_history WHERE progress = 100 AND (ended_at - started_at) <= INTERVAL '24 hours'",
+                    skill: 'filtering'
+                }
+            ],
+            uber: [
+                {
+                    id: 'u1',
+                    company: 'Uber',
+                    difficulty: 'hard',
+                    text: "Calculate the cancellation rate for each day. Cancellation rate = cancelled trips / total trips.",
+                    hint: "Use CASE statement to count cancelled trips, divide by total count.",
+                    solution: "SELECT DATE(request_at) as day, SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) as cancellation_rate FROM trips GROUP BY DATE(request_at)",
+                    skill: 'aggregation'
+                }
+            ]
+        };
+
+        // Practice Question Bank
+        const practiceQuestions = {
             easy: [
                 {
-                    id: 'e1',
-                    category: 'Basic Analysis',
+                    id: 'pe1',
+                    category: 'Customer Analytics',
+                    company: 'Practice',
                     skill: 'aggregation',
-                    tags: ['COUNT', 'Basic Statistics'],
-                    text: "The marketing team needs to know how many customers are in our database for a campaign. Provide the total count.",
-                    hint: "You need to count all records in the customers table. Think about which aggregate function counts rows.",
-                    generate: (schema) => {
-                        const table = 'customers';
-                        return {
-                            solution: `SELECT COUNT(*) as total_customers FROM ${table}`,
-                            validation: (result) => result.length === 1 && result[0].values[0][0] > 0
-                        };
-                    }
+                    tags: ['COUNT', 'Basic'],
+                    text: "How many customers are registered in our database?",
+                    hint: "Use COUNT(*) to count all rows in the customers table.",
+                    solution: "SELECT COUNT(*) as total_customers FROM customers"
                 },
                 {
-                    id: 'e2',
-                    category: 'Customer Insights',
+                    id: 'pe2',
+                    category: 'Sales Metrics',
+                    company: 'Practice',
                     skill: 'aggregation',
-                    tags: ['AVG', 'Customer Behavior'],
-                    text: "Management wants to understand customer spending patterns. What is the average order value across all orders?",
-                    hint: "Calculate the average of the total_amount column from the orders table.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT AVG(total_amount) as average_order_value FROM orders`,
-                            validation: (result) => result.length === 1 && result[0].values[0][0] > 0
-                        };
-                    }
+                    tags: ['AVG', 'Revenue'],
+                    text: "What is the average order value across all orders?",
+                    hint: "Use AVG() function on the total_amount column.",
+                    solution: "SELECT AVG(total_amount) as avg_order_value FROM orders"
                 },
                 {
-                    id: 'e3',
-                    category: 'Inventory Management',
+                    id: 'pe3',
+                    category: 'Inventory',
+                    company: 'Practice',
                     skill: 'filtering',
-                    tags: ['WHERE', 'Inventory'],
-                    text: "The warehouse team needs a list of all products in the Electronics category that are currently in stock. Show all details.",
-                    hint: "Filter products where category equals 'Electronics' and stock_quantity is greater than 0.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT * FROM products WHERE category = 'Electronics' AND stock_quantity > 0`,
-                            validation: (result) => result.length > 0
-                        };
-                    }
-                },
-                {
-                    id: 'e4',
-                    category: 'Sales Analysis',
-                    skill: 'filtering',
-                    tags: ['WHERE', 'Date Filtering'],
-                    text: "Find all orders placed in the last 30 days to analyze recent sales performance.",
-                    hint: "Use date comparison on the order_date column. You may need to use date functions.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT * FROM orders WHERE order_date >= date('now', '-30 days')`,
-                            validation: (result) => true // Dynamic validation
-                        };
-                    }
-                },
-                {
-                    id: 'e5',
-                    category: 'Product Catalog',
-                    skill: 'sorting',
-                    tags: ['ORDER BY', 'Pricing'],
-                    text: "Display all products sorted by price from highest to lowest to identify premium items.",
-                    hint: "Use ORDER BY with DESC to sort in descending order.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT * FROM products ORDER BY price DESC`,
-                            validation: (result) => result.length > 0
-                        };
-                    }
-                },
-                {
-                    id: 'e6',
-                    category: 'Customer Segmentation',
-                    skill: 'filtering',
-                    tags: ['WHERE', 'Geographic'],
-                    text: "The sales team needs contact information for all customers located in the USA for a regional promotion.",
-                    hint: "Filter customers by country column.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT first_name, last_name, email FROM customers WHERE country = 'USA'`,
-                            validation: (result) => result.length >= 0
-                        };
-                    }
+                    tags: ['WHERE', 'Stock'],
+                    text: "List all products in Electronics category with stock > 0.",
+                    hint: "Use WHERE clause with AND condition.",
+                    solution: "SELECT * FROM products WHERE category = 'Electronics' AND stock_quantity > 0"
                 }
             ],
             medium: [
                 {
-                    id: 'm1',
+                    id: 'pm1',
                     category: 'Revenue Analysis',
+                    company: 'Practice',
                     skill: 'aggregation',
                     tags: ['GROUP BY', 'Revenue'],
-                    text: "The finance department needs a breakdown of total revenue by product category to understand which categories drive the most sales.",
-                    hint: "Group by category and sum the price multiplied by quantity from order_items, joined with products.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT p.category, SUM(oi.quantity * oi.unit_price) as total_revenue 
-                                       FROM products p 
-                                       JOIN order_items oi ON p.product_id = oi.product_id 
-                                       GROUP BY p.category 
-                                       ORDER BY total_revenue DESC`,
-                            validation: (result) => result.length >= 3
-                        };
-                    }
+                    text: "Show total revenue by product category.",
+                    hint: "Join products with order_items, group by category, sum quantity * price.",
+                    solution: "SELECT p.category, SUM(oi.quantity * oi.unit_price) as revenue FROM products p JOIN order_items oi ON p.product_id = oi.product_id GROUP BY p.category"
                 },
                 {
-                    id: 'm2',
-                    category: 'Customer Loyalty',
+                    id: 'pm2',
+                    category: 'Top Customers',
+                    company: 'Practice',
                     skill: 'joins',
-                    tags: ['JOIN', 'Customer Behavior'],
-                    text: "Identify customers who have placed more than 2 orders. Show their name and total number of orders.",
-                    hint: "Join customers with orders, group by customer, and use HAVING to filter those with count > 2.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT c.first_name, c.last_name, COUNT(o.order_id) as order_count 
-                                       FROM customers c 
-                                       JOIN orders o ON c.customer_id = o.customer_id 
-                                       GROUP BY c.customer_id 
-                                       HAVING order_count > 2`,
-                            validation: (result) => result.length >= 0
-                        };
-                    }
-                },
-                {
-                    id: 'm3',
-                    category: 'Top Performers',
-                    skill: 'sorting',
-                    tags: ['ORDER BY', 'LIMIT', 'Top N'],
-                    text: "Who are our top 5 highest-value customers by total spending? Include their names and total amount spent.",
-                    hint: "Join customers with orders, sum total_amount by customer, order descending, limit to 5.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent 
-                                       FROM customers c 
-                                       JOIN orders o ON c.customer_id = o.customer_id 
-                                       GROUP BY c.customer_id 
-                                       ORDER BY total_spent DESC 
-                                       LIMIT 5`,
-                            validation: (result) => result.length <= 5
-                        };
-                    }
-                },
-                {
-                    id: 'm4',
-                    category: 'Inventory Alerts',
-                    skill: 'filtering',
-                    tags: ['HAVING', 'Inventory'],
-                    text: "Find categories where the average stock quantity is less than 50 units. These may need restocking attention.",
-                    hint: "Group products by category, calculate average stock, filter with HAVING for avg < 50.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT category, AVG(stock_quantity) as avg_stock 
-                                       FROM products 
-                                       GROUP BY category 
-                                       HAVING avg_stock < 50`,
-                            validation: (result) => result.length >= 0
-                        };
-                    }
-                },
-                {
-                    id: 'm5',
-                    category: 'Monthly Trends',
-                    skill: 'aggregation',
-                    tags: ['Date Functions', 'Trends'],
-                    text: "Show monthly order counts for the current year to identify seasonal trends.",
-                    hint: "Use strftime to extract month from order_date, group by month, count orders.",
-                            generate: (schema) => {
-                        return {
-                            solution: `SELECT strftime('%Y-%m', order_date) as month, COUNT(*) as order_count 
-                                       FROM orders 
-                                       WHERE strftime('%Y', order_date) = '2024' 
-                                       GROUP BY month 
-                                       ORDER BY month`,
-                            validation: (result) => result.length >= 1
-                        };
-                    }
-                },
-                {
-                    id: 'm6',
-                    category: 'Product Performance',
-                    skill: 'joins',
-                    tags: ['JOIN', 'Product Analysis'],
-                    text: "Which products have never been ordered? These might need marketing attention or discontinuation.",
-                    hint: "Use LEFT JOIN from products to order_items and find where order_items.product_id IS NULL.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT p.product_name, p.category 
-                                       FROM products p 
-                                       LEFT JOIN order_items oi ON p.product_id = oi.product_id 
-                                       WHERE oi.product_id IS NULL`,
-                            validation: (result) => result.length >= 0
-                        };
-                    }
+                    tags: ['JOIN', 'TOP N'],
+                    text: "Find top 5 customers by total spending.",
+                    hint: "Join customers with orders, group by customer, sum amounts, order desc, limit 5.",
+                    solution: "SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id ORDER BY total_spent DESC LIMIT 5"
                 }
             ],
             hard: [
                 {
-                    id: 'h1',
-                    category: 'Customer Churn Analysis',
+                    id: 'ph1',
+                    category: 'Churn Analysis',
+                    company: 'Practice',
                     skill: 'subqueries',
-                    tags: ['Subquery', 'Customer Retention'],
-                    text: "Find customers who haven't placed any orders in the last 90 days. These are at risk of churning.",
-                    hint: "Use a subquery or NOT EXISTS to find customers without recent orders. Compare with date('now', '-90 days').",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT c.first_name, c.last_name, c.email 
-                                       FROM customers c 
-                                       WHERE NOT EXISTS (
-                                           SELECT 1 FROM orders o 
-                                           WHERE o.customer_id = c.customer_id 
-                                           AND o.order_date >= date('now', '-90 days')
-                                       )`,
-                            validation: (result) => result.length >= 0
-                        };
-                    }
+                    tags: ['NOT EXISTS', 'Retention'],
+                    text: "Find customers with no orders in last 90 days (churn risk).",
+                    hint: "Use NOT EXISTS or LEFT JOIN with IS NULL to find customers without recent orders.",
+                    solution: "SELECT c.first_name, c.last_name FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.order_date >= date('now', '-90 days'))"
                 },
                 {
-                    id: 'h2',
-                    category: 'Revenue Ranking',
+                    id: 'ph2',
+                    category: 'Ranking',
+                    company: 'Practice',
                     skill: 'windowFunctions',
-                    tags: ['RANK', 'Window Functions'],
-                    text: "Rank all customers by their total lifetime spending. If there's a tie, the customer with the lower ID should rank higher.",
-                    hint: "Use RANK() OVER with ORDER BY total_spent DESC, customer_id ASC.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT c.first_name, c.last_name, 
-                                              SUM(o.total_amount) as total_spent,
-                                              RANK() OVER (ORDER BY SUM(o.total_amount) DESC, c.customer_id ASC) as spending_rank
-                                       FROM customers c 
-                                       JOIN orders o ON c.customer_id = o.customer_id 
-                                       GROUP BY c.customer_id`,
-                            validation: (result) => result.length > 0 && result[0].columns.includes('spending_rank')
-                        };
-                    }
-                },
-                {
-                    id: 'h3',
-                    category: 'Growth Analysis',
-                    skill: 'windowFunctions',
-                    tags: ['LAG', 'Window Functions', 'Growth'],
-                    text: "Calculate month-over-month revenue growth percentage. Show month, revenue, and growth rate.",
-                    hint: "Use LAG() window function to get previous month's revenue, then calculate percentage change.",
-                    generate: (schema) => {
-                        return {
-                            solution: `WITH monthly_revenue AS (
-                                           SELECT strftime('%Y-%m', order_date) as month,
-                                                  SUM(total_amount) as revenue
-                                           FROM orders
-                                           GROUP BY month
-                                       )
-                                       SELECT month, revenue,
-                                              LAG(revenue) OVER (ORDER BY month) as prev_month_revenue,
-                                              ROUND(((revenue - LAG(revenue) OVER (ORDER BY month)) * 100.0 / LAG(revenue) OVER (ORDER BY month)), 2) as growth_pct
-                                       FROM monthly_revenue`,
-                            validation: (result) => result.length > 0 && result[0].columns.includes('growth_pct')
-                        };
-                    }
-                },
-                {
-                    id: 'h4',
-                    category: 'Market Basket Analysis',
-                    skill: 'subqueries',
-                    tags: ['Correlated Subquery', 'Cross-Sell'],
-                    text: "Find customers who bought products from more than 3 different categories. These are high-engagement customers.",
-                    hint: "Use a correlated subquery or join with COUNT DISTINCT categories.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT c.first_name, c.last_name 
-                                       FROM customers c 
-                                       WHERE (
-                                           SELECT COUNT(DISTINCT p.category) 
-                                           FROM orders o 
-                                           JOIN order_items oi ON o.order_id = oi.order_id 
-                                           JOIN products p ON oi.product_id = p.product_id 
-                                           WHERE o.customer_id = c.customer_id
-                                       ) > 3`,
-                            validation: (result) => result.length >= 0
-                        };
-                    }
-                },
-                {
-                    id: 'h5',
-                    category: 'Running Totals',
-                    skill: 'windowFunctions',
-                    tags: ['SUM() OVER', 'Running Total'],
-                    text: "Show daily revenue with a running total column that accumulates revenue day by day.",
-                    hint: "Use SUM(total_amount) OVER (ORDER BY order_date) for running total.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT order_date, 
-                                              SUM(total_amount) as daily_revenue,
-                                              SUM(SUM(total_amount)) OVER (ORDER BY order_date) as running_total
-                                       FROM orders
-                                       GROUP BY order_date
-                                       ORDER BY order_date`,
-                            validation: (result) => result.length > 0 && result[0].columns.includes('running_total')
-                        };
-                    }
-                },
-                {
-                    id: 'h6',
-                    category: 'Percentile Analysis',
-                    skill: 'windowFunctions',
-                    tags: ['NTILE', 'Percentiles'],
-                    text: "Segment customers into 4 quartiles based on their total spending (Q1: top 25%, Q4: bottom 25%).",
-                    hint: "Use NTILE(4) OVER with ORDER BY total spending.",
-                    generate: (schema) => {
-                        return {
-                            solution: `SELECT c.first_name, c.last_name, 
-                                              SUM(o.total_amount) as total_spent,
-                                              NTILE(4) OVER (ORDER BY SUM(o.total_amount) DESC) as spending_quartile
-                                       FROM customers c 
-                                       JOIN orders o ON c.customer_id = o.customer_id 
-                                       GROUP BY c.customer_id
-                                       ORDER BY total_spent DESC`,
-                            validation: (result) => result.length > 0 && result[0].columns.includes('spending_quartile')
-                        };
-                    }
+                    tags: ['RANK', 'Window'],
+                    text: "Rank customers by total spending (highest to lowest).",
+                    hint: "Use RANK() OVER with ORDER BY total spending DESC.",
+                    solution: "SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent, RANK() OVER (ORDER BY SUM(o.total_amount) DESC) as rank FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id"
                 }
             ]
         };
 
         // ==========================================
-        // DATABASE SCHEMAS - Realistic Business Data
+        // DATABASE SCHEMAS
         // ==========================================
 
         const databaseSchemas = {
@@ -1696,132 +1432,92 @@
                 }
             },
             hr: {
-                name: 'HR Management',
+                name: 'HR',
                 tables: {
                     employees: {
                         columns: [
-                            { name: 'employee_id', type: 'INTEGER', pk: true },
-                            { name: 'first_name', type: 'VARCHAR(50)' },
-                            { name: 'last_name', type: 'VARCHAR(50)' },
-                            { name: 'email', type: 'VARCHAR(100)' },
-                            { name: 'hire_date', type: 'DATE' },
-                            { name: 'job_title', type: 'VARCHAR(50)' },
+                            { name: 'id', type: 'INTEGER', pk: true },
+                            { name: 'name', type: 'VARCHAR(50)' },
                             { name: 'salary', type: 'DECIMAL(10,2)' },
-                            { name: 'department_id', type: 'INTEGER' },
-                            { name: 'manager_id', type: 'INTEGER' }
+                            { name: 'manager_id', type: 'INTEGER' },
+                            { name: 'department_id', type: 'INTEGER' }
                         ]
                     },
                     departments: {
                         columns: [
-                            { name: 'department_id', type: 'INTEGER', pk: true },
-                            { name: 'department_name', type: 'VARCHAR(50)' },
-                            { name: 'location', type: 'VARCHAR(50)' }
+                            { name: 'id', type: 'INTEGER', pk: true },
+                            { name: 'name', type: 'VARCHAR(50)' }
                         ]
                     }
                 }
             },
             social: {
-                name: 'Social Network',
+                name: 'Social',
                 tables: {
                     users: {
                         columns: [
                             { name: 'user_id', type: 'INTEGER', pk: true },
-                            { name: 'username', type: 'VARCHAR(50)' },
-                            { name: 'email', type: 'VARCHAR(100)' },
-                            { name: 'join_date', type: 'DATE' },
-                            { name: 'followers_count', type: 'INTEGER' }
+                            { name: 'username', type: 'VARCHAR(50)' }
                         ]
                     },
-                    posts: {
+                    friendships: {
                         columns: [
-                            { name: 'post_id', type: 'INTEGER', pk: true },
-                            { name: 'user_id', type: 'INTEGER', fk: 'users' },
-                            { name: 'content', type: 'TEXT' },
-                            { name: 'post_date', type: 'TIMESTAMP' },
-                            { name: 'likes_count', type: 'INTEGER' }
-                        ]
-                    },
-                    comments: {
-                        columns: [
-                            { name: 'comment_id', type: 'INTEGER', pk: true },
-                            { name: 'post_id', type: 'INTEGER', fk: 'posts' },
-                            { name: 'user_id', type: 'INTEGER', fk: 'users' },
-                            { name: 'content', type: 'TEXT' },
-                            { name: 'comment_date', type: 'TIMESTAMP' }
+                            { name: 'user_id', type: 'INTEGER' },
+                            { name: 'friend_id', type: 'INTEGER' }
                         ]
                     }
                 }
             },
-            finance: {
-                name: 'Finance',
+            ads: {
+                name: 'Ads',
                 tables: {
-                    accounts: {
+                    ads: {
                         columns: [
-                            { name: 'account_id', type: 'INTEGER', pk: true },
-                            { name: 'account_holder', type: 'VARCHAR(100)' },
-                            { name: 'account_type', type: 'VARCHAR(20)' },
-                            { name: 'balance', type: 'DECIMAL(12,2)' },
-                            { name: 'open_date', type: 'DATE' }
+                            { name: 'ad_id', type: 'INTEGER', pk: true },
+                            { name: 'ad_name', type: 'VARCHAR(100)' }
                         ]
                     },
-                    transactions: {
+                    impressions: {
                         columns: [
-                            { name: 'transaction_id', type: 'INTEGER', pk: true },
-                            { name: 'account_id', type: 'INTEGER', fk: 'accounts' },
-                            { name: 'transaction_date', type: 'DATE' },
-                            { name: 'amount', type: 'DECIMAL(10,2)' },
-                            { name: 'transaction_type', type: 'VARCHAR(20)' },
-                            { name: 'description', type: 'VARCHAR(200)' }
+                            { name: 'user_id', type: 'INTEGER' },
+                            { name: 'ad_id', type: 'INTEGER' },
+                            { name: 'timestamp', type: 'TIMESTAMP' }
+                        ]
+                    },
+                    clicks: {
+                        columns: [
+                            { name: 'user_id', type: 'INTEGER' },
+                            { name: 'ad_id', type: 'INTEGER' },
+                            { name: 'timestamp', type: 'TIMESTAMP' }
                         ]
                     }
                 }
             },
-            logistics: {
-                name: 'Logistics',
+            streaming: {
+                name: 'Streaming',
                 tables: {
-                    shipments: {
+                    watch_history: {
                         columns: [
-                            { name: 'shipment_id', type: 'INTEGER', pk: true },
-                            { name: 'origin', type: 'VARCHAR(100)' },
-                            { name: 'destination', type: 'VARCHAR(100)' },
-                            { name: 'ship_date', type: 'DATE' },
-                            { name: 'delivery_date', type: 'DATE' },
-                            { name: 'status', type: 'VARCHAR(20)' },
-                            { name: 'weight_kg', type: 'DECIMAL(8,2)' }
-                        ]
-                    },
-                    carriers: {
-                        columns: [
-                            { name: 'carrier_id', type: 'INTEGER', pk: true },
-                            { name: 'carrier_name', type: 'VARCHAR(50)' },
-                            { name: 'contact', type: 'VARCHAR(100)' }
+                            { name: 'user_id', type: 'INTEGER' },
+                            { name: 'movie_id', type: 'INTEGER' },
+                            { name: 'started_at', type: 'TIMESTAMP' },
+                            { name: 'ended_at', type: 'TIMESTAMP' },
+                            { name: 'progress', type: 'INTEGER' }
                         ]
                     }
                 }
-            }
-        };
-
-        // ==========================================
-        // PROJECT DEFINITIONS
-        // ==========================================
-
-        const projects = {
-            ecommerce: {
-                name: 'E-Commerce Analytics',
-                description: 'You are a data analyst for an online retail store. Analyze sales, customers, and revenue trends to provide actionable business insights.',
-                database: 'ecommerce',
-                questions: [
-                    { id: 'p1', text: 'How many customers are registered in our system?', difficulty: 'easy', skill: 'aggregation', solution: 'SELECT COUNT(*) as total_customers FROM customers' },
-                    { id: 'p2', text: 'What is the average price of all products in our catalog?', difficulty: 'easy', skill: 'aggregation', solution: 'SELECT AVG(price) as avg_price FROM products' },
-                    { id: 'p3', text: 'List all products currently out of stock.', difficulty: 'easy', skill: 'filtering', solution: 'SELECT * FROM products WHERE stock_quantity = 0' },
-                    { id: 'p4', text: 'Show all orders placed in the last 7 days.', difficulty: 'easy', skill: 'filtering', solution: "SELECT * FROM orders WHERE order_date >= date('now', '-7 days')" },
-                    { id: 'p5', text: 'Which customer has placed the most orders?', difficulty: 'medium', skill: 'joins', solution: 'SELECT c.first_name, c.last_name, COUNT(o.order_id) as order_count FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id ORDER BY order_count DESC LIMIT 1' },
-                    { id: 'p6', text: 'Calculate total revenue by month for the current year.', difficulty: 'medium', skill: 'aggregation', solution: "SELECT strftime('%Y-%m', order_date) as month, SUM(total_amount) as revenue FROM orders WHERE strftime('%Y', order_date) = '2024' GROUP BY month ORDER BY month" },
-                    { id: 'p7', text: 'Find products that have been ordered more than 10 times.', difficulty: 'medium', skill: 'joins', solution: 'SELECT p.product_name, SUM(oi.quantity) as total_ordered FROM products p JOIN order_items oi ON p.product_id = oi.product_id GROUP BY p.product_id HAVING total_ordered > 10' },
-                    { id: 'p8', text: 'Identify customers who have spent over $1000 total.', difficulty: 'medium', skill: 'joins', solution: 'SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id HAVING total_spent > 1000' },
-                    { id: 'p9', text: 'Rank customers by their total spending (highest to lowest).', difficulty: 'hard', skill: 'windowFunctions', solution: 'SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent, RANK() OVER (ORDER BY SUM(o.total_amount) DESC) as rank FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id' },
-                    { id: 'p10', text: 'Calculate 7-day rolling average of daily orders.', difficulty: 'hard', skill: 'windowFunctions', solution: 'SELECT order_date, COUNT(*) as daily_orders, AVG(COUNT(*)) OVER (ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) as rolling_avg FROM orders GROUP BY order_date' }
-                ]
+            },
+            rideshare: {
+                name: 'Rideshare',
+                tables: {
+                    trips: {
+                        columns: [
+                            { name: 'id', type: 'INTEGER', pk: true },
+                            { name: 'request_at', type: 'TIMESTAMP' },
+                            { name: 'status', type: 'VARCHAR(20)' }
+                        ]
+                    }
+                }
             }
         };
 
@@ -1844,7 +1540,8 @@
 
             populateData() {
                 const schema = databaseSchemas[state.currentDatabase];
-                
+                if (!schema) return;
+
                 Object.entries(schema.tables).forEach(([tableName, tableData]) => {
                     const columns = tableData.columns.map(c => 
                         `${c.name} ${c.type}${c.pk ? ' PRIMARY KEY' : ''}`
@@ -1856,82 +1553,28 @@
             },
 
             generateSampleData(tableName, tableData) {
-                const rowCount = Math.floor(Math.random() * 15) + 15; // 15-30 rows
-                const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'Chris', 'Lisa', 'Robert', 'Jennifer', 'Daniel', 'Maria'];
-                const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
-                const categories = ['Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books', 'Food'];
-                const countries = ['USA', 'UK', 'Canada', 'Germany', 'France', 'Australia'];
-                const statuses = ['completed', 'pending', 'shipped', 'cancelled'];
-                const productNames = {
-                    'Electronics': ['Wireless Headphones', 'Smart Watch', 'Bluetooth Speaker', 'Laptop Stand', 'USB-C Hub', 'Phone Case', 'Screen Protector'],
-                    'Clothing': ['Cotton T-Shirt', 'Denim Jeans', 'Running Shoes', 'Winter Jacket', 'Summer Dress', 'Baseball Cap', 'Wool Socks'],
-                    'Home & Garden': ['Coffee Maker', 'Desk Lamp', 'Throw Pillow', 'Storage Box', 'Wall Clock', 'Plant Pot', 'Candle Set'],
-                    'Sports': ['Yoga Mat', 'Dumbbells', 'Water Bottle', 'Tennis Racket', 'Running Belt', 'Gym Bag', 'Resistance Bands'],
-                    'Books': ['SQL Mastery', 'Data Science 101', 'Python Guide', 'Business Strategy', 'Cookbook', 'Novel', 'Biography'],
-                    'Food': ['Organic Coffee', 'Green Tea', 'Protein Bar', 'Dried Fruits', 'Granola', 'Honey Jar', 'Spice Set']
-                };
-
+                const rowCount = 20;
+                const firstNames = ['John', 'Jane', 'Mike', 'Sarah', 'David', 'Emma', 'Chris', 'Lisa'];
+                const lastNames = ['Smith', 'Johnson', 'Brown', 'Davis', 'Wilson'];
+                
                 for (let i = 1; i <= rowCount; i++) {
                     const values = tableData.columns.map(col => {
                         if (col.pk) return i;
-                        
-                        if (col.name === 'first_name' || col.name === 'username') {
-                            return `'${firstNames[Math.floor(Math.random() * firstNames.length)]}'`;
+                        if (col.name.includes('name') && !col.name.includes('product')) {
+                            return `'${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}'`;
                         }
-                        if (col.name === 'last_name') {
-                            return `'${lastNames[Math.floor(Math.random() * lastNames.length)]}'`;
-                        }
-                        if (col.name === 'email') {
-                            return `'user${i}@email.com'`;
-                        }
-                        if (col.name.includes('date') || col.name.includes('_date')) {
-                            const year = 2024;
-                            const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
-                            const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
-                            return `'${year}-${month}-${day}'`;
-                        }
-                        if (col.name === 'category') {
-                            const cat = categories[Math.floor(Math.random() * categories.length)];
-                            return `'${cat}'`;
-                        }
-                        if (col.name === 'product_name') {
-                            const cat = categories[Math.floor(Math.random() * categories.length)];
-                            const products = productNames[cat];
-                            return `'${products[Math.floor(Math.random() * products.length)]}'`;
-                        }
-                        if (col.name === 'country') {
-                            return `'${countries[Math.floor(Math.random() * countries.length)]}'`;
-                        }
-                        if (col.name === 'status') {
-                            return `'${statuses[Math.floor(Math.random() * statuses.length)]}'`;
-                        }
-                        if (col.type.includes('DECIMAL') && col.name.includes('price')) {
-                            return (Math.random() * 500 + 10).toFixed(2);
-                        }
-                        if (col.type.includes('DECIMAL') && col.name.includes('amount')) {
-                            return (Math.random() * 1000 + 50).toFixed(2);
-                        }
-                        if (col.type.includes('DECIMAL')) {
-                            return (Math.random() * 1000).toFixed(2);
-                        }
-                        if (col.type.includes('INTEGER') && col.name.includes('stock')) {
-                            return Math.floor(Math.random() * 100);
-                        }
-                        if (col.type.includes('INTEGER') && col.name.includes('quantity')) {
-                            return Math.floor(Math.random() * 5) + 1;
-                        }
-                        if (col.type.includes('INTEGER') && col.fk) {
-                            return Math.floor(Math.random() * rowCount) + 1;
-                        }
-                        if (col.type.includes('INTEGER')) {
-                            return Math.floor(Math.random() * 1000);
-                        }
-                        return `'Sample ${i}'`;
+                        if (col.name === 'first_name') return `'${firstNames[i % firstNames.length]}'`;
+                        if (col.name === 'last_name') return `'${lastNames[i % lastNames.length]}'`;
+                        if (col.name.includes('salary')) return (50000 + i * 5000).toString();
+                        if (col.name.includes('price') || col.name.includes('amount')) return (10 + i * 5).toString();
+                        if (col.name.includes('quantity') || col.name.includes('stock')) return (i * 10).toString();
+                        if (col.name.includes('date')) return `'2024-01-${String(i).padStart(2, '0')}'`;
+                        if (col.type.includes('INTEGER')) return i.toString();
+                        return `'Value ${i}'`;
                     });
                     
                     const cols = tableData.columns.map(c => c.name).join(', ');
-                    const vals = values.join(', ');
-                    state.db.run(`INSERT INTO ${tableName} (${cols}) VALUES (${vals})`);
+                    state.db.run(`INSERT INTO ${tableName} (${cols}) VALUES (${values.join(', ')})`);
                 }
             },
 
@@ -1950,92 +1593,98 @@
         };
 
         // ==========================================
-        // QUESTION ENGINE - FIXED VERSION
+        // QUESTION ENGINE
         // ==========================================
         const questionEngine = {
-            generate() {
-                // Get questions for current difficulty
-                const questions = questionBank[state.difficulty.current];
-                // Filter out already solved questions
-                const available = questions.filter(q => !state.userProgress.solvedQuestionIds.has(q.id));
+            loadInterviewQuestion(company, index = 0) {
+                const questions = interviewQuestions[company];
+                if (!questions || index >= questions.length) return null;
                 
-                // If all questions solved at this difficulty, reset or move up
-                let questionPool = available.length > 0 ? available : questions;
-                
-                // Select random question
-                const question = questionPool[Math.floor(Math.random() * questionPool.length)];
-                const generated = question.generate(databaseSchemas[state.currentDatabase]);
-                
+                const q = questions[index];
                 state.currentQuestion = {
-                    ...question,
-                    solution: generated.solution,
-                    validationFn: generated.validation,
-                    id: question.id
+                    ...q,
+                    id: q.id,
+                    isInterview: true
                 };
                 
-                state.questionSolved = false; // Reset solved state
-                
+                // Switch to appropriate database
+                this.setDatabaseForCompany(company);
+                state.questionSolved = false;
                 return state.currentQuestion;
+            },
+
+            loadPracticeQuestion() {
+                const questions = practiceQuestions[state.difficulty.current];
+                const available = questions.filter(q => !state.userProgress.solvedQuestionIds.has(q.id));
+                const pool = available.length > 0 ? available : questions;
+                
+                const q = pool[Math.floor(Math.random() * pool.length)];
+                state.currentQuestion = { ...q, isInterview: false };
+                state.questionSolved = false;
+                return state.currentQuestion;
+            },
+
+            setDatabaseForCompany(company) {
+                const dbMap = {
+                    google: 'hr',
+                    amazon: 'ecommerce',
+                    meta: 'social',
+                    netflix: 'streaming',
+                    uber: 'rideshare'
+                };
+                
+                if (dbMap[company] && dbMap[company] !== state.currentDatabase) {
+                    state.currentDatabase = dbMap[company];
+                    databaseEngine.reset();
+                }
             },
 
             checkAnswer(userQuery) {
                 if (!state.currentQuestion) return { correct: false, error: 'No question loaded' };
                 
-                // ANTI-CHEAT: Check if already solved
-                if (state.questionSolved || state.userProgress.solvedQuestionIds.has(state.currentQuestion.id)) {
-                    return { correct: false, error: 'Question already solved. Move to next question.', alreadySolved: true };
+                if (state.questionSolved) {
+                    return { correct: false, error: 'Already solved!', alreadySolved: true };
                 }
-                
-                // Execute user query
+
                 const userResult = databaseEngine.execute(userQuery);
                 if (!userResult.success) {
                     return { correct: false, error: userResult.error };
                 }
-                
-                // Execute solution
+
                 const solutionResult = databaseEngine.execute(state.currentQuestion.solution);
                 
-                // Validate results match
                 const correct = this.compareResults(userResult.data, solutionResult.data);
                 
                 if (correct) {
                     state.questionSolved = true;
                     state.userProgress.solvedQuestionIds.add(state.currentQuestion.id);
                 }
-                
-                return { 
-                    correct, 
-                    userResult: userResult.data, 
+
+                return {
+                    correct,
+                    userResult: userResult.data,
                     expectedResult: solutionResult.data,
-                    error: correct ? null : 'Your query returned different results than expected. Check the expected output panel.'
+                    error: correct ? null : 'Results do not match expected output'
                 };
             },
 
             compareResults(user, expected) {
-                if (!user || !expected || user.length === 0 || expected.length === 0) {
-                    return user && expected && user.length === 0 && expected.length === 0;
-                }
+                if (!user || !expected) return user === expected;
+                if (user.length === 0 || expected.length === 0) return user.length === expected.length;
                 
-                const userData = user[0];
-                const expectedData = expected[0];
+                const u = user[0];
+                const e = expected[0];
                 
-                // Check column count
-                if (userData.columns.length !== expectedData.columns.length) return false;
+                if (u.columns.length !== e.columns.length) return false;
+                if (u.values.length !== e.values.length) return false;
                 
-                // Check row count
-                if (userData.values.length !== expectedData.values.length) return false;
-                
-                // Sort and compare (for set-based comparison)
-                const sortRows = (a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1;
-                const sortedUser = [...userData.values].sort(sortRows);
-                const sortedExpected = [...expectedData.values].sort(sortRows);
-                
-                return JSON.stringify(sortedUser) === JSON.stringify(sortedExpected);
+                const sort = (a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1;
+                return JSON.stringify([...u.values].sort(sort)) === JSON.stringify([...e.values].sort(sort));
             }
         };
 
         // ==========================================
-        // UI ENGINE - FIXED VERSION
+        // UI ENGINE
         // ==========================================
         const uiEngine = {
             init() {
@@ -2043,33 +1692,21 @@
                 this.updateSchemaDisplay();
                 this.loadQuestion();
                 this.updateStats();
+                this.renderInterviewCards();
             },
 
             setupEventListeners() {
-                // Navigation tabs
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        const mode = e.currentTarget.dataset.mode;
-                        this.switchMode(mode);
-                    });
+                document.addEventListener('click', (e) => {
+                    const dropdown = document.getElementById('dbDropdownMenu');
+                    const selector = document.getElementById('dbSelector');
+                    if (!dropdown.contains(e.target) && !selector.contains(e.target)) {
+                        dropdown.classList.remove('show');
+                        selector.classList.remove('active');
+                    }
                 });
 
-                // Buttons
-                document.getElementById('runBtn').addEventListener('click', () => this.runQuery());
-                document.getElementById('submitBtn').addEventListener('click', () => this.submitAnswer());
-                document.getElementById('hintBtn').addEventListener('click', () => this.showHint());
-                document.getElementById('skipBtn').addEventListener('click', () => this.skipQuestion());
-                document.getElementById('clearBtn').addEventListener('click', () => this.clearEditor());
-                document.getElementById('formatBtn').addEventListener('click', () => this.formatCode());
-                document.getElementById('toggleAutocomplete').addEventListener('click', () => this.toggleAutocomplete());
-                document.getElementById('dbSelector').addEventListener('click', () => this.cycleDatabase());
-                document.getElementById('dailyChallengeBtn').addEventListener('click', () => this.startDailyChallenge());
-
-                // Keyboard shortcuts
                 document.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.key === 'Enter') {
-                        this.runQuery();
-                    }
+                    if (e.ctrlKey && e.key === 'Enter') this.runQuery();
                 });
             },
 
@@ -2090,26 +1727,18 @@
                             };
                             
                             const suggestions = [
-                                ...['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'INSERT', 'UPDATE', 'DELETE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN', 'ON', 'GROUP BY', 'HAVING', 'ORDER BY', 'ASC', 'DESC', 'LIMIT', 'OFFSET', 'UNION', 'ALL', 'AS', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'BETWEEN', 'LIKE', 'IN', 'IS NULL', 'IS NOT NULL', 'EXISTS', 'CREATE', 'TABLE', 'ALTER', 'DROP', 'INDEX', 'VIEW', 'RANK', 'DENSE_RANK', 'ROW_NUMBER', 'NTILE', 'LAG', 'LEAD', 'FIRST_VALUE', 'LAST_VALUE', 'OVER', 'PARTITION BY', 'ROWS', 'RANGE', 'UNBOUNDED', 'PRECEDING', 'FOLLOWING', 'CURRENT ROW'].map(k => ({
+                                ...['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'JOIN', 'LEFT JOIN', 'GROUP BY', 'ORDER BY', 'HAVING', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'RANK', 'OVER', 'PARTITION BY'].map(k => ({
                                     label: k,
                                     kind: monaco.languages.CompletionItemKind.Keyword,
                                     insertText: k,
                                     range
                                 })),
-                                ...Object.keys(databaseSchemas[state.currentDatabase].tables).map(t => ({
+                                ...Object.keys(databaseSchemas[state.currentDatabase]?.tables || {}).map(t => ({
                                     label: t,
                                     kind: monaco.languages.CompletionItemKind.Class,
                                     insertText: t,
                                     range
-                                })),
-                                ...Object.values(databaseSchemas[state.currentDatabase].tables).flatMap(t => 
-                                    t.columns.map(c => ({
-                                        label: c.name,
-                                        kind: monaco.languages.CompletionItemKind.Field,
-                                        insertText: c.name,
-                                        range
-                                    }))
-                                )
+                                }))
                             ];
                             
                             return { suggestions };
@@ -2124,13 +1753,8 @@
                         automaticLayout: true,
                         fontSize: 14,
                         lineNumbers: 'on',
-                        roundedSelection: false,
                         scrollBeyondLastLine: false,
-                        readOnly: false,
-                        padding: { top: 16 },
-                        suggestOnTriggerCharacters: true,
-                        quickSuggestions: true,
-                        wordBasedSuggestions: true
+                        padding: { top: 16 }
                     });
                     
                     document.getElementById('loading').style.display = 'none';
@@ -2143,37 +1767,42 @@
                 document.querySelectorAll('.nav-tab').forEach(tab => {
                     tab.classList.toggle('active', tab.dataset.mode === mode);
                 });
+
+                document.getElementById('practiceLeftPanel').style.display = mode === 'practice' ? 'flex' : 'none';
+                document.getElementById('practiceRightPanel').style.display = mode === 'practice' ? 'flex' : 'none';
+                document.getElementById('interviewView').style.display = mode === 'interview' ? 'grid' : 'none';
+                document.getElementById('dashboardView').style.display = mode === 'dashboard' ? 'grid' : 'none';
+
+                if (mode === 'practice') this.loadQuestion();
+            },
+
+            toggleDbDropdown(e) {
+                e.stopPropagation();
+                const menu = document.getElementById('dbDropdownMenu');
+                const selector = document.getElementById('dbSelector');
+                menu.classList.toggle('show');
+                selector.classList.toggle('active');
+            },
+
+            selectDatabase(db) {
+                state.currentDatabase = db;
+                document.getElementById('currentDb').textContent = databaseSchemas[db].name;
                 
-                const practiceLeft = document.getElementById('practiceLeftPanel');
-                const practiceRight = document.getElementById('practiceRightPanel');
-                const projectSidebar = document.getElementById('projectSidebar');
-                const dashboard = document.getElementById('dashboardView');
+                document.querySelectorAll('.db-dropdown-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.db === db);
+                });
                 
-                if (mode === 'practice') {
-                    practiceLeft.style.display = 'flex';
-                    practiceRight.style.display = 'flex';
-                    projectSidebar.style.display = 'none';
-                    dashboard.style.display = 'none';
-                    this.loadQuestion();
-                } else if (mode === 'project') {
-                    practiceLeft.style.display = 'none';
-                    practiceRight.style.display = 'flex';
-                    projectSidebar.style.display = 'flex';
-                    dashboard.style.display = 'none';
-                    this.initProjectMode();
-                } else if (mode === 'dashboard') {
-                    practiceLeft.style.display = 'none';
-                    practiceRight.style.display = 'none';
-                    projectSidebar.style.display = 'none';
-                    dashboard.style.display = 'grid';
-                    this.updateDashboard();
-                }
+                databaseEngine.reset();
+                this.updateSchemaDisplay();
+                this.loadQuestion();
+                this.toggleDbDropdown({ stopPropagation: () => {} });
             },
 
             updateSchemaDisplay() {
                 const container = document.getElementById('schemaContainer');
                 const schema = databaseSchemas[state.currentDatabase];
-                
+                if (!schema) return;
+
                 container.innerHTML = Object.entries(schema.tables).map(([name, table]) => `
                     <div class="schema-table">
                         <div class="schema-table-header">
@@ -2193,56 +1822,63 @@
             },
 
             loadQuestion() {
-                const question = questionEngine.generate();
-                
-                document.getElementById('questionText').textContent = question.text;
-                document.getElementById('questionCategory').textContent = question.category;
+                const q = state.currentMode === 'interview' && state.currentQuestion?.isInterview
+                    ? state.currentQuestion
+                    : questionEngine.loadPracticeQuestion();
+
+                document.getElementById('questionText').textContent = q.text;
+                document.getElementById('questionCategory').textContent = q.category || 'SQL Interview';
+                document.getElementById('questionCompany').innerHTML = `
+                    <i class="fas fa-building"></i>
+                    <span>${q.company}</span>
+                `;
                 document.getElementById('questionNumber').textContent = `Q${state.userProgress.solved + 1}`;
-                document.getElementById('difficultyBadge').textContent = state.difficulty.current;
-                document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${state.difficulty.current}`;
+                document.getElementById('difficultyBadge').textContent = q.difficulty;
+                document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${q.difficulty}`;
                 
-                document.getElementById('questionTags').innerHTML = question.tags.map(tag => 
+                document.getElementById('questionTags').innerHTML = (q.tags || [q.skill]).map(tag => 
                     `<span class="tag">${tag}</span>`
                 ).join('');
-                
+
                 document.getElementById('hintPanel').classList.remove('show');
-                
-                // Enable submit button
                 document.getElementById('submitBtn').disabled = false;
+
+                if (state.editor) state.editor.setValue('-- Write your SQL query here\n');
                 
-                if (state.editor) {
-                    state.editor.setValue('-- Write your SQL query here\n');
-                }
-                
-                this.showExpectedOutput();
+                // Show expected output immediately
+                this.refreshExpectedOutput();
             },
 
-            showExpectedOutput() {
+            refreshExpectedOutput() {
+                if (!state.currentQuestion) return;
+                
                 const result = databaseEngine.execute(state.currentQuestion.solution);
+                const container = document.getElementById('expectedOutput');
+                
                 if (result.success && result.data.length > 0) {
-                    document.getElementById('expectedOutput').innerHTML = this.renderTable(result.data[0]);
+                    container.innerHTML = this.renderTable(result.data[0]);
                 } else {
-                    document.getElementById('expectedOutput').innerHTML = '<div class="empty-state"><i class="fas fa-table"></i><div>Expected output will appear here</div></div>';
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-table"></i><div>Run query to see expected format</div></div>';
                 }
             },
 
             renderTable(data) {
                 if (!data || data.values.length === 0) {
-                    return '<div class="empty-state"><i class="fas fa-inbox"></i><div>No data returned</div></div>';
+                    return '<div class="empty-state" style="padding: 20px;"><i class="fas fa-inbox"></i><div>No data</div></div>';
                 }
-                
+
                 return `
                     <table class="data-table">
                         <thead>
                             <tr>${data.columns.map(col => `<th>${col}</th>`).join('')}</tr>
                         </thead>
                         <tbody>
-                            ${data.values.slice(0, 10).map(row => 
+                            ${data.values.slice(0, 8).map(row => 
                                 `<tr>${row.map(cell => `<td>${cell !== null ? cell : 'NULL'}</td>`).join('')}</tr>`
                             ).join('')}
                         </tbody>
                     </table>
-                    ${data.values.length > 10 ? `<div style="padding: 8px; text-align: center; color: var(--text-tertiary); font-size: 12px;">... and ${data.values.length - 10} more rows</div>` : ''}
+                    ${data.values.length > 8 ? `<div style="padding: 8px; text-align: center; color: var(--text-tertiary); font-size: 11px;">... ${data.values.length - 8} more rows</div>` : ''}
                 `;
             },
 
@@ -2250,18 +1886,9 @@
                 const query = state.editor.getValue();
                 const result = databaseEngine.execute(query);
                 
-                if (result.success) {
-                    document.getElementById('queryResult').innerHTML = result.data.length > 0 
-                        ? this.renderTable(result.data[0])
-                        : '<div class="empty-state"><i class="fas fa-check"></i><div>Query executed successfully (0 rows returned)</div></div>';
-                } else {
-                    document.getElementById('queryResult').innerHTML = `
-                        <div class="empty-state" style="color: var(--danger);">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <div>${result.error}</div>
-                        </div>
-                    `;
-                }
+                document.getElementById('queryResult').innerHTML = result.success 
+                    ? (result.data.length > 0 ? this.renderTable(result.data[0]) : '<div class="empty-state" style="padding: 20px;"><i class="fas fa-check"></i><div>Query executed (0 rows)</div></div>')
+                    : `<div class="empty-state" style="padding: 20px; color: var(--danger);"><i class="fas fa-exclamation-circle"></i><div>${result.error}</div></div>`;
             },
 
             submitAnswer() {
@@ -2272,7 +1899,7 @@
                     this.showFeedback('Question already solved! Click Next to continue.', 'info');
                     return;
                 }
-                
+
                 if (check.correct) {
                     this.handleCorrectAnswer();
                 } else {
@@ -2281,94 +1908,43 @@
             },
 
             handleCorrectAnswer() {
-                // Disable submit to prevent double-clicking
                 document.getElementById('submitBtn').disabled = true;
                 
-                // Update stats
+                const xp = { easy: 10, medium: 25, hard: 50 }[state.currentQuestion.difficulty] || 10;
                 state.userProgress.solved++;
                 state.userProgress.correct++;
-                state.userProgress.xp += this.getXPForDifficulty(state.difficulty.current);
+                state.userProgress.xp += xp;
                 state.userProgress.streak++;
                 
-                // Update skills
-                const skill = state.currentQuestion.skill;
-                if (state.userProgress.skills[skill] !== undefined) {
-                    state.userProgress.skills[skill] = Math.min(100, state.userProgress.skills[skill] + 10);
-                }
-                
-                // Update difficulty
                 this.updateDifficulty(true);
-                
-                // Save progress
                 this.saveProgress();
                 this.updateStats();
-                
-                // Add to history
-                state.userProgress.history.unshift({
-                    question: state.currentQuestion.text,
-                    result: 'correct',
-                    timestamp: new Date(),
-                    difficulty: state.difficulty.current
-                });
-                
-                // Show success overlay with auto-advance option
-                this.showSuccessOverlay();
+
+                document.getElementById('successXP').textContent = `+${xp} XP`;
+                document.getElementById('successOverlay').classList.add('show');
             },
 
             handleWrongAnswer(error) {
                 state.userProgress.streak = 0;
                 this.updateDifficulty(false);
                 this.updateStats();
-                this.showFeedback(`Incorrect: ${error}`, 'error');
-                
-                // Add to history
-                state.userProgress.history.unshift({
-                    question: state.currentQuestion.text,
-                    result: 'wrong',
-                    timestamp: new Date(),
-                    difficulty: state.difficulty.current
-                });
-            },
-
-            showSuccessOverlay() {
-                const overlay = document.getElementById('successOverlay');
-                const xpText = document.getElementById('successXP');
-                xpText.textContent = `+${this.getXPForDifficulty(state.difficulty.current)} XP`;
-                overlay.classList.add('show');
-                
-                // Auto-advance after 3 seconds
-                setTimeout(() => {
-                    if (overlay.classList.contains('show')) {
-                        this.nextQuestion();
-                    }
-                }, 3000);
-            },
-
-            getXPForDifficulty(diff) {
-                const xp = { easy: 10, medium: 25, hard: 50 };
-                return xp[diff] || 10;
+                this.showFeedback(`❌ ${error}`, 'error');
             },
 
             updateDifficulty(correct) {
                 if (correct) {
                     state.difficulty[`${state.difficulty.current}Streak`]++;
-                    
-                    if (state.difficulty.current === 'easy' && state.difficulty.easyStreak >= 3) {
+                    if (state.difficulty.current === 'easy' && state.difficulty.easyStreak >= 2) {
                         state.difficulty.current = 'medium';
                         state.difficulty.easyStreak = 0;
-                        this.showFeedback('🎉 Level Up! Now attempting Medium questions', 'info');
-                    } else if (state.difficulty.current === 'medium' && state.difficulty.mediumStreak >= 3) {
+                        this.showFeedback('🎉 Level Up! Medium difficulty', 'info');
+                    } else if (state.difficulty.current === 'medium' && state.difficulty.mediumStreak >= 2) {
                         state.difficulty.current = 'hard';
                         state.difficulty.mediumStreak = 0;
-                        this.showFeedback('🔥 Level Up! Now attempting Hard questions', 'info');
+                        this.showFeedback('🔥 Level Up! Hard difficulty', 'info');
                     }
                 } else {
                     state.difficulty[`${state.difficulty.current}Streak`] = 0;
-                    if (state.difficulty.current === 'hard') {
-                        state.difficulty.current = 'medium';
-                    } else if (state.difficulty.current === 'medium') {
-                        state.difficulty.current = 'easy';
-                    }
                 }
             },
 
@@ -2379,85 +1955,62 @@
                 this.loadQuestion();
             },
 
+            showSolution() {
+                if (state.editor && state.currentQuestion) {
+                    state.editor.setValue(state.currentQuestion.solution);
+                }
+                document.getElementById('successOverlay').classList.remove('show');
+            },
+
             showHint() {
-                const hintPanel = document.getElementById('hintPanel');
                 document.getElementById('hintText').textContent = state.currentQuestion.hint;
-                hintPanel.classList.add('show');
+                document.getElementById('hintPanel').classList.add('show');
             },
 
             skipQuestion() {
                 state.userProgress.streak = 0;
                 this.updateStats();
-                this.showFeedback('Question skipped. Streak reset.', 'warning');
-                databaseEngine.reset();
-                this.updateSchemaDisplay();
-                this.loadQuestion();
+                this.showFeedback('Skipped. Streak reset.', 'warning');
+                this.nextQuestion();
+            },
+
+            formatCode() {
+                let code = state.editor.getValue();
+                code = code.replace(/\s+/g, ' ').trim();
+                code = code.replace(/SELECT/gi, '\nSELECT');
+                code = code.replace(/FROM/gi, '\nFROM');
+                code = code.replace(/WHERE/gi, '\nWHERE');
+                code = code.replace(/GROUP BY/gi, '\nGROUP BY');
+                code = code.replace(/ORDER BY/gi, '\nORDER BY');
+                code = code.replace(/JOIN/gi, '\nJOIN');
+                state.editor.setValue(code.trim());
             },
 
             clearEditor() {
                 state.editor.setValue('');
             },
 
-            formatCode() {
-                let code = state.editor.getValue();
-                code = code.replace(/\s+/g, ' ').trim();
-                code = code.replace(/\s*,\s*/g, ', ');
-                code = code.replace(/\s*=\s*/g, ' = ');
-                code = code.replace(/SELECT/gi, '\nSELECT');
-                code = code.replace(/FROM/gi, '\nFROM');
-                code = code.replace(/WHERE/gi, '\nWHERE');
-                code = code.replace(/GROUP BY/gi, '\nGROUP BY');
-                code = code.replace(/HAVING/gi, '\nHAVING');
-                code = code.replace(/ORDER BY/gi, '\nORDER BY');
-                code = code.replace(/JOIN/gi, '\nJOIN');
-                code = code.replace(/LEFT/gi, '\n  LEFT');
-                code = code.replace(/RIGHT/gi, '\n  RIGHT');
-                code = code.replace(/INNER/gi, '\n  INNER');
-                state.editor.setValue(code.trim());
-            },
-
-            toggleAutocomplete() {
-                state.autocompleteEnabled = !state.autocompleteEnabled;
-                document.getElementById('autocompleteSwitch').classList.toggle('active', state.autocompleteEnabled);
-                this.showFeedback(`Autocomplete ${state.autocompleteEnabled ? 'enabled' : 'disabled'}`, 'info');
-            },
-
-            cycleDatabase() {
-                const dbs = Object.keys(databaseSchemas);
-                const currentIndex = dbs.indexOf(state.currentDatabase);
-                state.currentDatabase = dbs[(currentIndex + 1) % dbs.length];
-                document.getElementById('currentDb').textContent = databaseSchemas[state.currentDatabase].name;
-                databaseEngine.reset();
-                this.updateSchemaDisplay();
-                this.loadQuestion();
-                this.showFeedback(`Switched to ${databaseSchemas[state.currentDatabase].name} database`, 'info');
-            },
-
             showFeedback(text, type) {
                 const panel = document.getElementById('feedbackPanel');
                 const icon = document.getElementById('feedbackIcon');
-                const textEl = document.getElementById('feedbackText');
                 
                 panel.className = `feedback-panel feedback-${type} show`;
                 icon.className = type === 'success' ? 'fas fa-check-circle' : 
-                                type === 'error' ? 'fas fa-times-circle' : 
-                                type === 'warning' ? 'fas fa-exclamation-triangle' : 'fas fa-info-circle';
-                textEl.textContent = text;
+                                type === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle';
+                document.getElementById('feedbackText').textContent = text;
                 
-                setTimeout(() => {
-                    panel.classList.remove('show');
-                }, 4000);
+                setTimeout(() => panel.classList.remove('show'), 4000);
             },
 
             updateStats() {
                 document.getElementById('statSolved').textContent = state.userProgress.solved;
                 document.getElementById('statStreak').textContent = state.userProgress.streak;
                 document.getElementById('statXP').textContent = state.userProgress.xp;
-                
-                const accuracy = state.userProgress.solved > 0 
-                    ? Math.round((state.userProgress.correct / state.userProgress.solved) * 100) 
-                    : 0;
-                document.getElementById('statAccuracy').textContent = `${accuracy}%`;
+                document.getElementById('dashSolved').textContent = state.userProgress.solved;
+                document.getElementById('dashAccuracy').textContent = 
+                    state.userProgress.solved > 0 ? Math.round((state.userProgress.correct / state.userProgress.solved) * 100) + '%' : '0%';
+                document.getElementById('dashStreak').textContent = state.userProgress.streak;
+                document.getElementById('dashXP').textContent = state.userProgress.xp;
             },
 
             saveProgress() {
@@ -2465,11 +2018,11 @@
                     ...state.userProgress,
                     solvedQuestionIds: Array.from(state.userProgress.solvedQuestionIds)
                 };
-                localStorage.setItem('sqlMasteryPro', JSON.stringify(data));
+                localStorage.setItem('sqlInterviewPro', JSON.stringify(data));
             },
 
             loadProgress() {
-                const saved = localStorage.getItem('sqlMasteryPro');
+                const saved = localStorage.getItem('sqlInterviewPro');
                 if (saved) {
                     const data = JSON.parse(saved);
                     state.userProgress = {
@@ -2479,141 +2032,52 @@
                 }
             },
 
-            // Project Mode
-            initProjectMode() {
-                const project = projects.ecommerce;
-                state.currentProject = project;
-                state.currentProjectQuestion = 0;
-                
-                document.getElementById('projectTitle').textContent = project.name;
-                document.getElementById('projectDesc').textContent = project.description;
-                
-                this.renderProjectQuestions();
-                this.loadProjectQuestion(0);
-            },
+            renderInterviewCards() {
+                const container = document.getElementById('interviewView');
+                const companies = [
+                    { key: 'google', name: 'Google', icon: 'fab fa-google', color: '#4285F4', count: 15 },
+                    { key: 'amazon', name: 'Amazon', icon: 'fab fa-amazon', color: '#FF9900', count: 12 },
+                    { key: 'meta', name: 'Meta', icon: 'fab fa-meta', color: '#0668E1', count: 10 },
+                    { key: 'netflix', name: 'Netflix', icon: 'fas fa-play', color: '#E50914', count: 8 },
+                    { key: 'uber', name: 'Uber', icon: 'fab fa-uber', color: '#000000', count: 10 }
+                ];
 
-            renderProjectQuestions() {
-                const container = document.getElementById('projectQuestionList');
-                container.innerHTML = state.currentProject.questions.map((q, i) => `
-                    <div class="question-item ${i === state.currentProjectQuestion ? 'active' : ''} ${i < state.currentProjectQuestion ? 'completed' : ''}" 
-                         onclick="uiEngine.loadProjectQuestion(${i})">
-                        <div class="question-item-number">${i < state.currentProjectQuestion ? '<i class="fas fa-check"></i>' : i + 1}</div>
-                        <div class="question-item-info">
-                            <div class="question-item-title">Question ${i + 1}</div>
-                            <div class="question-item-difficulty">${q.difficulty}</div>
+                container.innerHTML = companies.map(comp => `
+                    <div class="interview-card" onclick="uiEngine.startInterview('${comp.key}')">
+                        <div class="interview-card-header">
+                            <div class="interview-company">
+                                <div class="company-logo" style="color: ${comp.color};">
+                                    <i class="${comp.icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="company-name">${comp.name}</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">Real interview questions</div>
+                                </div>
+                            </div>
+                            <span class="question-count">${comp.count}</span>
+                        </div>
+                        <div class="interview-stats">
+                            <span><i class="fas fa-fire"></i> Hot</span>
+                            <span><i class="fas fa-clock"></i> 30 min</span>
+                            <span><i class="fas fa-signal"></i> All levels</span>
                         </div>
                     </div>
                 `).join('');
-                
-                const progress = ((state.currentProjectQuestion / state.currentProject.questions.length) * 100).toFixed(0);
-                document.getElementById('projectProgress').style.width = `${progress}%`;
-                document.getElementById('progressText').textContent = `${state.currentProjectQuestion} of ${state.currentProject.questions.length} completed`;
             },
 
-            loadProjectQuestion(index) {
-                if (index >= state.currentProject.questions.length) {
-                    this.completeProject();
-                    return;
-                }
+            startInterview(company) {
+                state.currentMode = 'practice';
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-mode="practice"]').classList.add('active');
                 
-                state.currentProjectQuestion = index;
-                const q = state.currentProject.questions[index];
+                document.getElementById('practiceLeftPanel').style.display = 'flex';
+                document.getElementById('practiceRightPanel').style.display = 'flex';
+                document.getElementById('interviewView').style.display = 'none';
                 
-                document.getElementById('questionText').textContent = q.text;
-                document.getElementById('questionCategory').textContent = 'Project: ' + state.currentProject.name;
-                document.getElementById('questionNumber').textContent = `${index + 1}/${state.currentProject.questions.length}`;
-                document.getElementById('difficultyBadge').textContent = q.difficulty;
-                document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${q.difficulty}`;
-                document.getElementById('questionTags').innerHTML = `<span class="tag">${q.skill}</span>`;
-                
-                state.currentQuestion = {
-                    ...q,
-                    solution: q.solution,
-                    hint: 'Think about which tables you need to join and what conditions to apply.',
-                    skill: q.skill,
-                    id: `project-${index}`
-                };
-                
-                state.questionSolved = false;
-                document.getElementById('submitBtn').disabled = false;
-                
-                this.renderProjectQuestions();
-                
-                // Execute solution to show expected output
-                const result = databaseEngine.execute(q.solution);
-                if (result.success && result.data.length > 0) {
-                    document.getElementById('expectedOutput').innerHTML = this.renderTable(result.data[0]);
-                }
-            },
-
-            completeProject() {
-                state.userProgress.xp += 200;
-                this.saveProgress();
-                this.showFeedback('🎉 Project completed! +200 XP earned!', 'success');
-                this.switchMode('dashboard');
-            },
-
-            // Dashboard
-            updateDashboard() {
-                document.getElementById('dashSolved').textContent = state.userProgress.solved;
-                document.getElementById('dashXP').textContent = `${state.userProgress.xp} XP`;
-                document.getElementById('dashStreak').textContent = state.userProgress.streak;
-                
-                const accuracy = state.userProgress.solved > 0 
-                    ? Math.round((state.userProgress.correct / state.userProgress.solved) * 100) 
-                    : 0;
-                document.getElementById('dashAccuracy').textContent = `${accuracy}%`;
-                
-                if (state.userProgress.xp >= 2000) {
-                    state.userProgress.level = 'Expert';
-                } else if (state.userProgress.xp >= 1000) {
-                    state.userProgress.level = 'Advanced';
-                } else if (state.userProgress.xp >= 500) {
-                    state.userProgress.level = 'Intermediate';
-                } else {
-                    state.userProgress.level = 'Beginner';
-                }
-                document.getElementById('dashLevel').textContent = state.userProgress.level;
-                
-                const skillsContainer = document.getElementById('skillsContainer');
-                skillsContainer.innerHTML = Object.entries(state.userProgress.skills).map(([skill, value]) => {
-                    const level = value >= 70 ? 'high' : value >= 40 ? 'medium' : 'low';
-                    const skillName = skill.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                    return `
-                        <div class="skill-bar">
-                            <div class="skill-header">
-                                <span>${skillName}</span>
-                                <span>${value}%</span>
-                            </div>
-                            <div class="skill-track">
-                                <div class="skill-fill ${level}" style="width: ${value}%"></div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                // Recent activity
-                const activityContainer = document.getElementById('activityContainer');
-                if (state.userProgress.history.length > 0) {
-                    activityContainer.innerHTML = state.userProgress.history.slice(0, 5).map(h => `
-                        <div style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-size: 13px; font-weight: 500;">${h.question.substring(0, 50)}...</div>
-                                <div style="font-size: 11px; color: var(--text-tertiary);">${new Date(h.timestamp).toLocaleDateString()}</div>
-                            </div>
-                            <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; ${h.result === 'correct' ? 'background: #dcfce7; color: #166534;' : 'background: #fee2e2; color: #991b1b;'}">
-                                ${h.result === 'correct' ? 'Correct' : 'Incorrect'}
-                            </span>
-                        </div>
-                    `).join('');
-                }
-            },
-
-            startDailyChallenge() {
-                this.switchMode('practice');
-                state.difficulty.current = 'medium';
+                questionEngine.loadInterviewQuestion(company, 0);
+                this.updateSchemaDisplay();
                 this.loadQuestion();
-                this.showFeedback('Daily Challenge started! Complete this medium difficulty question.', 'info');
+                this.showFeedback(`Starting ${company.toUpperCase()} interview questions!`, 'success');
             }
         };
 
