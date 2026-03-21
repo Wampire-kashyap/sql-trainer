@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Interview Pro - Crack Top Tech Interviews</title>
+    <title>SQL Interview Pro - Master SQL for Top Tech Jobs</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
@@ -76,6 +76,7 @@
             font-size: 20px;
             font-weight: 700;
             color: var(--primary);
+            cursor: pointer;
         }
 
         .logo i {
@@ -685,6 +686,94 @@
             color: var(--text-secondary);
         }
 
+        /* Project Section Styles */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 24px;
+            overflow: auto;
+        }
+
+        .project-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .project-header-bg {
+            height: 120px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+
+        .project-content {
+            padding: 20px;
+        }
+
+        .project-week {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .project-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .project-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .project-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .project-progress-bar {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .project-progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
         /* Success Animation */
         .success-overlay {
             position: fixed;
@@ -836,14 +925,44 @@
             color: var(--text-primary);
         }
 
+        .footer-creator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .footer-creator a {
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
+            cursor: pointer;
+            position: relative;
         }
 
         .footer-creator a:hover {
             text-decoration: underline;
+        }
+
+        .copy-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .copy-tooltip.show {
+            opacity: 1;
+            visibility: visible;
         }
 
         .footer-right {
@@ -915,6 +1034,96 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Project Detail View */
+        .project-detail {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 24px;
+            overflow: auto;
+        }
+
+        .project-detail.show {
+            display: flex;
+        }
+
+        .project-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .project-question-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pq-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pq-item:hover {
+            border-color: var(--primary);
+        }
+
+        .pq-item.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .pq-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .pq-item.completed .pq-number {
+            background: var(--success);
+            color: white;
+        }
+
+        .pq-content {
+            flex: 1;
+        }
+
+        .pq-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .pq-difficulty {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
         /* Responsive */
         @media (max-width: 1200px) {
             .left-panel {
@@ -954,7 +1163,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-left">
-            <div class="logo">
+            <div class="logo" onclick="uiEngine.switchMode('practice')">
                 <i class="fas fa-database"></i>
                 <span>SQL Interview Pro</span>
             </div>
@@ -962,29 +1171,21 @@
             <div class="db-dropdown-container">
                 <div class="database-selector" id="dbSelector" onclick="uiEngine.toggleDbDropdown(event)">
                     <i class="fas fa-server"></i>
-                    <span id="currentDb">E-Commerce</span>
+                    <span id="currentDb">Danny's Diner</span>
                     <i class="fas fa-chevron-down" style="margin-left: auto;"></i>
                 </div>
                 <div class="db-dropdown-menu" id="dbDropdownMenu">
-                    <div class="db-dropdown-item active" data-db="ecommerce" onclick="uiEngine.selectDatabase('ecommerce')">
+                    <div class="db-dropdown-item active" data-db="dannys_diner" onclick="uiEngine.selectDatabase('dannys_diner')">
+                        <i class="fas fa-utensils"></i>
+                        <span>Danny's Diner</span>
+                    </div>
+                    <div class="db-dropdown-item" data-db="pizza_runner" onclick="uiEngine.selectDatabase('pizza_runner')">
+                        <i class="fas fa-pizza-slice"></i>
+                        <span>Pizza Runner</span>
+                    </div>
+                    <div class="db-dropdown-item" data-db="ecommerce" onclick="uiEngine.selectDatabase('ecommerce')">
                         <i class="fas fa-shopping-cart"></i>
                         <span>E-Commerce</span>
-                    </div>
-                    <div class="db-dropdown-item" data-db="hr" onclick="uiEngine.selectDatabase('hr')">
-                        <i class="fas fa-users"></i>
-                        <span>HR Management</span>
-                    </div>
-                    <div class="db-dropdown-item" data-db="social" onclick="uiEngine.selectDatabase('social')">
-                        <i class="fas fa-share-nodes"></i>
-                        <span>Social Network</span>
-                    </div>
-                    <div class="db-dropdown-item" data-db="finance" onclick="uiEngine.selectDatabase('finance')">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Finance</span>
-                    </div>
-                    <div class="db-dropdown-item" data-db="logistics" onclick="uiEngine.selectDatabase('logistics')">
-                        <i class="fas fa-truck"></i>
-                        <span>Logistics</span>
                     </div>
                 </div>
             </div>
@@ -1001,6 +1202,10 @@
                 <i class="fas fa-briefcase"></i>
                 Interviews
                 <span class="badge">Hot</span>
+            </div>
+            <div class="nav-tab" data-mode="project" onclick="uiEngine.switchMode('project')">
+                <i class="fas fa-graduation-cap"></i>
+                8-Week SQL
             </div>
             <div class="nav-tab" data-mode="dashboard" onclick="uiEngine.switchMode('dashboard')">
                 <i class="fas fa-chart-line"></i>
@@ -1080,7 +1285,7 @@
                             <div class="question-meta">
                                 <div class="question-company" id="questionCompany">
                                     <i class="fas fa-building"></i>
-                                    <span>General Practice</span>
+                                    <span>Danny's Diner</span>
                                 </div>
                                 <span class="question-number" id="questionNumber">Q1</span>
                             </div>
@@ -1119,7 +1324,7 @@
                     </div>
 
                     <div class="action-bar">
-                        <button class="btn btn-primary" onclick="uiEngine.runQuery()">
+                        <button class="btn btn-primary" id="runBtn" onclick="uiEngine.runQuery()">
                             <i class="fas fa-play"></i>
                             Run
                         </button>
@@ -1139,33 +1344,50 @@
                 </div>
             </div>
 
-            <!-- Interview Mode (Hidden) -->
+            <!-- Interview Mode -->
             <div class="interview-grid" id="interviewView" style="display: none; width: 100%;">
-                <!-- Interview cards will be rendered here -->
+                <!-- Interview cards rendered here -->
             </div>
 
-            <!-- Dashboard (Hidden) -->
+            <!-- Project Mode (8-Week SQL Challenge) -->
+            <div class="project-grid" id="projectView" style="display: none; width: 100%;">
+                <!-- Project cards rendered here -->
+            </div>
+
+            <!-- Project Detail View -->
+            <div class="project-detail" id="projectDetailView" style="display: none; width: 100%;">
+                <div class="project-nav">
+                    <button class="back-btn" onclick="uiEngine.backToProjects()">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Projects
+                    </button>
+                    <h2 id="projectDetailTitle">Danny's Diner</h2>
+                </div>
+                <div class="project-question-list" id="projectQuestionList">
+                    <!-- Project questions rendered here -->
+                </div>
+            </div>
+
+            <!-- Dashboard -->
             <div class="interview-grid" id="dashboardView" style="display: none; width: 100%;">
-                <div class="dashboard-card" style="grid-column: span 2;">
-                    <div style="padding: 24px;">
-                        <h3 style="margin-bottom: 16px;">Your Progress</h3>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="dashSolved">0</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Solved</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 32px; font-weight: 700; color: var(--success);" id="dashAccuracy">0%</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Accuracy</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 32px; font-weight: 700; color: var(--warning);" id="dashStreak">0</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">Streak</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="dashXP">0</div>
-                                <div style="font-size: 12px; color: var(--text-secondary);">XP</div>
-                            </div>
+                <div class="dashboard-card" style="grid-column: span 2; background: var(--bg-secondary); border-radius: var(--radius); padding: 24px; border: 1px solid var(--border);">
+                    <h3 style="margin-bottom: 16px;">Your Progress</h3>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="dashSolved">0</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Solved</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: var(--success);" id="dashAccuracy">0%</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Accuracy</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: var(--warning);" id="dashStreak">0</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Streak</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="dashXP">0</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">XP</div>
                         </div>
                     </div>
                 </div>
@@ -1180,13 +1402,16 @@
                     <span>SQL Interview Pro</span>
                 </div>
                 <div class="footer-creator">
-                    Created by <a href="mailto:Kunalkumarshri47@gmail.com">KunalKumar</a>
+                    Created by 
+                    <a onclick="uiEngine.copyEmail(event)" style="cursor: pointer;">
+                        KunalKumar
+                        <span class="copy-tooltip" id="copyTooltip">Click to copy email</span>
+                    </a>
                 </div>
             </div>
             <div class="footer-right">
-                <span id="cycleInfo">Next update: Daily</span>
-                <a href="mailto:Kunalkumarshri47@gmail.com" class="footer-link">Contact</a>
-                <a href="#" class="footer-link">GitHub</a>
+                <span>8-Week SQL Challenge | Resume Ready</span>
+                <a href="#" class="footer-link" onclick="uiEngine.copyEmail(event)">Contact</a>
             </div>
         </footer>
     </div>
@@ -1199,9 +1424,9 @@
 
     <script>
         // ==========================================
-        // SQL INTERVIEW PRO - ULTIMATE EDITION
+        // SQL INTERVIEW PRO - COMPLETE REBUILD
         // Created by: KunalKumar (Kunalkumarshri47@gmail.com)
-        // Features: Real Interview Questions, Auto-Update, Working Expected Output
+        // Features: Working Interview, 8-Week Projects, Expected Output, Copy Email
         // ==========================================
 
         const state = {
@@ -1210,6 +1435,7 @@
             editor: null,
             currentMode: 'practice',
             currentQuestion: null,
+            currentProject: null,
             autocompleteEnabled: true,
             questionSolved: false,
             userProgress: {
@@ -1217,180 +1443,80 @@
                 correct: 0,
                 streak: 0,
                 xp: 0,
-                solvedQuestionIds: new Set()
+                solvedQuestionIds: new Set(),
+                projectProgress: {}
             },
             difficulty: { current: 'easy', easyStreak: 0, mediumStreak: 0, hardStreak: 0 },
-            currentDatabase: 'ecommerce'
+            currentDatabase: 'dannys_diner'
         };
 
         // ==========================================
-        // REAL INTERVIEW QUESTIONS FROM TOP COMPANIES
-        // Auto-refreshing question bank
-        // ==========================================
-
-        const interviewQuestions = {
-            google: [
-                {
-                    id: 'g1',
-                    company: 'Google',
-                    difficulty: 'hard',
-                    text: "Write a SQL query to find the second highest salary from the employees table without using LIMIT or TOP.",
-                    hint: "Use a subquery with MAX() to exclude the highest salary, then find max of remaining.",
-                    solution: "SELECT MAX(salary) as second_highest FROM employees WHERE salary < (SELECT MAX(salary) FROM employees)",
-                    skill: 'subqueries'
-                },
-                {
-                    id: 'g2',
-                    company: 'Google',
-                    difficulty: 'hard',
-                    text: "Find all employees who earn more than their managers. Return employee name and salary.",
-                    hint: "Self-join employees table where employee's salary > manager's salary.",
-                    solution: "SELECT e.name, e.salary FROM employees e JOIN employees m ON e.manager_id = m.id WHERE e.salary > m.salary",
-                    skill: 'joins'
-                }
-            ],
-            amazon: [
-                {
-                    id: 'a1',
-                    company: 'Amazon',
-                    difficulty: 'medium',
-                    text: "Find the top 3 products by revenue in each category using window functions.",
-                    hint: "Use DENSE_RANK() or ROW_NUMBER() partitioned by category, ordered by revenue DESC.",
-                    solution: "SELECT category, product_name, revenue FROM (SELECT category, product_name, SUM(price*quantity) as revenue, DENSE_RANK() OVER (PARTITION BY category ORDER BY SUM(price*quantity) DESC) as rnk FROM products GROUP BY category, product_name) WHERE rnk <= 3",
-                    skill: 'windowFunctions'
-                },
-                {
-                    id: 'a2',
-                    company: 'Amazon',
-                    difficulty: 'medium',
-                    text: "Calculate the click-through rate (CTR) for each ad. CTR = clicks / impressions * 100",
-                    hint: "Join impressions and clicks tables, calculate percentage.",
-                    solution: "SELECT a.ad_id, a.ad_name, COUNT(DISTINCT c.user_id) * 100.0 / COUNT(DISTINCT i.user_id) as ctr FROM ads a LEFT JOIN impressions i ON a.ad_id = i.ad_id LEFT JOIN clicks c ON a.ad_id = c.ad_id GROUP BY a.ad_id",
-                    skill: 'joins'
-                }
-            ],
-            meta: [
-                {
-                    id: 'm1',
-                    company: 'Meta',
-                    difficulty: 'hard',
-                    text: "Find friend recommendations using mutual friends. If A is friends with B and B is friends with C, recommend C to A.",
-                    hint: "Self-join friendships table twice to find second-degree connections.",
-                    solution: "SELECT DISTINCT f1.user_id as user, f2.friend_id as recommended_friend FROM friendships f1 JOIN friendships f2 ON f1.friend_id = f2.user_id WHERE f1.user_id != f2.friend_id",
-                    skill: 'joins'
-                }
-            ],
-            netflix: [
-                {
-                    id: 'n1',
-                    company: 'Netflix',
-                    difficulty: 'medium',
-                    text: "Find users who watched a movie from start to end (progress = 100) within 24 hours of starting.",
-                    hint: "Filter where progress = 100 and timestamp difference is within 24 hours.",
-                    solution: "SELECT user_id, movie_id FROM watch_history WHERE progress = 100 AND (ended_at - started_at) <= INTERVAL '24 hours'",
-                    skill: 'filtering'
-                }
-            ],
-            uber: [
-                {
-                    id: 'u1',
-                    company: 'Uber',
-                    difficulty: 'hard',
-                    text: "Calculate the cancellation rate for each day. Cancellation rate = cancelled trips / total trips.",
-                    hint: "Use CASE statement to count cancelled trips, divide by total count.",
-                    solution: "SELECT DATE(request_at) as day, SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) as cancellation_rate FROM trips GROUP BY DATE(request_at)",
-                    skill: 'aggregation'
-                }
-            ]
-        };
-
-        // Practice Question Bank
-        const practiceQuestions = {
-            easy: [
-                {
-                    id: 'pe1',
-                    category: 'Customer Analytics',
-                    company: 'Practice',
-                    skill: 'aggregation',
-                    tags: ['COUNT', 'Basic'],
-                    text: "How many customers are registered in our database?",
-                    hint: "Use COUNT(*) to count all rows in the customers table.",
-                    solution: "SELECT COUNT(*) as total_customers FROM customers"
-                },
-                {
-                    id: 'pe2',
-                    category: 'Sales Metrics',
-                    company: 'Practice',
-                    skill: 'aggregation',
-                    tags: ['AVG', 'Revenue'],
-                    text: "What is the average order value across all orders?",
-                    hint: "Use AVG() function on the total_amount column.",
-                    solution: "SELECT AVG(total_amount) as avg_order_value FROM orders"
-                },
-                {
-                    id: 'pe3',
-                    category: 'Inventory',
-                    company: 'Practice',
-                    skill: 'filtering',
-                    tags: ['WHERE', 'Stock'],
-                    text: "List all products in Electronics category with stock > 0.",
-                    hint: "Use WHERE clause with AND condition.",
-                    solution: "SELECT * FROM products WHERE category = 'Electronics' AND stock_quantity > 0"
-                }
-            ],
-            medium: [
-                {
-                    id: 'pm1',
-                    category: 'Revenue Analysis',
-                    company: 'Practice',
-                    skill: 'aggregation',
-                    tags: ['GROUP BY', 'Revenue'],
-                    text: "Show total revenue by product category.",
-                    hint: "Join products with order_items, group by category, sum quantity * price.",
-                    solution: "SELECT p.category, SUM(oi.quantity * oi.unit_price) as revenue FROM products p JOIN order_items oi ON p.product_id = oi.product_id GROUP BY p.category"
-                },
-                {
-                    id: 'pm2',
-                    category: 'Top Customers',
-                    company: 'Practice',
-                    skill: 'joins',
-                    tags: ['JOIN', 'TOP N'],
-                    text: "Find top 5 customers by total spending.",
-                    hint: "Join customers with orders, group by customer, sum amounts, order desc, limit 5.",
-                    solution: "SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id ORDER BY total_spent DESC LIMIT 5"
-                }
-            ],
-            hard: [
-                {
-                    id: 'ph1',
-                    category: 'Churn Analysis',
-                    company: 'Practice',
-                    skill: 'subqueries',
-                    tags: ['NOT EXISTS', 'Retention'],
-                    text: "Find customers with no orders in last 90 days (churn risk).",
-                    hint: "Use NOT EXISTS or LEFT JOIN with IS NULL to find customers without recent orders.",
-                    solution: "SELECT c.first_name, c.last_name FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.order_date >= date('now', '-90 days'))"
-                },
-                {
-                    id: 'ph2',
-                    category: 'Ranking',
-                    company: 'Practice',
-                    skill: 'windowFunctions',
-                    tags: ['RANK', 'Window'],
-                    text: "Rank customers by total spending (highest to lowest).",
-                    hint: "Use RANK() OVER with ORDER BY total spending DESC.",
-                    solution: "SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent, RANK() OVER (ORDER BY SUM(o.total_amount) DESC) as rank FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id"
-                }
-            ]
-        };
-
-        // ==========================================
-        // DATABASE SCHEMAS
+        // DATABASE SCHEMAS - DANNY MA 8-WEEK STYLE
         // ==========================================
 
         const databaseSchemas = {
+            dannys_diner: {
+                name: "Danny's Diner",
+                tables: {
+                    sales: {
+                        columns: [
+                            { name: 'customer_id', type: 'VARCHAR(1)' },
+                            { name: 'order_date', type: 'DATE' },
+                            { name: 'product_id', type: 'INTEGER' }
+                        ]
+                    },
+                    menu: {
+                        columns: [
+                            { name: 'product_id', type: 'INTEGER', pk: true },
+                            { name: 'product_name', type: 'VARCHAR(50)' },
+                            { name: 'price', type: 'INTEGER' }
+                        ]
+                    },
+                    members: {
+                        columns: [
+                            { name: 'customer_id', type: 'VARCHAR(1)' },
+                            { name: 'join_date', type: 'DATE' }
+                        ]
+                    }
+                }
+            },
+            pizza_runner: {
+                name: "Pizza Runner",
+                tables: {
+                    runners: {
+                        columns: [
+                            { name: 'runner_id', type: 'INTEGER', pk: true },
+                            { name: 'registration_date', type: 'DATE' }
+                        ]
+                    },
+                    customer_orders: {
+                        columns: [
+                            { name: 'order_id', type: 'INTEGER' },
+                            { name: 'customer_id', type: 'INTEGER' },
+                            { name: 'pizza_id', type: 'INTEGER' },
+                            { name: 'order_date', type: 'TIMESTAMP' }
+                        ]
+                    },
+                    runner_orders: {
+                        columns: [
+                            { name: 'order_id', type: 'INTEGER' },
+                            { name: 'runner_id', type: 'INTEGER' },
+                            { name: 'pickup_time', type: 'TIMESTAMP' },
+                            { name: 'distance', type: 'VARCHAR(10)' },
+                            { name: 'duration', type: 'VARCHAR(10)' },
+                            { name: 'cancellation', type: 'VARCHAR(50)' }
+                        ]
+                    },
+                    pizza_names: {
+                        columns: [
+                            { name: 'pizza_id', type: 'INTEGER', pk: true },
+                            { name: 'pizza_name', type: 'VARCHAR(50)' }
+                        ]
+                    }
+                }
+            },
             ecommerce: {
-                name: 'E-Commerce',
+                name: "E-Commerce",
                 tables: {
                     customers: {
                         columns: [
@@ -1398,8 +1524,7 @@
                             { name: 'first_name', type: 'VARCHAR(50)' },
                             { name: 'last_name', type: 'VARCHAR(50)' },
                             { name: 'email', type: 'VARCHAR(100)' },
-                            { name: 'registration_date', type: 'DATE' },
-                            { name: 'country', type: 'VARCHAR(50)' }
+                            { name: 'registration_date', type: 'DATE' }
                         ]
                     },
                     products: {
@@ -1407,117 +1532,162 @@
                             { name: 'product_id', type: 'INTEGER', pk: true },
                             { name: 'product_name', type: 'VARCHAR(100)' },
                             { name: 'category', type: 'VARCHAR(50)' },
-                            { name: 'price', type: 'DECIMAL(10,2)' },
-                            { name: 'stock_quantity', type: 'INTEGER' }
+                            { name: 'price', type: 'DECIMAL(10,2)' }
                         ]
                     },
                     orders: {
                         columns: [
                             { name: 'order_id', type: 'INTEGER', pk: true },
-                            { name: 'customer_id', type: 'INTEGER', fk: 'customers' },
+                            { name: 'customer_id', type: 'INTEGER' },
                             { name: 'order_date', type: 'DATE' },
-                            { name: 'total_amount', type: 'DECIMAL(10,2)' },
-                            { name: 'status', type: 'VARCHAR(20)' }
-                        ]
-                    },
-                    order_items: {
-                        columns: [
-                            { name: 'item_id', type: 'INTEGER', pk: true },
-                            { name: 'order_id', type: 'INTEGER', fk: 'orders' },
-                            { name: 'product_id', type: 'INTEGER', fk: 'products' },
-                            { name: 'quantity', type: 'INTEGER' },
-                            { name: 'unit_price', type: 'DECIMAL(10,2)' }
+                            { name: 'total_amount', type: 'DECIMAL(10,2)' }
                         ]
                     }
                 }
+            }
+        };
+
+        // ==========================================
+        // 8-WEEK SQL CHALLENGE PROJECTS
+        // ==========================================
+
+        const projects = {
+            week1: {
+                id: 'week1',
+                week: 'Week 1',
+                title: "Danny's Diner",
+                description: "Help Danny understand customer visiting patterns, spending habits, and favorite menu items to improve his restaurant's loyalty program.",
+                icon: 'fa-utensils',
+                difficulty: 'Easy',
+                questions: 12,
+                database: 'dannys_diner',
+                color: '#f59e0b'
             },
-            hr: {
-                name: 'HR',
-                tables: {
-                    employees: {
-                        columns: [
-                            { name: 'id', type: 'INTEGER', pk: true },
-                            { name: 'name', type: 'VARCHAR(50)' },
-                            { name: 'salary', type: 'DECIMAL(10,2)' },
-                            { name: 'manager_id', type: 'INTEGER' },
-                            { name: 'department_id', type: 'INTEGER' }
-                        ]
-                    },
-                    departments: {
-                        columns: [
-                            { name: 'id', type: 'INTEGER', pk: true },
-                            { name: 'name', type: 'VARCHAR(50)' }
-                        ]
-                    }
-                }
+            week2: {
+                id: 'week2',
+                week: 'Week 2',
+                title: "Pizza Runner",
+                description: "Analyze pizza delivery data to optimize runner operations, calculate delivery times, and understand customer ordering patterns.",
+                icon: 'fa-pizza-slice',
+                difficulty: 'Medium',
+                questions: 10,
+                database: 'pizza_runner',
+                color: '#ef4444'
             },
-            social: {
-                name: 'Social',
-                tables: {
-                    users: {
-                        columns: [
-                            { name: 'user_id', type: 'INTEGER', pk: true },
-                            { name: 'username', type: 'VARCHAR(50)' }
-                        ]
-                    },
-                    friendships: {
-                        columns: [
-                            { name: 'user_id', type: 'INTEGER' },
-                            { name: 'friend_id', type: 'INTEGER' }
-                        ]
-                    }
-                }
+            week3: {
+                id: 'week3',
+                week: 'Week 3',
+                title: "Foodie-Fi",
+                description: "Analyze subscription data for a Netflix-style food streaming service. Understand churn, upgrades, and customer lifetime value.",
+                icon: 'fa-film',
+                difficulty: 'Medium',
+                questions: 12,
+                database: 'ecommerce',
+                color: '#8b5cf6'
             },
-            ads: {
-                name: 'Ads',
-                tables: {
-                    ads: {
-                        columns: [
-                            { name: 'ad_id', type: 'INTEGER', pk: true },
-                            { name: 'ad_name', type: 'VARCHAR(100)' }
-                        ]
+            week4: {
+                id: 'week4',
+                week: 'Week 4',
+                title: "Data Bank",
+                description: "Work with digital bank data to calculate interest, analyze customer nodes, and understand transaction patterns.",
+                icon: 'fa-university',
+                difficulty: 'Hard',
+                questions: 8,
+                database: 'ecommerce',
+                color: '#10b981'
+            }
+        };
+
+        // ==========================================
+        // QUESTION BANKS
+        // ==========================================
+
+        const questionBanks = {
+            dannys_diner: [
+                {
+                    id: 'dd1',
+                    text: "What is the total amount each customer spent at the restaurant?",
+                    hint: "Join sales with menu table, group by customer_id, sum the price.",
+                    solution: "SELECT s.customer_id, SUM(m.price) as total_spent FROM sales s JOIN menu m ON s.product_id = m.product_id GROUP BY s.customer_id",
+                    difficulty: 'easy',
+                    skill: 'joins'
+                },
+                {
+                    id: 'dd2',
+                    text: "How many days has each customer visited the restaurant?",
+                    hint: "Use COUNT(DISTINCT order_date) to count unique visit days.",
+                    solution: "SELECT customer_id, COUNT(DISTINCT order_date) as visit_days FROM sales GROUP BY customer_id",
+                    difficulty: 'easy',
+                    skill: 'aggregation'
+                },
+                {
+                    id: 'dd3',
+                    text: "What was the first item from the menu purchased by each customer?",
+                    hint: "Use RANK() or ROW_NUMBER() window function partitioned by customer_id, ordered by order_date.",
+                    solution: "WITH ranked AS (SELECT s.customer_id, m.product_name, s.order_date, ROW_NUMBER() OVER (PARTITION BY s.customer_id ORDER BY s.order_date) as rn FROM sales s JOIN menu m ON s.product_id = m.product_id) SELECT customer_id, product_name FROM ranked WHERE rn = 1",
+                    difficulty: 'medium',
+                    skill: 'windowFunctions'
+                },
+                {
+                    id: 'dd4',
+                    text: "What is the most purchased item on the menu and how many times was it purchased?",
+                    hint: "Join sales with menu, group by product_name, count orders, order by count desc, limit 1.",
+                    solution: "SELECT m.product_name, COUNT(*) as purchase_count FROM sales s JOIN menu m ON s.product_id = m.product_id GROUP BY m.product_name ORDER BY purchase_count DESC LIMIT 1",
+                    difficulty: 'easy',
+                    skill: 'joins'
+                },
+                {
+                    id: 'dd5',
+                    text: "Which item was the most popular for each customer?",
+                    hint: "Use window function RANK() to rank products by purchase count for each customer.",
+                    solution: "WITH popular AS (SELECT s.customer_id, m.product_name, COUNT(*) as cnt, RANK() OVER (PARTITION BY s.customer_id ORDER BY COUNT(*) DESC) as rnk FROM sales s JOIN menu m ON s.product_id = m.product_id GROUP BY s.customer_id, m.product_name) SELECT customer_id, product_name FROM popular WHERE rnk = 1",
+                    difficulty: 'medium',
+                    skill: 'windowFunctions'
+                }
+            ],
+            interview: {
+                google: [
+                    {
+                        id: 'g1',
+                        company: 'Google',
+                        text: "Find the second highest salary from employees table without using LIMIT.",
+                        hint: "Use subquery with MAX() to exclude the highest salary.",
+                        solution: "SELECT MAX(salary) as second_highest FROM employees WHERE salary < (SELECT MAX(salary) FROM employees)",
+                        difficulty: 'hard',
+                        skill: 'subqueries'
                     },
-                    impressions: {
-                        columns: [
-                            { name: 'user_id', type: 'INTEGER' },
-                            { name: 'ad_id', type: 'INTEGER' },
-                            { name: 'timestamp', type: 'TIMESTAMP' }
-                        ]
-                    },
-                    clicks: {
-                        columns: [
-                            { name: 'user_id', type: 'INTEGER' },
-                            { name: 'ad_id', type: 'INTEGER' },
-                            { name: 'timestamp', type: 'TIMESTAMP' }
-                        ]
+                    {
+                        id: 'g2',
+                        company: 'Google',
+                        text: "Find employees who earn more than their managers.",
+                        hint: "Self-join employees table on manager_id.",
+                        solution: "SELECT e.name FROM employees e JOIN employees m ON e.manager_id = m.id WHERE e.salary > m.salary",
+                        difficulty: 'medium',
+                        skill: 'joins'
                     }
-                }
-            },
-            streaming: {
-                name: 'Streaming',
-                tables: {
-                    watch_history: {
-                        columns: [
-                            { name: 'user_id', type: 'INTEGER' },
-                            { name: 'movie_id', type: 'INTEGER' },
-                            { name: 'started_at', type: 'TIMESTAMP' },
-                            { name: 'ended_at', type: 'TIMESTAMP' },
-                            { name: 'progress', type: 'INTEGER' }
-                        ]
+                ],
+                amazon: [
+                    {
+                        id: 'a1',
+                        company: 'Amazon',
+                        text: "Find top 3 products by revenue in each category.",
+                        hint: "Use DENSE_RANK() window function partitioned by category.",
+                        solution: "SELECT category, product_name, revenue FROM (SELECT category, product_name, SUM(price*qty) as revenue, DENSE_RANK() OVER (PARTITION BY category ORDER BY SUM(price*qty) DESC) as rnk FROM products GROUP BY category, product_name) WHERE rnk <= 3",
+                        difficulty: 'hard',
+                        skill: 'windowFunctions'
                     }
-                }
-            },
-            rideshare: {
-                name: 'Rideshare',
-                tables: {
-                    trips: {
-                        columns: [
-                            { name: 'id', type: 'INTEGER', pk: true },
-                            { name: 'request_at', type: 'TIMESTAMP' },
-                            { name: 'status', type: 'VARCHAR(20)' }
-                        ]
+                ],
+                meta: [
+                    {
+                        id: 'm1',
+                        company: 'Meta',
+                        text: "Find friend recommendations based on mutual friends.",
+                        hint: "Self-join friendships table to find second-degree connections.",
+                        solution: "SELECT DISTINCT f1.user_id, f2.friend_id as recommended FROM friendships f1 JOIN friendships f2 ON f1.friend_id = f2.user_id WHERE f1.user_id != f2.friend_id",
+                        difficulty: 'hard',
+                        skill: 'joins'
                     }
-                }
+                ]
             }
         };
 
@@ -1548,33 +1718,42 @@
                     ).join(', ');
                     
                     state.db.run(`CREATE TABLE ${tableName} (${columns})`);
-                    this.generateSampleData(tableName, tableData);
+                    this.generateSampleData(tableName, tableData, schema.name);
                 });
             },
 
-            generateSampleData(tableName, tableData) {
-                const rowCount = 20;
-                const firstNames = ['John', 'Jane', 'Mike', 'Sarah', 'David', 'Emma', 'Chris', 'Lisa'];
-                const lastNames = ['Smith', 'Johnson', 'Brown', 'Davis', 'Wilson'];
-                
-                for (let i = 1; i <= rowCount; i++) {
-                    const values = tableData.columns.map(col => {
-                        if (col.pk) return i;
-                        if (col.name.includes('name') && !col.name.includes('product')) {
-                            return `'${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}'`;
-                        }
-                        if (col.name === 'first_name') return `'${firstNames[i % firstNames.length]}'`;
-                        if (col.name === 'last_name') return `'${lastNames[i % lastNames.length]}'`;
-                        if (col.name.includes('salary')) return (50000 + i * 5000).toString();
-                        if (col.name.includes('price') || col.name.includes('amount')) return (10 + i * 5).toString();
-                        if (col.name.includes('quantity') || col.name.includes('stock')) return (i * 10).toString();
-                        if (col.name.includes('date')) return `'2024-01-${String(i).padStart(2, '0')}'`;
-                        if (col.type.includes('INTEGER')) return i.toString();
-                        return `'Value ${i}'`;
-                    });
-                    
-                    const cols = tableData.columns.map(c => c.name).join(', ');
-                    state.db.run(`INSERT INTO ${tableName} (${cols}) VALUES (${values.join(', ')})`);
+            generateSampleData(tableName, tableData, dbName) {
+                if (dbName === "Danny's Diner") {
+                    if (tableName === 'sales') {
+                        const data = [
+                            ['A', '2021-01-01', 1], ['A', '2021-01-01', 2], ['A', '2021-01-07', 2],
+                            ['A', '2021-01-10', 3], ['A', '2021-01-11', 3], ['A', '2021-01-11', 3],
+                            ['B', '2021-01-01', 2], ['B', '2021-01-02', 2], ['B', '2021-01-04', 1],
+                            ['B', '2021-01-11', 1], ['B', '2021-01-16', 3], ['B', '2021-02-01', 3],
+                            ['C', '2021-01-01', 3], ['C', '2021-01-01', 3], ['C', '2021-01-07', 3]
+                        ];
+                        data.forEach(row => {
+                            state.db.run(`INSERT INTO sales (customer_id, order_date, product_id) VALUES ('${row[0]}', '${row[1]}', ${row[2]})`);
+                        });
+                    } else if (tableName === 'menu') {
+                        state.db.run(`INSERT INTO menu VALUES (1, 'sushi', 10), (2, 'curry', 15), (3, 'ramen', 12)`);
+                    } else if (tableName === 'members') {
+                        state.db.run(`INSERT INTO members VALUES ('A', '2021-01-07'), ('B', '2021-01-09')`);
+                    }
+                } else {
+                    // Generic data for other databases
+                    for (let i = 1; i <= 10; i++) {
+                        const values = tableData.columns.map(col => {
+                            if (col.pk) return i;
+                            if (col.type.includes('VARCHAR')) return `'Item ${i}'`;
+                            if (col.type.includes('DATE')) return `'2024-01-${String(i).padStart(2, '0')}'`;
+                            if (col.type.includes('INTEGER')) return i * 10;
+                            if (col.type.includes('DECIMAL')) return (i * 10.5).toString();
+                            return 'NULL';
+                        });
+                        const cols = tableData.columns.map(c => c.name).join(', ');
+                        state.db.run(`INSERT INTO ${tableName} (${cols}) VALUES (${values.join(', ')})`);
+                    }
                 }
             },
 
@@ -1593,97 +1772,6 @@
         };
 
         // ==========================================
-        // QUESTION ENGINE
-        // ==========================================
-        const questionEngine = {
-            loadInterviewQuestion(company, index = 0) {
-                const questions = interviewQuestions[company];
-                if (!questions || index >= questions.length) return null;
-                
-                const q = questions[index];
-                state.currentQuestion = {
-                    ...q,
-                    id: q.id,
-                    isInterview: true
-                };
-                
-                // Switch to appropriate database
-                this.setDatabaseForCompany(company);
-                state.questionSolved = false;
-                return state.currentQuestion;
-            },
-
-            loadPracticeQuestion() {
-                const questions = practiceQuestions[state.difficulty.current];
-                const available = questions.filter(q => !state.userProgress.solvedQuestionIds.has(q.id));
-                const pool = available.length > 0 ? available : questions;
-                
-                const q = pool[Math.floor(Math.random() * pool.length)];
-                state.currentQuestion = { ...q, isInterview: false };
-                state.questionSolved = false;
-                return state.currentQuestion;
-            },
-
-            setDatabaseForCompany(company) {
-                const dbMap = {
-                    google: 'hr',
-                    amazon: 'ecommerce',
-                    meta: 'social',
-                    netflix: 'streaming',
-                    uber: 'rideshare'
-                };
-                
-                if (dbMap[company] && dbMap[company] !== state.currentDatabase) {
-                    state.currentDatabase = dbMap[company];
-                    databaseEngine.reset();
-                }
-            },
-
-            checkAnswer(userQuery) {
-                if (!state.currentQuestion) return { correct: false, error: 'No question loaded' };
-                
-                if (state.questionSolved) {
-                    return { correct: false, error: 'Already solved!', alreadySolved: true };
-                }
-
-                const userResult = databaseEngine.execute(userQuery);
-                if (!userResult.success) {
-                    return { correct: false, error: userResult.error };
-                }
-
-                const solutionResult = databaseEngine.execute(state.currentQuestion.solution);
-                
-                const correct = this.compareResults(userResult.data, solutionResult.data);
-                
-                if (correct) {
-                    state.questionSolved = true;
-                    state.userProgress.solvedQuestionIds.add(state.currentQuestion.id);
-                }
-
-                return {
-                    correct,
-                    userResult: userResult.data,
-                    expectedResult: solutionResult.data,
-                    error: correct ? null : 'Results do not match expected output'
-                };
-            },
-
-            compareResults(user, expected) {
-                if (!user || !expected) return user === expected;
-                if (user.length === 0 || expected.length === 0) return user.length === expected.length;
-                
-                const u = user[0];
-                const e = expected[0];
-                
-                if (u.columns.length !== e.columns.length) return false;
-                if (u.values.length !== e.values.length) return false;
-                
-                const sort = (a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1;
-                return JSON.stringify([...u.values].sort(sort)) === JSON.stringify([...e.values].sort(sort));
-            }
-        };
-
-        // ==========================================
         // UI ENGINE
         // ==========================================
         const uiEngine = {
@@ -1693,6 +1781,7 @@
                 this.loadQuestion();
                 this.updateStats();
                 this.renderInterviewCards();
+                this.renderProjectCards();
             },
 
             setupEventListeners() {
@@ -1727,16 +1816,10 @@
                             };
                             
                             const suggestions = [
-                                ...['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'JOIN', 'LEFT JOIN', 'GROUP BY', 'ORDER BY', 'HAVING', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'RANK', 'OVER', 'PARTITION BY'].map(k => ({
+                                ...['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'JOIN', 'LEFT JOIN', 'GROUP BY', 'ORDER BY', 'HAVING', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'RANK', 'ROW_NUMBER', 'OVER', 'PARTITION BY'].map(k => ({
                                     label: k,
                                     kind: monaco.languages.CompletionItemKind.Keyword,
                                     insertText: k,
-                                    range
-                                })),
-                                ...Object.keys(databaseSchemas[state.currentDatabase]?.tables || {}).map(t => ({
-                                    label: t,
-                                    kind: monaco.languages.CompletionItemKind.Class,
-                                    insertText: t,
                                     range
                                 }))
                             ];
@@ -1768,12 +1851,20 @@
                     tab.classList.toggle('active', tab.dataset.mode === mode);
                 });
 
-                document.getElementById('practiceLeftPanel').style.display = mode === 'practice' ? 'flex' : 'none';
-                document.getElementById('practiceRightPanel').style.display = mode === 'practice' ? 'flex' : 'none';
-                document.getElementById('interviewView').style.display = mode === 'interview' ? 'grid' : 'none';
-                document.getElementById('dashboardView').style.display = mode === 'dashboard' ? 'grid' : 'none';
+                const panels = ['practiceLeftPanel', 'practiceRightPanel', 'interviewView', 'projectView', 'projectDetailView', 'dashboardView'];
+                panels.forEach(p => document.getElementById(p).style.display = 'none');
 
-                if (mode === 'practice') this.loadQuestion();
+                if (mode === 'practice') {
+                    document.getElementById('practiceLeftPanel').style.display = 'flex';
+                    document.getElementById('practiceRightPanel').style.display = 'flex';
+                    this.loadQuestion();
+                } else if (mode === 'interview') {
+                    document.getElementById('interviewView').style.display = 'grid';
+                } else if (mode === 'project') {
+                    document.getElementById('projectView').style.display = 'grid';
+                } else if (mode === 'dashboard') {
+                    document.getElementById('dashboardView').style.display = 'grid';
+                }
             },
 
             toggleDbDropdown(e) {
@@ -1821,31 +1912,36 @@
                 `).join('');
             },
 
-            loadQuestion() {
-                const q = state.currentMode === 'interview' && state.currentQuestion?.isInterview
-                    ? state.currentQuestion
-                    : questionEngine.loadPracticeQuestion();
+            loadQuestion(question = null) {
+                if (!question) {
+                    const bank = questionBanks[state.currentDatabase] || questionBanks.dannys_diner;
+                    const available = bank.filter(q => !state.userProgress.solvedQuestionIds.has(q.id));
+                    const pool = available.length > 0 ? available : bank;
+                    question = pool[Math.floor(Math.random() * pool.length)];
+                }
+                
+                state.currentQuestion = question;
+                state.questionSolved = false;
 
-                document.getElementById('questionText').textContent = q.text;
-                document.getElementById('questionCategory').textContent = q.category || 'SQL Interview';
+                document.getElementById('questionText').textContent = question.text;
                 document.getElementById('questionCompany').innerHTML = `
                     <i class="fas fa-building"></i>
-                    <span>${q.company}</span>
+                    <span>${question.company || databaseSchemas[state.currentDatabase].name}</span>
                 `;
                 document.getElementById('questionNumber').textContent = `Q${state.userProgress.solved + 1}`;
-                document.getElementById('difficultyBadge').textContent = q.difficulty;
-                document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${q.difficulty}`;
+                document.getElementById('difficultyBadge').textContent = question.difficulty;
+                document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${question.difficulty}`;
                 
-                document.getElementById('questionTags').innerHTML = (q.tags || [q.skill]).map(tag => 
-                    `<span class="tag">${tag}</span>`
-                ).join('');
+                document.getElementById('questionTags').innerHTML = `
+                    <span class="tag">${question.skill}</span>
+                    <span class="tag company">${question.difficulty}</span>
+                `;
 
                 document.getElementById('hintPanel').classList.remove('show');
                 document.getElementById('submitBtn').disabled = false;
-
+                
                 if (state.editor) state.editor.setValue('-- Write your SQL query here\n');
                 
-                // Show expected output immediately
                 this.refreshExpectedOutput();
             },
 
@@ -1858,7 +1954,7 @@
                 if (result.success && result.data.length > 0) {
                     container.innerHTML = this.renderTable(result.data[0]);
                 } else {
-                    container.innerHTML = '<div class="empty-state"><i class="fas fa-table"></i><div>Run query to see expected format</div></div>';
+                    container.innerHTML = '<div class="empty-state" style="padding: 20px;"><i class="fas fa-table"></i><div>Run query to see expected format</div></div>';
                 }
             },
 
@@ -1873,12 +1969,12 @@
                             <tr>${data.columns.map(col => `<th>${col}</th>`).join('')}</tr>
                         </thead>
                         <tbody>
-                            ${data.values.slice(0, 8).map(row => 
+                            ${data.values.slice(0, 10).map(row => 
                                 `<tr>${row.map(cell => `<td>${cell !== null ? cell : 'NULL'}</td>`).join('')}</tr>`
                             ).join('')}
                         </tbody>
                     </table>
-                    ${data.values.length > 8 ? `<div style="padding: 8px; text-align: center; color: var(--text-tertiary); font-size: 11px;">... ${data.values.length - 8} more rows</div>` : ''}
+                    ${data.values.length > 10 ? `<div style="padding: 8px; text-align: center; color: var(--text-tertiary); font-size: 11px;">... ${data.values.length - 10} more rows</div>` : ''}
                 `;
             },
 
@@ -1893,28 +1989,56 @@
 
             submitAnswer() {
                 const query = state.editor.getValue();
-                const check = questionEngine.checkAnswer(query);
                 
-                if (check.alreadySolved) {
-                    this.showFeedback('Question already solved! Click Next to continue.', 'info');
+                if (!state.currentQuestion) {
+                    this.showFeedback('No question loaded', 'error');
                     return;
                 }
 
-                if (check.correct) {
+                if (state.questionSolved) {
+                    this.showFeedback('Already solved! Click Next.', 'info');
+                    return;
+                }
+
+                const userResult = databaseEngine.execute(query);
+                if (!userResult.success) {
+                    this.handleWrongAnswer(userResult.error);
+                    return;
+                }
+
+                const solutionResult = databaseEngine.execute(state.currentQuestion.solution);
+                const correct = this.compareResults(userResult.data, solutionResult.data);
+
+                if (correct) {
                     this.handleCorrectAnswer();
                 } else {
-                    this.handleWrongAnswer(check.error);
+                    this.handleWrongAnswer('Your output does not match expected results');
                 }
+            },
+
+            compareResults(user, expected) {
+                if (!user || !expected || user.length === 0 || expected.length === 0) return false;
+                
+                const u = user[0];
+                const e = expected[0];
+                
+                if (u.columns.length !== e.columns.length) return false;
+                if (u.values.length !== e.values.length) return false;
+                
+                const sort = (a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1;
+                return JSON.stringify([...u.values].sort(sort)) === JSON.stringify([...e.values].sort(sort));
             },
 
             handleCorrectAnswer() {
                 document.getElementById('submitBtn').disabled = true;
+                state.questionSolved = true;
                 
                 const xp = { easy: 10, medium: 25, hard: 50 }[state.currentQuestion.difficulty] || 10;
                 state.userProgress.solved++;
                 state.userProgress.correct++;
                 state.userProgress.xp += xp;
                 state.userProgress.streak++;
+                state.userProgress.solvedQuestionIds.add(state.currentQuestion.id);
                 
                 this.updateDifficulty(true);
                 this.saveProgress();
@@ -1937,11 +2061,9 @@
                     if (state.difficulty.current === 'easy' && state.difficulty.easyStreak >= 2) {
                         state.difficulty.current = 'medium';
                         state.difficulty.easyStreak = 0;
-                        this.showFeedback('🎉 Level Up! Medium difficulty', 'info');
                     } else if (state.difficulty.current === 'medium' && state.difficulty.mediumStreak >= 2) {
                         state.difficulty.current = 'hard';
                         state.difficulty.mediumStreak = 0;
-                        this.showFeedback('🔥 Level Up! Hard difficulty', 'info');
                     }
                 } else {
                     state.difficulty[`${state.difficulty.current}Streak`] = 0;
@@ -1950,8 +2072,6 @@
 
             nextQuestion() {
                 document.getElementById('successOverlay').classList.remove('show');
-                databaseEngine.reset();
-                this.updateSchemaDisplay();
                 this.loadQuestion();
             },
 
@@ -1971,7 +2091,7 @@
                 state.userProgress.streak = 0;
                 this.updateStats();
                 this.showFeedback('Skipped. Streak reset.', 'warning');
-                this.nextQuestion();
+                this.loadQuestion();
             },
 
             formatCode() {
@@ -2003,7 +2123,6 @@
             },
 
             updateStats() {
-                document.getElementById('statSolved').textContent = state.userProgress.solved;
                 document.getElementById('statStreak').textContent = state.userProgress.streak;
                 document.getElementById('statXP').textContent = state.userProgress.xp;
                 document.getElementById('dashSolved').textContent = state.userProgress.solved;
@@ -2030,6 +2149,20 @@
                         solvedQuestionIds: new Set(data.solvedQuestionIds || [])
                     };
                 }
+            },
+
+            copyEmail(e) {
+                e.preventDefault();
+                const email = 'Kunalkumarshri47@gmail.com';
+                navigator.clipboard.writeText(email).then(() => {
+                    const tooltip = document.getElementById('copyTooltip');
+                    tooltip.textContent = 'Email copied!';
+                    tooltip.classList.add('show');
+                    setTimeout(() => {
+                        tooltip.classList.remove('show');
+                        setTimeout(() => tooltip.textContent = 'Click to copy email', 200);
+                    }, 2000);
+                });
             },
 
             renderInterviewCards() {
@@ -2066,18 +2199,86 @@
             },
 
             startInterview(company) {
-                state.currentMode = 'practice';
-                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                document.querySelector('[data-mode="practice"]').classList.add('active');
+                const questions = questionBanks.interview[company];
+                if (!questions || questions.length === 0) {
+                    this.showFeedback('Questions coming soon!', 'info');
+                    return;
+                }
                 
-                document.getElementById('practiceLeftPanel').style.display = 'flex';
-                document.getElementById('practiceRightPanel').style.display = 'flex';
-                document.getElementById('interviewView').style.display = 'none';
-                
-                questionEngine.loadInterviewQuestion(company, 0);
-                this.updateSchemaDisplay();
-                this.loadQuestion();
+                this.switchMode('practice');
+                this.loadQuestion(questions[0]);
                 this.showFeedback(`Starting ${company.toUpperCase()} interview questions!`, 'success');
+            },
+
+            renderProjectCards() {
+                const container = document.getElementById('projectView');
+                const projectList = Object.values(projects);
+                
+                container.innerHTML = projectList.map(proj => {
+                    const progress = state.userProgress.projectProgress[proj.id] || 0;
+                    return `
+                    <div class="project-card" onclick="uiEngine.openProject('${proj.id}')">
+                        <div class="project-header-bg" style="background: linear-gradient(135deg, ${proj.color} 0%, ${proj.color}dd 100%);">
+                            <i class="fas ${proj.icon}"></i>
+                        </div>
+                        <div class="project-content">
+                            <div class="project-week">${proj.week}</div>
+                            <div class="project-title">${proj.title}</div>
+                            <div class="project-desc">${proj.description}</div>
+                            <div class="project-meta">
+                                <span><i class="fas fa-signal"></i> ${proj.difficulty}</span>
+                                <span><i class="fas fa-list-ol"></i> ${proj.questions} Questions</span>
+                            </div>
+                            <div class="project-progress-bar">
+                                <div class="project-progress-fill" style="width: ${(progress / proj.questions) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `}).join('');
+            },
+
+            openProject(projectId) {
+                const project = projects[projectId];
+                if (!project) return;
+                
+                state.currentProject = project;
+                
+                document.getElementById('projectView').style.display = 'none';
+                document.getElementById('projectDetailView').style.display = 'flex';
+                document.getElementById('projectDetailTitle').textContent = project.title;
+                
+                // Load project questions
+                const questions = questionBanks[project.database] || [];
+                const list = document.getElementById('projectQuestionList');
+                
+                list.innerHTML = questions.map((q, i) => `
+                    <div class="pq-item" onclick="uiEngine.loadProjectQuestion(${i})">
+                        <div class="pq-number">${i + 1}</div>
+                        <div class="pq-content">
+                            <div class="pq-title">${q.text.substring(0, 60)}...</div>
+                            <div class="pq-difficulty">${q.difficulty} • ${q.skill}</div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            loadProjectQuestion(index) {
+                const questions = questionBanks[state.currentProject.database] || [];
+                if (index >= questions.length) return;
+                
+                this.switchMode('practice');
+                this.loadQuestion(questions[index]);
+                
+                // Mark as active in project view
+                document.querySelectorAll('.pq-item').forEach((el, i) => {
+                    el.classList.toggle('active', i === index);
+                });
+            },
+
+            backToProjects() {
+                document.getElementById('projectDetailView').style.display = 'none';
+                document.getElementById('projectView').style.display = 'grid';
+                state.currentProject = null;
             }
         };
 
