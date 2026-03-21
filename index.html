@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Mastery - AI-Powered Training Platform</title>
+    <title>SQL Mastery Pro - Ultimate SQL Training Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
@@ -21,6 +21,7 @@
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
+            --info: #3b82f6;
             --bg-primary: #fafafa;
             --bg-secondary: #ffffff;
             --bg-tertiary: #f3f4f6;
@@ -494,13 +495,18 @@
             gap: 8px;
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn-primary {
             background: var(--primary);
             color: white;
             box-shadow: 0 4px 6px -1px rgb(99 102 241 / 0.2);
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: var(--primary-dark);
             transform: translateY(-1px);
             box-shadow: 0 6px 8px -1px rgb(99 102 241 / 0.3);
@@ -512,7 +518,7 @@
             border: 1px solid var(--border);
         }
 
-        .btn-secondary:hover {
+        .btn-secondary:hover:not(:disabled) {
             background: var(--bg-tertiary);
         }
 
@@ -888,6 +894,72 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Success Animation */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(34, 197, 94, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 3000;
+            color: white;
+            text-align: center;
+        }
+
+        .success-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: scaleIn 0.5s ease;
+        }
+
+        .success-text {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .success-xp {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .success-next-btn {
+            background: white;
+            color: var(--success);
+            border: none;
+            padding: 16px 32px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .success-next-btn:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -950,12 +1022,22 @@
         <div>Initializing SQL Engine...</div>
     </div>
 
+    <!-- Success Overlay -->
+    <div id="successOverlay" class="success-overlay">
+        <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="success-text">Correct!</div>
+        <div class="success-xp" id="successXP">+10 XP</div>
+        <button class="success-next-btn" onclick="uiEngine.nextQuestion()">
+            Next Question <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="header-left">
             <div class="logo">
                 <i class="fas fa-database"></i>
-                <span>SQL Mastery</span>
+                <span>SQL Mastery Pro</span>
             </div>
             <div class="database-selector" id="dbSelector">
                 <i class="fas fa-server"></i>
@@ -1115,10 +1197,6 @@
                         <i class="fas fa-forward"></i>
                         Skip
                     </button>
-                    <button class="btn btn-secondary" id="nextBtn" style="margin-left: auto; display: none;">
-                        Next Question
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -1202,7 +1280,8 @@
 
     <script>
         // ==========================================
-        // SQL Mastery Platform - Main Application
+        // SQL MASTERY PRO - ULTIMATE SQL TRAINER
+        // Fixed Version: Natural Questions + Anti-Cheat + Auto-Advance
         // ==========================================
 
         // Global State
@@ -1215,6 +1294,7 @@
             currentProject: null,
             currentProjectQuestion: 0,
             autocompleteEnabled: true,
+            questionSolved: false, // ANTI-CHEAT: Track if current question already solved
             userProgress: {
                 solved: 0,
                 correct: 0,
@@ -1227,7 +1307,8 @@
                     subqueries: 0,
                     windowFunctions: 0
                 },
-                history: []
+                history: [],
+                solvedQuestionIds: new Set() // Track solved question IDs to prevent re-solving
             },
             difficulty: {
                 current: 'easy',
@@ -1238,7 +1319,339 @@
             currentDatabase: 'ecommerce'
         };
 
-        // Database Schemas
+        // ==========================================
+        // NATURAL LANGUAGE QUESTION BANK
+        // Questions that describe BUSINESS PROBLEMS, not SQL syntax
+        // ==========================================
+
+        const questionBank = {
+            easy: [
+                {
+                    id: 'e1',
+                    category: 'Basic Analysis',
+                    skill: 'aggregation',
+                    tags: ['COUNT', 'Basic Statistics'],
+                    text: "The marketing team needs to know how many customers are in our database for a campaign. Provide the total count.",
+                    hint: "You need to count all records in the customers table. Think about which aggregate function counts rows.",
+                    generate: (schema) => {
+                        const table = 'customers';
+                        return {
+                            solution: `SELECT COUNT(*) as total_customers FROM ${table}`,
+                            validation: (result) => result.length === 1 && result[0].values[0][0] > 0
+                        };
+                    }
+                },
+                {
+                    id: 'e2',
+                    category: 'Customer Insights',
+                    skill: 'aggregation',
+                    tags: ['AVG', 'Customer Behavior'],
+                    text: "Management wants to understand customer spending patterns. What is the average order value across all orders?",
+                    hint: "Calculate the average of the total_amount column from the orders table.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT AVG(total_amount) as average_order_value FROM orders`,
+                            validation: (result) => result.length === 1 && result[0].values[0][0] > 0
+                        };
+                    }
+                },
+                {
+                    id: 'e3',
+                    category: 'Inventory Management',
+                    skill: 'filtering',
+                    tags: ['WHERE', 'Inventory'],
+                    text: "The warehouse team needs a list of all products in the Electronics category that are currently in stock. Show all details.",
+                    hint: "Filter products where category equals 'Electronics' and stock_quantity is greater than 0.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT * FROM products WHERE category = 'Electronics' AND stock_quantity > 0`,
+                            validation: (result) => result.length > 0
+                        };
+                    }
+                },
+                {
+                    id: 'e4',
+                    category: 'Sales Analysis',
+                    skill: 'filtering',
+                    tags: ['WHERE', 'Date Filtering'],
+                    text: "Find all orders placed in the last 30 days to analyze recent sales performance.",
+                    hint: "Use date comparison on the order_date column. You may need to use date functions.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT * FROM orders WHERE order_date >= date('now', '-30 days')`,
+                            validation: (result) => true // Dynamic validation
+                        };
+                    }
+                },
+                {
+                    id: 'e5',
+                    category: 'Product Catalog',
+                    skill: 'sorting',
+                    tags: ['ORDER BY', 'Pricing'],
+                    text: "Display all products sorted by price from highest to lowest to identify premium items.",
+                    hint: "Use ORDER BY with DESC to sort in descending order.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT * FROM products ORDER BY price DESC`,
+                            validation: (result) => result.length > 0
+                        };
+                    }
+                },
+                {
+                    id: 'e6',
+                    category: 'Customer Segmentation',
+                    skill: 'filtering',
+                    tags: ['WHERE', 'Geographic'],
+                    text: "The sales team needs contact information for all customers located in the USA for a regional promotion.",
+                    hint: "Filter customers by country column.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT first_name, last_name, email FROM customers WHERE country = 'USA'`,
+                            validation: (result) => result.length >= 0
+                        };
+                    }
+                }
+            ],
+            medium: [
+                {
+                    id: 'm1',
+                    category: 'Revenue Analysis',
+                    skill: 'aggregation',
+                    tags: ['GROUP BY', 'Revenue'],
+                    text: "The finance department needs a breakdown of total revenue by product category to understand which categories drive the most sales.",
+                    hint: "Group by category and sum the price multiplied by quantity from order_items, joined with products.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT p.category, SUM(oi.quantity * oi.unit_price) as total_revenue 
+                                       FROM products p 
+                                       JOIN order_items oi ON p.product_id = oi.product_id 
+                                       GROUP BY p.category 
+                                       ORDER BY total_revenue DESC`,
+                            validation: (result) => result.length >= 3
+                        };
+                    }
+                },
+                {
+                    id: 'm2',
+                    category: 'Customer Loyalty',
+                    skill: 'joins',
+                    tags: ['JOIN', 'Customer Behavior'],
+                    text: "Identify customers who have placed more than 2 orders. Show their name and total number of orders.",
+                    hint: "Join customers with orders, group by customer, and use HAVING to filter those with count > 2.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT c.first_name, c.last_name, COUNT(o.order_id) as order_count 
+                                       FROM customers c 
+                                       JOIN orders o ON c.customer_id = o.customer_id 
+                                       GROUP BY c.customer_id 
+                                       HAVING order_count > 2`,
+                            validation: (result) => result.length >= 0
+                        };
+                    }
+                },
+                {
+                    id: 'm3',
+                    category: 'Top Performers',
+                    skill: 'sorting',
+                    tags: ['ORDER BY', 'LIMIT', 'Top N'],
+                    text: "Who are our top 5 highest-value customers by total spending? Include their names and total amount spent.",
+                    hint: "Join customers with orders, sum total_amount by customer, order descending, limit to 5.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent 
+                                       FROM customers c 
+                                       JOIN orders o ON c.customer_id = o.customer_id 
+                                       GROUP BY c.customer_id 
+                                       ORDER BY total_spent DESC 
+                                       LIMIT 5`,
+                            validation: (result) => result.length <= 5
+                        };
+                    }
+                },
+                {
+                    id: 'm4',
+                    category: 'Inventory Alerts',
+                    skill: 'filtering',
+                    tags: ['HAVING', 'Inventory'],
+                    text: "Find categories where the average stock quantity is less than 50 units. These may need restocking attention.",
+                    hint: "Group products by category, calculate average stock, filter with HAVING for avg < 50.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT category, AVG(stock_quantity) as avg_stock 
+                                       FROM products 
+                                       GROUP BY category 
+                                       HAVING avg_stock < 50`,
+                            validation: (result) => result.length >= 0
+                        };
+                    }
+                },
+                {
+                    id: 'm5',
+                    category: 'Monthly Trends',
+                    skill: 'aggregation',
+                    tags: ['Date Functions', 'Trends'],
+                    text: "Show monthly order counts for the current year to identify seasonal trends.",
+                    hint: "Use strftime to extract month from order_date, group by month, count orders.",
+                            generate: (schema) => {
+                        return {
+                            solution: `SELECT strftime('%Y-%m', order_date) as month, COUNT(*) as order_count 
+                                       FROM orders 
+                                       WHERE strftime('%Y', order_date) = '2024' 
+                                       GROUP BY month 
+                                       ORDER BY month`,
+                            validation: (result) => result.length >= 1
+                        };
+                    }
+                },
+                {
+                    id: 'm6',
+                    category: 'Product Performance',
+                    skill: 'joins',
+                    tags: ['JOIN', 'Product Analysis'],
+                    text: "Which products have never been ordered? These might need marketing attention or discontinuation.",
+                    hint: "Use LEFT JOIN from products to order_items and find where order_items.product_id IS NULL.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT p.product_name, p.category 
+                                       FROM products p 
+                                       LEFT JOIN order_items oi ON p.product_id = oi.product_id 
+                                       WHERE oi.product_id IS NULL`,
+                            validation: (result) => result.length >= 0
+                        };
+                    }
+                }
+            ],
+            hard: [
+                {
+                    id: 'h1',
+                    category: 'Customer Churn Analysis',
+                    skill: 'subqueries',
+                    tags: ['Subquery', 'Customer Retention'],
+                    text: "Find customers who haven't placed any orders in the last 90 days. These are at risk of churning.",
+                    hint: "Use a subquery or NOT EXISTS to find customers without recent orders. Compare with date('now', '-90 days').",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT c.first_name, c.last_name, c.email 
+                                       FROM customers c 
+                                       WHERE NOT EXISTS (
+                                           SELECT 1 FROM orders o 
+                                           WHERE o.customer_id = c.customer_id 
+                                           AND o.order_date >= date('now', '-90 days')
+                                       )`,
+                            validation: (result) => result.length >= 0
+                        };
+                    }
+                },
+                {
+                    id: 'h2',
+                    category: 'Revenue Ranking',
+                    skill: 'windowFunctions',
+                    tags: ['RANK', 'Window Functions'],
+                    text: "Rank all customers by their total lifetime spending. If there's a tie, the customer with the lower ID should rank higher.",
+                    hint: "Use RANK() OVER with ORDER BY total_spent DESC, customer_id ASC.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT c.first_name, c.last_name, 
+                                              SUM(o.total_amount) as total_spent,
+                                              RANK() OVER (ORDER BY SUM(o.total_amount) DESC, c.customer_id ASC) as spending_rank
+                                       FROM customers c 
+                                       JOIN orders o ON c.customer_id = o.customer_id 
+                                       GROUP BY c.customer_id`,
+                            validation: (result) => result.length > 0 && result[0].columns.includes('spending_rank')
+                        };
+                    }
+                },
+                {
+                    id: 'h3',
+                    category: 'Growth Analysis',
+                    skill: 'windowFunctions',
+                    tags: ['LAG', 'Window Functions', 'Growth'],
+                    text: "Calculate month-over-month revenue growth percentage. Show month, revenue, and growth rate.",
+                    hint: "Use LAG() window function to get previous month's revenue, then calculate percentage change.",
+                    generate: (schema) => {
+                        return {
+                            solution: `WITH monthly_revenue AS (
+                                           SELECT strftime('%Y-%m', order_date) as month,
+                                                  SUM(total_amount) as revenue
+                                           FROM orders
+                                           GROUP BY month
+                                       )
+                                       SELECT month, revenue,
+                                              LAG(revenue) OVER (ORDER BY month) as prev_month_revenue,
+                                              ROUND(((revenue - LAG(revenue) OVER (ORDER BY month)) * 100.0 / LAG(revenue) OVER (ORDER BY month)), 2) as growth_pct
+                                       FROM monthly_revenue`,
+                            validation: (result) => result.length > 0 && result[0].columns.includes('growth_pct')
+                        };
+                    }
+                },
+                {
+                    id: 'h4',
+                    category: 'Market Basket Analysis',
+                    skill: 'subqueries',
+                    tags: ['Correlated Subquery', 'Cross-Sell'],
+                    text: "Find customers who bought products from more than 3 different categories. These are high-engagement customers.",
+                    hint: "Use a correlated subquery or join with COUNT DISTINCT categories.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT c.first_name, c.last_name 
+                                       FROM customers c 
+                                       WHERE (
+                                           SELECT COUNT(DISTINCT p.category) 
+                                           FROM orders o 
+                                           JOIN order_items oi ON o.order_id = oi.order_id 
+                                           JOIN products p ON oi.product_id = p.product_id 
+                                           WHERE o.customer_id = c.customer_id
+                                       ) > 3`,
+                            validation: (result) => result.length >= 0
+                        };
+                    }
+                },
+                {
+                    id: 'h5',
+                    category: 'Running Totals',
+                    skill: 'windowFunctions',
+                    tags: ['SUM() OVER', 'Running Total'],
+                    text: "Show daily revenue with a running total column that accumulates revenue day by day.",
+                    hint: "Use SUM(total_amount) OVER (ORDER BY order_date) for running total.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT order_date, 
+                                              SUM(total_amount) as daily_revenue,
+                                              SUM(SUM(total_amount)) OVER (ORDER BY order_date) as running_total
+                                       FROM orders
+                                       GROUP BY order_date
+                                       ORDER BY order_date`,
+                            validation: (result) => result.length > 0 && result[0].columns.includes('running_total')
+                        };
+                    }
+                },
+                {
+                    id: 'h6',
+                    category: 'Percentile Analysis',
+                    skill: 'windowFunctions',
+                    tags: ['NTILE', 'Percentiles'],
+                    text: "Segment customers into 4 quartiles based on their total spending (Q1: top 25%, Q4: bottom 25%).",
+                    hint: "Use NTILE(4) OVER with ORDER BY total spending.",
+                    generate: (schema) => {
+                        return {
+                            solution: `SELECT c.first_name, c.last_name, 
+                                              SUM(o.total_amount) as total_spent,
+                                              NTILE(4) OVER (ORDER BY SUM(o.total_amount) DESC) as spending_quartile
+                                       FROM customers c 
+                                       JOIN orders o ON c.customer_id = o.customer_id 
+                                       GROUP BY c.customer_id
+                                       ORDER BY total_spent DESC`,
+                            validation: (result) => result.length > 0 && result[0].columns.includes('spending_quartile')
+                        };
+                    }
+                }
+            ]
+        };
+
+        // ==========================================
+        // DATABASE SCHEMAS - Realistic Business Data
+        // ==========================================
+
         const databaseSchemas = {
             ecommerce: {
                 name: 'E-Commerce',
@@ -1388,140 +1801,32 @@
             }
         };
 
-        // Question Templates
-        const questionTemplates = {
-            easy: [
-                {
-                    category: 'Basic Aggregation',
-                    tags: ['COUNT', 'aggregation'],
-                    generate: (schema) => {
-                        const table = Object.keys(schema.tables)[0];
-                        const tableData = schema.tables[table];
-                        return {
-                            text: `How many records are there in the ${table} table?`,
-                            solution: `SELECT COUNT(*) as total FROM ${table}`,
-                            hint: 'Use the COUNT(*) function to count all rows in the table.'
-                        };
-                    }
-                },
-                {
-                    category: 'Basic Selection',
-                    tags: ['SELECT', 'filtering'],
-                    generate: (schema) => {
-                        const table = Object.keys(schema.tables)[0];
-                        const column = schema.tables[table].columns[1];
-                        return {
-                            text: `Select the ${column.name} from all records in the ${table} table.`,
-                            solution: `SELECT ${column.name} FROM ${table}`,
-                            hint: `Use SELECT ${column.name} FROM ${table}`
-                        };
-                    }
-                },
-                {
-                    category: 'Filtering',
-                    tags: ['WHERE', 'comparison'],
-                    generate: (schema) => {
-                        const table = Object.keys(schema.tables).find(t => 
-                            schema.tables[t].columns.some(c => c.type.includes('DECIMAL') || c.type.includes('INTEGER'))
-                        ) || Object.keys(schema.tables)[0];
-                        return {
-                            text: `Find all records from ${table} where the value is greater than 100.`,
-                            solution: `SELECT * FROM ${table} WHERE ${schema.tables[table].columns[0].name} > 100`,
-                            hint: 'Use the WHERE clause with a comparison operator.'
-                        };
-                    }
-                }
-            ],
-            medium: [
-                {
-                    category: 'Grouping',
-                    tags: ['GROUP BY', 'aggregation'],
-                    generate: (schema) => {
-                        const table = Object.keys(schema.tables)[0];
-                        const groupCol = schema.tables[table].columns.find(c => !c.pk) || schema.tables[table].columns[1];
-                        return {
-                            text: `Count the number of records for each ${groupCol.name} in the ${table} table.`,
-                            solution: `SELECT ${groupCol.name}, COUNT(*) as count FROM ${table} GROUP BY ${groupCol.name}`,
-                            hint: 'Use GROUP BY to group results and COUNT to count records in each group.'
-                        };
-                    }
-                },
-                {
-                    category: 'Joins',
-                    tags: ['JOIN', 'multi-table'],
-                    generate: (schema) => {
-                        const tables = Object.keys(schema.tables);
-                        if (tables.length < 2) return null;
-                        return {
-                            text: `Join the ${tables[0]} and ${tables[1]} tables to get all matching records.`,
-                            solution: `SELECT * FROM ${tables[0]} t1 JOIN ${tables[1]} t2 ON t1.${tables[0]}_id = t2.${tables[0]}_id`,
-                            hint: 'Use JOIN clause with ON condition to match records between tables.'
-                        };
-                    }
-                },
-                {
-                    category: 'Top N',
-                    tags: ['ORDER BY', 'LIMIT'],
-                    generate: (schema) => {
-                        const table = Object.keys(schema.tables)[0];
-                        return {
-                            text: `Get the top 5 records from ${table} ordered by the first column in descending order.`,
-                            solution: `SELECT * FROM ${table} ORDER BY ${schema.tables[table].columns[0].name} DESC LIMIT 5`,
-                            hint: 'Use ORDER BY with DESC and LIMIT to get top N records.'
-                        };
-                    }
-                }
-            ],
-            hard: [
-                {
-                    category: 'Subqueries',
-                    tags: ['Subquery', 'correlated'],
-                    generate: (schema) => {
-                        const table = Object.keys(schema.tables)[0];
-                        return {
-                            text: `Find records in ${table} where the ID is greater than the average ID.`,
-                            solution: `SELECT * FROM ${table} WHERE ${schema.tables[table].columns[0].name} > (SELECT AVG(${schema.tables[table].columns[0].name}) FROM ${table})`,
-                            hint: 'Use a subquery in the WHERE clause to compare against an aggregate value.'
-                        };
-                    }
-                },
-                {
-                    category: 'Window Functions',
-                    tags: ['RANK', 'window'],
-                    generate: (schema) => {
-                        const table = Object.keys(schema.tables)[0];
-                        const col = schema.tables[table].columns[1];
-                        return {
-                            text: `Rank all records in ${table} by ${col.name} using window functions.`,
-                            solution: `SELECT *, RANK() OVER (ORDER BY ${col.name} DESC) as rank FROM ${table}`,
-                            hint: 'Use RANK() OVER (ORDER BY ...) to assign rankings.'
-                        };
-                    }
-                }
-            ]
-        };
+        // ==========================================
+        // PROJECT DEFINITIONS
+        // ==========================================
 
-        // Project Definitions
         const projects = {
             ecommerce: {
                 name: 'E-Commerce Analytics',
-                description: 'You are a data analyst for an online retail store. Analyze sales, customers, and revenue trends.',
+                description: 'You are a data analyst for an online retail store. Analyze sales, customers, and revenue trends to provide actionable business insights.',
                 database: 'ecommerce',
                 questions: [
-                    { text: 'How many customers are registered in the system?', difficulty: 'easy', skill: 'aggregation', solution: 'SELECT COUNT(*) as total_customers FROM customers' },
-                    { text: 'List all products in the Electronics category.', difficulty: 'easy', skill: 'filtering', solution: "SELECT * FROM products WHERE category = 'Electronics'" },
-                    { text: 'Find the average price of all products.', difficulty: 'easy', skill: 'aggregation', solution: 'SELECT AVG(price) as avg_price FROM products' },
-                    { text: 'Count orders by status.', difficulty: 'medium', skill: 'aggregation', solution: 'SELECT status, COUNT(*) as order_count FROM orders GROUP BY status' },
-                    { text: 'Find top 5 customers by total order amount.', difficulty: 'medium', skill: 'joins', solution: 'SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id ORDER BY total_spent DESC LIMIT 5' },
-                    { text: 'Calculate monthly revenue for the current year.', difficulty: 'hard', skill: 'aggregation', solution: "SELECT strftime('%Y-%m', order_date) as month, SUM(total_amount) as revenue FROM orders WHERE strftime('%Y', order_date) = '2024' GROUP BY month" },
-                    { text: 'Find customers who made repeat purchases.', difficulty: 'medium', skill: 'grouping', solution: 'SELECT customer_id, COUNT(*) as order_count FROM orders GROUP BY customer_id HAVING COUNT(*) > 1' },
-                    { text: 'Rank products by revenue generated.', difficulty: 'hard', skill: 'windowFunctions', solution: 'SELECT p.product_name, SUM(oi.quantity * oi.unit_price) as revenue, RANK() OVER (ORDER BY SUM(oi.quantity * oi.unit_price) DESC) as rank FROM products p JOIN order_items oi ON p.product_id = oi.product_id GROUP BY p.product_id' }
+                    { id: 'p1', text: 'How many customers are registered in our system?', difficulty: 'easy', skill: 'aggregation', solution: 'SELECT COUNT(*) as total_customers FROM customers' },
+                    { id: 'p2', text: 'What is the average price of all products in our catalog?', difficulty: 'easy', skill: 'aggregation', solution: 'SELECT AVG(price) as avg_price FROM products' },
+                    { id: 'p3', text: 'List all products currently out of stock.', difficulty: 'easy', skill: 'filtering', solution: 'SELECT * FROM products WHERE stock_quantity = 0' },
+                    { id: 'p4', text: 'Show all orders placed in the last 7 days.', difficulty: 'easy', skill: 'filtering', solution: "SELECT * FROM orders WHERE order_date >= date('now', '-7 days')" },
+                    { id: 'p5', text: 'Which customer has placed the most orders?', difficulty: 'medium', skill: 'joins', solution: 'SELECT c.first_name, c.last_name, COUNT(o.order_id) as order_count FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id ORDER BY order_count DESC LIMIT 1' },
+                    { id: 'p6', text: 'Calculate total revenue by month for the current year.', difficulty: 'medium', skill: 'aggregation', solution: "SELECT strftime('%Y-%m', order_date) as month, SUM(total_amount) as revenue FROM orders WHERE strftime('%Y', order_date) = '2024' GROUP BY month ORDER BY month" },
+                    { id: 'p7', text: 'Find products that have been ordered more than 10 times.', difficulty: 'medium', skill: 'joins', solution: 'SELECT p.product_name, SUM(oi.quantity) as total_ordered FROM products p JOIN order_items oi ON p.product_id = oi.product_id GROUP BY p.product_id HAVING total_ordered > 10' },
+                    { id: 'p8', text: 'Identify customers who have spent over $1000 total.', difficulty: 'medium', skill: 'joins', solution: 'SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id HAVING total_spent > 1000' },
+                    { id: 'p9', text: 'Rank customers by their total spending (highest to lowest).', difficulty: 'hard', skill: 'windowFunctions', solution: 'SELECT c.first_name, c.last_name, SUM(o.total_amount) as total_spent, RANK() OVER (ORDER BY SUM(o.total_amount) DESC) as rank FROM customers c JOIN orders o ON c.customer_id = o.customer_id GROUP BY c.customer_id' },
+                    { id: 'p10', text: 'Calculate 7-day rolling average of daily orders.', difficulty: 'hard', skill: 'windowFunctions', solution: 'SELECT order_date, COUNT(*) as daily_orders, AVG(COUNT(*)) OVER (ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) as rolling_avg FROM orders GROUP BY order_date' }
                 ]
             }
         };
 
         // ==========================================
-        // Database Engine
+        // DATABASE ENGINE
         // ==========================================
         const databaseEngine = {
             async init() {
@@ -1540,40 +1845,87 @@
             populateData() {
                 const schema = databaseSchemas[state.currentDatabase];
                 
-                // Create tables
                 Object.entries(schema.tables).forEach(([tableName, tableData]) => {
                     const columns = tableData.columns.map(c => 
                         `${c.name} ${c.type}${c.pk ? ' PRIMARY KEY' : ''}`
                     ).join(', ');
                     
                     state.db.run(`CREATE TABLE ${tableName} (${columns})`);
-                    
-                    // Insert sample data
                     this.generateSampleData(tableName, tableData);
                 });
             },
 
             generateSampleData(tableName, tableData) {
-                const rowCount = Math.floor(Math.random() * 20) + 10;
-                const firstNames = ['John', 'Jane', 'Bob', 'Alice', 'Charlie', 'Diana', 'Edward', 'Fiona', 'George', 'Hannah'];
-                const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
-                const categories = ['Electronics', 'Clothing', 'Food', 'Books', 'Home'];
-                const countries = ['USA', 'UK', 'Canada', 'Germany', 'France'];
-                const statuses = ['completed', 'pending', 'cancelled', 'processing'];
-                
+                const rowCount = Math.floor(Math.random() * 15) + 15; // 15-30 rows
+                const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'Chris', 'Lisa', 'Robert', 'Jennifer', 'Daniel', 'Maria'];
+                const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+                const categories = ['Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books', 'Food'];
+                const countries = ['USA', 'UK', 'Canada', 'Germany', 'France', 'Australia'];
+                const statuses = ['completed', 'pending', 'shipped', 'cancelled'];
+                const productNames = {
+                    'Electronics': ['Wireless Headphones', 'Smart Watch', 'Bluetooth Speaker', 'Laptop Stand', 'USB-C Hub', 'Phone Case', 'Screen Protector'],
+                    'Clothing': ['Cotton T-Shirt', 'Denim Jeans', 'Running Shoes', 'Winter Jacket', 'Summer Dress', 'Baseball Cap', 'Wool Socks'],
+                    'Home & Garden': ['Coffee Maker', 'Desk Lamp', 'Throw Pillow', 'Storage Box', 'Wall Clock', 'Plant Pot', 'Candle Set'],
+                    'Sports': ['Yoga Mat', 'Dumbbells', 'Water Bottle', 'Tennis Racket', 'Running Belt', 'Gym Bag', 'Resistance Bands'],
+                    'Books': ['SQL Mastery', 'Data Science 101', 'Python Guide', 'Business Strategy', 'Cookbook', 'Novel', 'Biography'],
+                    'Food': ['Organic Coffee', 'Green Tea', 'Protein Bar', 'Dried Fruits', 'Granola', 'Honey Jar', 'Spice Set']
+                };
+
                 for (let i = 1; i <= rowCount; i++) {
                     const values = tableData.columns.map(col => {
                         if (col.pk) return i;
-                        if (col.name.includes('name') && col.name.includes('first')) return `'${firstNames[Math.floor(Math.random() * firstNames.length)]}'`;
-                        if (col.name.includes('name') && col.name.includes('last')) return `'${lastNames[Math.floor(Math.random() * lastNames.length)]}'`;
-                        if (col.name === 'email') return `'user${i}@example.com'`;
-                        if (col.name.includes('date')) return `'2024-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}'`;
-                        if (col.name === 'category') return `'${categories[Math.floor(Math.random() * categories.length)]}'`;
-                        if (col.name === 'country') return `'${countries[Math.floor(Math.random() * countries.length)]}'`;
-                        if (col.name === 'status') return `'${statuses[Math.floor(Math.random() * statuses.length)]}'`;
-                        if (col.type.includes('DECIMAL')) return (Math.random() * 1000 + 10).toFixed(2);
-                        if (col.type.includes('INTEGER') && col.fk) return Math.floor(Math.random() * rowCount) + 1;
-                        if (col.type.includes('INTEGER')) return Math.floor(Math.random() * 100) + 1;
+                        
+                        if (col.name === 'first_name' || col.name === 'username') {
+                            return `'${firstNames[Math.floor(Math.random() * firstNames.length)]}'`;
+                        }
+                        if (col.name === 'last_name') {
+                            return `'${lastNames[Math.floor(Math.random() * lastNames.length)]}'`;
+                        }
+                        if (col.name === 'email') {
+                            return `'user${i}@email.com'`;
+                        }
+                        if (col.name.includes('date') || col.name.includes('_date')) {
+                            const year = 2024;
+                            const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+                            const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+                            return `'${year}-${month}-${day}'`;
+                        }
+                        if (col.name === 'category') {
+                            const cat = categories[Math.floor(Math.random() * categories.length)];
+                            return `'${cat}'`;
+                        }
+                        if (col.name === 'product_name') {
+                            const cat = categories[Math.floor(Math.random() * categories.length)];
+                            const products = productNames[cat];
+                            return `'${products[Math.floor(Math.random() * products.length)]}'`;
+                        }
+                        if (col.name === 'country') {
+                            return `'${countries[Math.floor(Math.random() * countries.length)]}'`;
+                        }
+                        if (col.name === 'status') {
+                            return `'${statuses[Math.floor(Math.random() * statuses.length)]}'`;
+                        }
+                        if (col.type.includes('DECIMAL') && col.name.includes('price')) {
+                            return (Math.random() * 500 + 10).toFixed(2);
+                        }
+                        if (col.type.includes('DECIMAL') && col.name.includes('amount')) {
+                            return (Math.random() * 1000 + 50).toFixed(2);
+                        }
+                        if (col.type.includes('DECIMAL')) {
+                            return (Math.random() * 1000).toFixed(2);
+                        }
+                        if (col.type.includes('INTEGER') && col.name.includes('stock')) {
+                            return Math.floor(Math.random() * 100);
+                        }
+                        if (col.type.includes('INTEGER') && col.name.includes('quantity')) {
+                            return Math.floor(Math.random() * 5) + 1;
+                        }
+                        if (col.type.includes('INTEGER') && col.fk) {
+                            return Math.floor(Math.random() * rowCount) + 1;
+                        }
+                        if (col.type.includes('INTEGER')) {
+                            return Math.floor(Math.random() * 1000);
+                        }
                         return `'Sample ${i}'`;
                     });
                     
@@ -1598,51 +1950,82 @@
         };
 
         // ==========================================
-        // Question Engine
+        // QUESTION ENGINE - FIXED VERSION
         // ==========================================
         const questionEngine = {
             generate() {
-                const templates = questionTemplates[state.difficulty.current];
-                const template = templates[Math.floor(Math.random() * templates.length)];
-                const schema = databaseSchemas[state.currentDatabase];
+                // Get questions for current difficulty
+                const questions = questionBank[state.difficulty.current];
+                // Filter out already solved questions
+                const available = questions.filter(q => !state.userProgress.solvedQuestionIds.has(q.id));
                 
-                const generated = template.generate(schema);
-                if (!generated) return this.generate();
+                // If all questions solved at this difficulty, reset or move up
+                let questionPool = available.length > 0 ? available : questions;
+                
+                // Select random question
+                const question = questionPool[Math.floor(Math.random() * questionPool.length)];
+                const generated = question.generate(databaseSchemas[state.currentDatabase]);
                 
                 state.currentQuestion = {
-                    ...generated,
-                    category: template.category,
-                    tags: template.tags,
-                    difficulty: state.difficulty.current,
-                    id: Date.now()
+                    ...question,
+                    solution: generated.solution,
+                    validationFn: generated.validation,
+                    id: question.id
                 };
+                
+                state.questionSolved = false; // Reset solved state
                 
                 return state.currentQuestion;
             },
 
             checkAnswer(userQuery) {
-                if (!state.currentQuestion) return false;
+                if (!state.currentQuestion) return { correct: false, error: 'No question loaded' };
                 
+                // ANTI-CHEAT: Check if already solved
+                if (state.questionSolved || state.userProgress.solvedQuestionIds.has(state.currentQuestion.id)) {
+                    return { correct: false, error: 'Question already solved. Move to next question.', alreadySolved: true };
+                }
+                
+                // Execute user query
                 const userResult = databaseEngine.execute(userQuery);
-                if (!userResult.success) return { correct: false, error: userResult.error };
+                if (!userResult.success) {
+                    return { correct: false, error: userResult.error };
+                }
                 
+                // Execute solution
                 const solutionResult = databaseEngine.execute(state.currentQuestion.solution);
                 
-                // Compare results
+                // Validate results match
                 const correct = this.compareResults(userResult.data, solutionResult.data);
-                return { correct, userResult: userResult.data, expectedResult: solutionResult.data };
+                
+                if (correct) {
+                    state.questionSolved = true;
+                    state.userProgress.solvedQuestionIds.add(state.currentQuestion.id);
+                }
+                
+                return { 
+                    correct, 
+                    userResult: userResult.data, 
+                    expectedResult: solutionResult.data,
+                    error: correct ? null : 'Your query returned different results than expected. Check the expected output panel.'
+                };
             },
 
             compareResults(user, expected) {
-                if (!user || !expected || user.length === 0 || expected.length === 0) return false;
+                if (!user || !expected || user.length === 0 || expected.length === 0) {
+                    return user && expected && user.length === 0 && expected.length === 0;
+                }
                 
                 const userData = user[0];
                 const expectedData = expected[0];
                 
+                // Check column count
                 if (userData.columns.length !== expectedData.columns.length) return false;
+                
+                // Check row count
                 if (userData.values.length !== expectedData.values.length) return false;
                 
-                // Sort both arrays for comparison
+                // Sort and compare (for set-based comparison)
                 const sortRows = (a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1;
                 const sortedUser = [...userData.values].sort(sortRows);
                 const sortedExpected = [...expectedData.values].sort(sortRows);
@@ -1652,7 +2035,7 @@
         };
 
         // ==========================================
-        // UI Engine
+        // UI ENGINE - FIXED VERSION
         // ==========================================
         const uiEngine = {
             init() {
@@ -1676,7 +2059,6 @@
                 document.getElementById('submitBtn').addEventListener('click', () => this.submitAnswer());
                 document.getElementById('hintBtn').addEventListener('click', () => this.showHint());
                 document.getElementById('skipBtn').addEventListener('click', () => this.skipQuestion());
-                document.getElementById('nextBtn').addEventListener('click', () => this.nextQuestion());
                 document.getElementById('clearBtn').addEventListener('click', () => this.clearEditor());
                 document.getElementById('formatBtn').addEventListener('click', () => this.formatCode());
                 document.getElementById('toggleAutocomplete').addEventListener('click', () => this.toggleAutocomplete());
@@ -1695,7 +2077,6 @@
                 require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
                 
                 require(['vs/editor/editor.main'], () => {
-                    // Register SQL completion provider
                     monaco.languages.registerCompletionItemProvider('sql', {
                         provideCompletionItems: (model, position) => {
                             if (!state.autocompleteEnabled) return { suggestions: [] };
@@ -1709,21 +2090,18 @@
                             };
                             
                             const suggestions = [
-                                // SQL Keywords
-                                ...['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'HAVING', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN', 'ON', 'AND', 'OR', 'NOT', 'NULL', 'IS', 'IN', 'EXISTS', 'BETWEEN', 'LIKE', 'LIMIT', 'OFFSET', 'UNION', 'ALL', 'AS', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END'].map(k => ({
+                                ...['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'INSERT', 'UPDATE', 'DELETE', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'OUTER JOIN', 'ON', 'GROUP BY', 'HAVING', 'ORDER BY', 'ASC', 'DESC', 'LIMIT', 'OFFSET', 'UNION', 'ALL', 'AS', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'BETWEEN', 'LIKE', 'IN', 'IS NULL', 'IS NOT NULL', 'EXISTS', 'CREATE', 'TABLE', 'ALTER', 'DROP', 'INDEX', 'VIEW', 'RANK', 'DENSE_RANK', 'ROW_NUMBER', 'NTILE', 'LAG', 'LEAD', 'FIRST_VALUE', 'LAST_VALUE', 'OVER', 'PARTITION BY', 'ROWS', 'RANGE', 'UNBOUNDED', 'PRECEDING', 'FOLLOWING', 'CURRENT ROW'].map(k => ({
                                     label: k,
                                     kind: monaco.languages.CompletionItemKind.Keyword,
                                     insertText: k,
                                     range
                                 })),
-                                // Table names
                                 ...Object.keys(databaseSchemas[state.currentDatabase].tables).map(t => ({
                                     label: t,
                                     kind: monaco.languages.CompletionItemKind.Class,
                                     insertText: t,
                                     range
                                 })),
-                                // Column names
                                 ...Object.values(databaseSchemas[state.currentDatabase].tables).flatMap(t => 
                                     t.columns.map(c => ({
                                         label: c.name,
@@ -1739,7 +2117,7 @@
                     });
 
                     state.editor = monaco.editor.create(document.getElementById('sql-editor'), {
-                        value: '-- Write your SQL query here\nSELECT * FROM ',
+                        value: '-- Write your SQL query here\n',
                         language: 'sql',
                         theme: 'vs',
                         minimap: { enabled: false },
@@ -1762,12 +2140,10 @@
             switchMode(mode) {
                 state.currentMode = mode;
                 
-                // Update tabs
                 document.querySelectorAll('.nav-tab').forEach(tab => {
                     tab.classList.toggle('active', tab.dataset.mode === mode);
                 });
                 
-                // Show/hide panels
                 const practiceLeft = document.getElementById('practiceLeftPanel');
                 const practiceRight = document.getElementById('practiceRightPanel');
                 const projectSidebar = document.getElementById('projectSidebar');
@@ -1822,21 +2198,22 @@
                 document.getElementById('questionText').textContent = question.text;
                 document.getElementById('questionCategory').textContent = question.category;
                 document.getElementById('questionNumber').textContent = `Q${state.userProgress.solved + 1}`;
-                document.getElementById('difficultyBadge').textContent = question.difficulty;
-                document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${question.difficulty}`;
+                document.getElementById('difficultyBadge').textContent = state.difficulty.current;
+                document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${state.difficulty.current}`;
                 
                 document.getElementById('questionTags').innerHTML = question.tags.map(tag => 
                     `<span class="tag">${tag}</span>`
                 ).join('');
                 
                 document.getElementById('hintPanel').classList.remove('show');
-                document.getElementById('nextBtn').style.display = 'none';
+                
+                // Enable submit button
+                document.getElementById('submitBtn').disabled = false;
                 
                 if (state.editor) {
                     state.editor.setValue('-- Write your SQL query here\n');
                 }
                 
-                // Show expected output preview
                 this.showExpectedOutput();
             },
 
@@ -1844,12 +2221,14 @@
                 const result = databaseEngine.execute(state.currentQuestion.solution);
                 if (result.success && result.data.length > 0) {
                     document.getElementById('expectedOutput').innerHTML = this.renderTable(result.data[0]);
+                } else {
+                    document.getElementById('expectedOutput').innerHTML = '<div class="empty-state"><i class="fas fa-table"></i><div>Expected output will appear here</div></div>';
                 }
             },
 
             renderTable(data) {
                 if (!data || data.values.length === 0) {
-                    return '<div class="empty-state"><i class="fas fa-inbox"></i><div>No data</div></div>';
+                    return '<div class="empty-state"><i class="fas fa-inbox"></i><div>No data returned</div></div>';
                 }
                 
                 return `
@@ -1859,7 +2238,7 @@
                         </thead>
                         <tbody>
                             ${data.values.slice(0, 10).map(row => 
-                                `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`
+                                `<tr>${row.map(cell => `<td>${cell !== null ? cell : 'NULL'}</td>`).join('')}</tr>`
                             ).join('')}
                         </tbody>
                     </table>
@@ -1874,7 +2253,7 @@
                 if (result.success) {
                     document.getElementById('queryResult').innerHTML = result.data.length > 0 
                         ? this.renderTable(result.data[0])
-                        : '<div class="empty-state"><i class="fas fa-check"></i><div>Query executed successfully</div></div>';
+                        : '<div class="empty-state"><i class="fas fa-check"></i><div>Query executed successfully (0 rows returned)</div></div>';
                 } else {
                     document.getElementById('queryResult').innerHTML = `
                         <div class="empty-state" style="color: var(--danger);">
@@ -1889,14 +2268,22 @@
                 const query = state.editor.getValue();
                 const check = questionEngine.checkAnswer(query);
                 
+                if (check.alreadySolved) {
+                    this.showFeedback('Question already solved! Click Next to continue.', 'info');
+                    return;
+                }
+                
                 if (check.correct) {
                     this.handleCorrectAnswer();
                 } else {
-                    this.handleWrongAnswer(check.error || 'Results do not match expected output');
+                    this.handleWrongAnswer(check.error);
                 }
             },
 
             handleCorrectAnswer() {
+                // Disable submit to prevent double-clicking
+                document.getElementById('submitBtn').disabled = true;
+                
                 // Update stats
                 state.userProgress.solved++;
                 state.userProgress.correct++;
@@ -1904,9 +2291,9 @@
                 state.userProgress.streak++;
                 
                 // Update skills
-                const skill = state.currentQuestion.tags[0].toLowerCase();
+                const skill = state.currentQuestion.skill;
                 if (state.userProgress.skills[skill] !== undefined) {
-                    state.userProgress.skills[skill] += 10;
+                    state.userProgress.skills[skill] = Math.min(100, state.userProgress.skills[skill] + 10);
                 }
                 
                 // Update difficulty
@@ -1916,18 +2303,16 @@
                 this.saveProgress();
                 this.updateStats();
                 
-                // Show feedback
-                this.showFeedback('Correct! Well done!', 'success');
-                
-                // Show next button
-                document.getElementById('nextBtn').style.display = 'flex';
-                
                 // Add to history
                 state.userProgress.history.unshift({
                     question: state.currentQuestion.text,
                     result: 'correct',
-                    timestamp: new Date()
+                    timestamp: new Date(),
+                    difficulty: state.difficulty.current
                 });
+                
+                // Show success overlay with auto-advance option
+                this.showSuccessOverlay();
             },
 
             handleWrongAnswer(error) {
@@ -1935,10 +2320,32 @@
                 this.updateDifficulty(false);
                 this.updateStats();
                 this.showFeedback(`Incorrect: ${error}`, 'error');
+                
+                // Add to history
+                state.userProgress.history.unshift({
+                    question: state.currentQuestion.text,
+                    result: 'wrong',
+                    timestamp: new Date(),
+                    difficulty: state.difficulty.current
+                });
+            },
+
+            showSuccessOverlay() {
+                const overlay = document.getElementById('successOverlay');
+                const xpText = document.getElementById('successXP');
+                xpText.textContent = `+${this.getXPForDifficulty(state.difficulty.current)} XP`;
+                overlay.classList.add('show');
+                
+                // Auto-advance after 3 seconds
+                setTimeout(() => {
+                    if (overlay.classList.contains('show')) {
+                        this.nextQuestion();
+                    }
+                }, 3000);
             },
 
             getXPForDifficulty(diff) {
-                const xp = { easy: 10, medium: 20, hard: 40 };
+                const xp = { easy: 10, medium: 25, hard: 50 };
                 return xp[diff] || 10;
             },
 
@@ -1949,11 +2356,11 @@
                     if (state.difficulty.current === 'easy' && state.difficulty.easyStreak >= 3) {
                         state.difficulty.current = 'medium';
                         state.difficulty.easyStreak = 0;
-                        this.showFeedback('Level Up! Now attempting Medium questions', 'info');
+                        this.showFeedback('🎉 Level Up! Now attempting Medium questions', 'info');
                     } else if (state.difficulty.current === 'medium' && state.difficulty.mediumStreak >= 3) {
                         state.difficulty.current = 'hard';
                         state.difficulty.mediumStreak = 0;
-                        this.showFeedback('Level Up! Now attempting Hard questions', 'info');
+                        this.showFeedback('🔥 Level Up! Now attempting Hard questions', 'info');
                     }
                 } else {
                     state.difficulty[`${state.difficulty.current}Streak`] = 0;
@@ -1965,6 +2372,13 @@
                 }
             },
 
+            nextQuestion() {
+                document.getElementById('successOverlay').classList.remove('show');
+                databaseEngine.reset();
+                this.updateSchemaDisplay();
+                this.loadQuestion();
+            },
+
             showHint() {
                 const hintPanel = document.getElementById('hintPanel');
                 document.getElementById('hintText').textContent = state.currentQuestion.hint;
@@ -1972,11 +2386,9 @@
             },
 
             skipQuestion() {
-                this.loadQuestion();
-                this.showFeedback('Question skipped', 'info');
-            },
-
-            nextQuestion() {
+                state.userProgress.streak = 0;
+                this.updateStats();
+                this.showFeedback('Question skipped. Streak reset.', 'warning');
                 databaseEngine.reset();
                 this.updateSchemaDisplay();
                 this.loadQuestion();
@@ -1987,15 +2399,20 @@
             },
 
             formatCode() {
-                // Simple formatting
                 let code = state.editor.getValue();
                 code = code.replace(/\s+/g, ' ').trim();
+                code = code.replace(/\s*,\s*/g, ', ');
+                code = code.replace(/\s*=\s*/g, ' = ');
                 code = code.replace(/SELECT/gi, '\nSELECT');
                 code = code.replace(/FROM/gi, '\nFROM');
                 code = code.replace(/WHERE/gi, '\nWHERE');
                 code = code.replace(/GROUP BY/gi, '\nGROUP BY');
+                code = code.replace(/HAVING/gi, '\nHAVING');
                 code = code.replace(/ORDER BY/gi, '\nORDER BY');
                 code = code.replace(/JOIN/gi, '\nJOIN');
+                code = code.replace(/LEFT/gi, '\n  LEFT');
+                code = code.replace(/RIGHT/gi, '\n  RIGHT');
+                code = code.replace(/INNER/gi, '\n  INNER');
                 state.editor.setValue(code.trim());
             },
 
@@ -2023,12 +2440,13 @@
                 
                 panel.className = `feedback-panel feedback-${type} show`;
                 icon.className = type === 'success' ? 'fas fa-check-circle' : 
-                                type === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle';
+                                type === 'error' ? 'fas fa-times-circle' : 
+                                type === 'warning' ? 'fas fa-exclamation-triangle' : 'fas fa-info-circle';
                 textEl.textContent = text;
                 
                 setTimeout(() => {
                     panel.classList.remove('show');
-                }, 3000);
+                }, 4000);
             },
 
             updateStats() {
@@ -2043,13 +2461,21 @@
             },
 
             saveProgress() {
-                localStorage.setItem('sqlMasteryProgress', JSON.stringify(state.userProgress));
+                const data = {
+                    ...state.userProgress,
+                    solvedQuestionIds: Array.from(state.userProgress.solvedQuestionIds)
+                };
+                localStorage.setItem('sqlMasteryPro', JSON.stringify(data));
             },
 
             loadProgress() {
-                const saved = localStorage.getItem('sqlMasteryProgress');
+                const saved = localStorage.getItem('sqlMasteryPro');
                 if (saved) {
-                    state.userProgress = JSON.parse(saved);
+                    const data = JSON.parse(saved);
+                    state.userProgress = {
+                        ...data,
+                        solvedQuestionIds: new Set(data.solvedQuestionIds || [])
+                    };
                 }
             },
 
@@ -2079,7 +2505,7 @@
                     </div>
                 `).join('');
                 
-                const progress = (state.currentProjectQuestion / state.currentProject.questions.length) * 100;
+                const progress = ((state.currentProjectQuestion / state.currentProject.questions.length) * 100).toFixed(0);
                 document.getElementById('projectProgress').style.width = `${progress}%`;
                 document.getElementById('progressText').textContent = `${state.currentProjectQuestion} of ${state.currentProject.questions.length} completed`;
             },
@@ -2094,7 +2520,7 @@
                 const q = state.currentProject.questions[index];
                 
                 document.getElementById('questionText').textContent = q.text;
-                document.getElementById('questionCategory').textContent = 'Project Question';
+                document.getElementById('questionCategory').textContent = 'Project: ' + state.currentProject.name;
                 document.getElementById('questionNumber').textContent = `${index + 1}/${state.currentProject.questions.length}`;
                 document.getElementById('difficultyBadge').textContent = q.difficulty;
                 document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${q.difficulty}`;
@@ -2103,17 +2529,27 @@
                 state.currentQuestion = {
                     ...q,
                     solution: q.solution,
-                    hint: 'Think about the tables and relationships involved.'
+                    hint: 'Think about which tables you need to join and what conditions to apply.',
+                    skill: q.skill,
+                    id: `project-${index}`
                 };
                 
+                state.questionSolved = false;
+                document.getElementById('submitBtn').disabled = false;
+                
                 this.renderProjectQuestions();
-                this.showExpectedOutput();
+                
+                // Execute solution to show expected output
+                const result = databaseEngine.execute(q.solution);
+                if (result.success && result.data.length > 0) {
+                    document.getElementById('expectedOutput').innerHTML = this.renderTable(result.data[0]);
+                }
             },
 
             completeProject() {
                 state.userProgress.xp += 200;
                 this.saveProgress();
-                this.showFeedback('Project completed! +200 XP', 'success');
+                this.showFeedback('🎉 Project completed! +200 XP earned!', 'success');
                 this.switchMode('dashboard');
             },
 
@@ -2128,8 +2564,9 @@
                     : 0;
                 document.getElementById('dashAccuracy').textContent = `${accuracy}%`;
                 
-                // Determine level
-                if (state.userProgress.xp >= 1000) {
+                if (state.userProgress.xp >= 2000) {
+                    state.userProgress.level = 'Expert';
+                } else if (state.userProgress.xp >= 1000) {
                     state.userProgress.level = 'Advanced';
                 } else if (state.userProgress.xp >= 500) {
                     state.userProgress.level = 'Intermediate';
@@ -2138,14 +2575,14 @@
                 }
                 document.getElementById('dashLevel').textContent = state.userProgress.level;
                 
-                // Skills
                 const skillsContainer = document.getElementById('skillsContainer');
                 skillsContainer.innerHTML = Object.entries(state.userProgress.skills).map(([skill, value]) => {
                     const level = value >= 70 ? 'high' : value >= 40 ? 'medium' : 'low';
+                    const skillName = skill.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                     return `
                         <div class="skill-bar">
                             <div class="skill-header">
-                                <span>${skill.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
+                                <span>${skillName}</span>
                                 <span>${value}%</span>
                             </div>
                             <div class="skill-track">
@@ -2154,18 +2591,34 @@
                         </div>
                     `;
                 }).join('');
+                
+                // Recent activity
+                const activityContainer = document.getElementById('activityContainer');
+                if (state.userProgress.history.length > 0) {
+                    activityContainer.innerHTML = state.userProgress.history.slice(0, 5).map(h => `
+                        <div style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 13px; font-weight: 500;">${h.question.substring(0, 50)}...</div>
+                                <div style="font-size: 11px; color: var(--text-tertiary);">${new Date(h.timestamp).toLocaleDateString()}</div>
+                            </div>
+                            <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; ${h.result === 'correct' ? 'background: #dcfce7; color: #166534;' : 'background: #fee2e2; color: #991b1b;'}">
+                                ${h.result === 'correct' ? 'Correct' : 'Incorrect'}
+                            </span>
+                        </div>
+                    `).join('');
+                }
             },
 
             startDailyChallenge() {
                 this.switchMode('practice');
                 state.difficulty.current = 'medium';
                 this.loadQuestion();
-                this.showFeedback('Daily Challenge started! You have 10 minutes.', 'info');
+                this.showFeedback('Daily Challenge started! Complete this medium difficulty question.', 'info');
             }
         };
 
         // ==========================================
-        // Initialization
+        // INITIALIZATION
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
             uiEngine.loadProgress();
