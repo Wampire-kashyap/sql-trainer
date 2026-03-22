@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SQL Mastery Pro - Complete Learning Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -65,6 +63,29 @@
         .loading-text {
             color: var(--text-secondary);
             font-size: 14px;
+        }
+
+        .loading-error {
+            color: var(--danger);
+            font-size: 14px;
+            max-width: 600px;
+            text-align: center;
+            padding: 20px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .retry-btn {
+            margin-top: 16px;
+            padding: 10px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
         }
 
         .header {
@@ -887,6 +908,10 @@
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-spinner"></div>
         <div class="loading-text" id="loadingText">Initializing SQL Engine...</div>
+        <div id="loadingError" class="loading-error">
+            <div id="errorMessage"></div>
+            <button class="retry-btn" onclick="location.reload()">Retry</button>
+        </div>
     </div>
 
     <!-- Success Toast -->
@@ -1146,8 +1171,12 @@
         </div>
     </div>
 
-    <script>
+    <!-- Load SQL.js first -->
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js"></script>
+    <!-- Load Monaco Editor -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 
+    <script>
         // ==========================================
         // GLOBAL STATE
         // ==========================================
@@ -1174,6 +1203,19 @@
                 difficulty: 'all'
             }
         };
+
+        // ==========================================
+        // ERROR HANDLING UTILITIES
+        // ==========================================
+
+        function showLoadingError(message, details) {
+            document.getElementById('loadingText').style.display = 'none';
+            document.querySelector('.loading-spinner').style.display = 'none';
+            const errorDiv = document.getElementById('loadingError');
+            const errorMsg = document.getElementById('errorMessage');
+            errorDiv.style.display = 'block';
+            errorMsg.innerHTML = `<strong>Initialization Failed:</strong><br>${message}<br><small style="color:#94a3b8">${details || ''}</small>`;
+        }
 
         // ==========================================
         // MUTATION ENGINE - INFINITE QUESTION GENERATOR
@@ -1280,7 +1322,7 @@
 
                 let result = text;
                 Object.entries(synonyms).forEach(([word, alts]) => {
-                    const regex = new RegExp(`\b${word}\b`, 'gi');
+                    const regex = new RegExp(`\\b${word}\\b`, 'gi');
                     if (regex.test(result)) {
                         result = result.replace(regex, alts[Math.floor(Math.random() * alts.length)]);
                     }
@@ -1712,7 +1754,7 @@
                         context: "The sales team wants to identify inactive customers for re-engagement.",
                         difficulty: "medium",
                         solution: "SELECT c.* FROM customers c LEFT JOIN orders o ON c.customer_id = o.customer_id WHERE o.order_id IS NULL",
-                        hint: "Use LEFT JOIN and check for NULL in orders table."
+                                                hint: "Use LEFT JOIN and check for NULL in orders table."
                     },
                     {
                         id: "ec5",
@@ -2074,26 +2116,36 @@
         ];
 
         // ==========================================
-        // INITIALIZATION
+        // INITIALIZATION WITH FIXES
         // ==========================================
 
         async function initializeApp() {
             try {
-                document.getElementById('loadingText').textContent = 'Loading SQL.js...';
+                updateLoadingText('Loading SQL.js...');
+                
+                // Check if initSqlJs is available
+                if (typeof initSqlJs === 'undefined') {
+                    throw new Error('SQL.js library not loaded. Check internet connection.');
+                }
 
-                // Initialize SQL.js
+                // Initialize SQL.js with proper error handling
                 const SQL = await initSqlJs({
-                    locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/${file}`
+                    locateFile: file => {
+                        // Use CDN path for WASM file
+                        return `https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/${file}`;
+                    }
+                }).catch(err => {
+                    throw new Error(`SQL.js initialization failed: ${err.message}`);
                 });
+                
                 AppState.SQL = SQL;
-
-                document.getElementById('loadingText').textContent = 'Initializing Monaco Editor...';
+                updateLoadingText('SQL Engine loaded successfully');
 
                 // Initialize Monaco Editor
+                updateLoadingText('Initializing Monaco Editor...');
                 await initMonacoEditor();
 
-                document.getElementById('loadingText').textContent = 'Setting up databases...';
-
+                updateLoadingText('Setting up databases...');
                 // Setup UI
                 setupPracticeSection();
                 setupInterviewSection();
@@ -2103,16 +2155,25 @@
                 updateStats();
 
                 // Hide loading
-                document.getElementById('loadingScreen').style.display = 'none';
+                hideLoadingScreen();
 
                 // Load first database
                 loadDatabase('ecommerce');
 
             } catch (error) {
                 console.error('Initialization error:', error);
-                document.getElementById('loadingText').textContent = 'Error: ' + error.message;
-                document.getElementById('loadingText').style.color = 'var(--danger)';
+                showLoadingError(error.message, 'Please check your internet connection and refresh the page. If the problem persists, the CDN resources may be temporarily unavailable.');
             }
+        }
+
+        function updateLoadingText(text) {
+            const el = document.getElementById('loadingText');
+            if (el) el.textContent = text;
+        }
+
+        function hideLoadingScreen() {
+            const screen = document.getElementById('loadingScreen');
+            if (screen) screen.style.display = 'none';
         }
 
         // ==========================================
@@ -2121,6 +2182,12 @@
 
         async function initMonacoEditor() {
             return new Promise((resolve, reject) => {
+                // Check if require is available from Monaco loader
+                if (typeof require === 'undefined') {
+                    reject(new Error('Monaco Editor loader not available'));
+                    return;
+                }
+
                 require.config({ 
                     paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }
                 });
@@ -2129,6 +2196,10 @@
                     try {
                         // Create editor
                         const container = document.getElementById('editorContainer');
+                        if (!container) {
+                            reject(new Error('Editor container not found'));
+                            return;
+                        }
 
                         AppState.editor = monaco.editor.create(container, {
                             value: '-- Write your SQL query here\n-- Press Ctrl+Enter to run\n',
@@ -2233,6 +2304,8 @@
                     } catch (err) {
                         reject(err);
                     }
+                }, function(err) {
+                    reject(new Error(`Failed to load Monaco Editor: ${err.message}`));
                 });
             });
         }
@@ -2254,6 +2327,7 @@
 
         function setupPracticeSection() {
             const dbList = document.getElementById('dbList');
+            if (!dbList) return;
 
             Object.entries(DatabaseContent).forEach(([key, db]) => {
                 const item = document.createElement('div');
@@ -2269,6 +2343,11 @@
         }
 
         function loadDatabase(dbKey) {
+            if (!AppState.SQL) {
+                showToast('SQL engine not initialized yet', 'error');
+                return;
+            }
+
             AppState.currentDb = dbKey;
             const dbConfig = DatabaseContent[dbKey];
 
@@ -2278,34 +2357,41 @@
             });
 
             // Create new database
-            AppState.db = new AppState.SQL.Database();
+            try {
+                AppState.db = new AppState.SQL.Database();
 
-            // Create tables and insert data
-            Object.entries(dbConfig.tables).forEach(([tableName, tableData]) => {
-                const cols = tableData.columns.map(c => `${c.name} ${c.type}`).join(', ');
-                AppState.db.run(`CREATE TABLE ${tableName} (${cols})`);
+                // Create tables and insert data
+                Object.entries(dbConfig.tables).forEach(([tableName, tableData]) => {
+                    const cols = tableData.columns.map(c => `${c.name} ${c.type}`).join(', ');
+                    AppState.db.run(`CREATE TABLE ${tableName} (${cols})`);
 
-                const placeholders = tableData.columns.map(() => '?').join(', ');
-                const stmt = AppState.db.prepare(`INSERT INTO ${tableName} VALUES (${placeholders})`);
+                    const placeholders = tableData.columns.map(() => '?').join(', ');
+                    const stmt = AppState.db.prepare(`INSERT INTO ${tableName} VALUES (${placeholders})`);
 
-                tableData.data.forEach(row => {
-                    stmt.run(row);
+                    tableData.data.forEach(row => {
+                        stmt.run(row);
+                    });
+                    stmt.free();
                 });
-                stmt.free();
-            });
 
-            // Show schema
-            showSchema(dbConfig);
+                // Show schema
+                showSchema(dbConfig);
 
-            // Load first question
-            loadQuestion(0);
+                // Load first question
+                loadQuestion(0);
 
-            // Update progress
-            updateProgress();
+                // Update progress
+                updateProgress();
+            } catch (error) {
+                console.error('Database loading error:', error);
+                showToast('Error loading database: ' + error.message, 'error');
+            }
         }
 
         function showSchema(dbConfig) {
             const container = document.getElementById('schemaContent');
+            if (!container) return;
+            
             container.innerHTML = '';
 
             Object.entries(dbConfig.tables).forEach(([tableName, tableData]) => {
@@ -2332,6 +2418,8 @@
 
         function loadQuestion(index) {
             const dbConfig = DatabaseContent[AppState.currentDb];
+            if (!dbConfig) return;
+
             const staticCount = dbConfig.questions.length;
 
             let question;
@@ -2342,7 +2430,8 @@
                 AppState.currentQuestion = { ...question, index, isGenerated: false };
 
                 // Hide generated badge
-                document.getElementById('generatedBadge').style.display = 'none';
+                const badge = document.getElementById('generatedBadge');
+                if (badge) badge.style.display = 'none';
             } else {
                 // Generate infinite question using MutationEngine
                 const userLevel = calculateUserLevel();
@@ -2352,43 +2441,65 @@
                 AppState.currentQuestion = { ...question, index, isGenerated: true };
 
                 // Show generated badge
-                document.getElementById('generatedBadge').style.display = 'inline-block';
+                const badge = document.getElementById('generatedBadge');
+                if (badge) badge.style.display = 'inline-block';
             }
 
             // Update UI
-            document.getElementById('qText').textContent = question.text;
-            document.getElementById('qContext').textContent = question.context || '';
-            document.getElementById('qNumber').textContent = question.isGenerated ? 
-                `Question ${index + 1} (AI-Generated)` : `Question ${index + 1} of ${staticCount}`;
-
+            const qText = document.getElementById('qText');
+            const qContext = document.getElementById('qContext');
+            const qNumber = document.getElementById('qNumber');
             const diffBadge = document.getElementById('diffBadge');
-            diffBadge.textContent = question.difficulty;
-            diffBadge.className = `difficulty-badge diff-${question.difficulty}`;
 
-            document.getElementById('hintContainer').style.display = 'none';
+            if (qText) qText.textContent = question.text;
+            if (qContext) qContext.textContent = question.context || '';
+            if (qNumber) qNumber.textContent = question.isGenerated ? 
+                `Question ${index + 1} (AI-Generated)` : `Question ${index + 1} of ${staticCount}`;
+            
+            if (diffBadge) {
+                diffBadge.textContent = question.difficulty;
+                diffBadge.className = `difficulty-badge diff-${question.difficulty}`;
+            }
+
+            const hintContainer = document.getElementById('hintContainer');
+            if (hintContainer) hintContainer.style.display = 'none';
 
             // Show expected output
             try {
-                const result = AppState.db.exec(question.solution);
-                document.getElementById('expectedOutput').innerHTML = renderTable(result[0]);
+                if (AppState.db) {
+                    const result = AppState.db.exec(question.solution);
+                    const expectedOutput = document.getElementById('expectedOutput');
+                    if (expectedOutput) {
+                        expectedOutput.innerHTML = result.length > 0 ? renderTable(result[0]) : 
+                            '<div class="empty-state">Query executed successfully (0 rows)</div>';
+                    }
+                }
             } catch (e) {
-                document.getElementById('expectedOutput').innerHTML = '<div class="error-message">Error loading expected output</div>';
+                const expectedOutput = document.getElementById('expectedOutput');
+                if (expectedOutput) {
+                    expectedOutput.innerHTML = '<div class="error-message">Error loading expected output</div>';
+                }
             }
 
             // Clear user output
-            document.getElementById('userOutput').innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-play-circle" style="font-size:32px;opacity:0.3;"></i>
-                    <span>Run your query to see results</span>
-                </div>
-            `;
+            const userOutput = document.getElementById('userOutput');
+            if (userOutput) {
+                userOutput.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-play-circle" style="font-size:32px;opacity:0.3;"></i>
+                        <span>Run your query to see results</span>
+                    </div>
+                `;
+            }
 
             // Clear editor
             setEditorValue('');
 
             // Update navigation buttons
-            document.getElementById('prevBtn').style.display = index > 0 ? 'flex' : 'none';
-            document.getElementById('nextBtn').style.display = 'flex';
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            if (prevBtn) prevBtn.style.display = index > 0 ? 'flex' : 'none';
+            if (nextBtn) nextBtn.style.display = 'flex';
         }
 
         function calculateUserLevel() {
@@ -2422,6 +2533,11 @@
         }
 
         function runQuery() {
+            if (!AppState.db) {
+                showToast('Database not loaded', 'error');
+                return;
+            }
+
             const sql = getEditorValue().trim();
             if (!sql) {
                 showToast('Please enter a SQL query', 'error');
@@ -2430,19 +2546,27 @@
 
             try {
                 const result = AppState.db.exec(sql);
+                const userOutput = document.getElementById('userOutput');
+                
                 if (result.length > 0) {
-                    document.getElementById('userOutput').innerHTML = renderTable(result[0]);
+                    userOutput.innerHTML = renderTable(result[0]);
                 } else {
-                    document.getElementById('userOutput').innerHTML = '<div class="empty-state">Query executed successfully (0 rows returned)</div>';
+                    userOutput.innerHTML = '<div class="empty-state">Query executed successfully (0 rows returned)</div>';
                 }
             } catch (error) {
-                document.getElementById('userOutput').innerHTML = `<div class="error-message"><i class="fas fa-exclamation-circle"></i> ${error.message}</div>`;
+                const userOutput = document.getElementById('userOutput');
+                userOutput.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-circle"></i> ${error.message}</div>`;
             }
         }
 
         function submitAnswer() {
+            if (!AppState.db || !AppState.currentQuestion) {
+                showToast('System not ready', 'error');
+                return;
+            }
+
             const userSql = getEditorValue().trim();
-            if (!userSql || !AppState.currentQuestion) {
+            if (!userSql) {
                 showToast('Please enter a SQL query', 'error');
                 return;
             }
@@ -2471,7 +2595,8 @@
         }
 
         function compareResults(user, expected) {
-            if (!user.length || !expected.length) return false;
+            if (!user || !expected) return false;
+            if (!user.length || !expected.length) return user.length === expected.length;
 
             const u = user[0];
             const e = expected[0];
@@ -2546,8 +2671,11 @@
 
         function showHint() {
             if (!AppState.currentQuestion) return;
-            document.getElementById('hintText').textContent = AppState.currentQuestion.hint;
-            document.getElementById('hintContainer').style.display = 'block';
+            const hintContainer = document.getElementById('hintContainer');
+            const hintText = document.getElementById('hintText');
+            
+            if (hintText) hintText.textContent = AppState.currentQuestion.hint;
+            if (hintContainer) hintContainer.style.display = 'block';
         }
 
         function updateProgress() {
@@ -2564,9 +2692,13 @@
             const total = dbConfig.questions.length;
             const percent = Math.round((completed / total) * 100);
 
-            document.getElementById('progressText').textContent = `${completed}/${total} Static Completed`;
-            document.getElementById('progressPercent').textContent = `${percent}%`;
-            document.getElementById('progressBar').style.width = `${percent}%`;
+            const progressText = document.getElementById('progressText');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressBar = document.getElementById('progressBar');
+
+            if (progressText) progressText.textContent = `${completed}/${total} Static Completed`;
+            if (progressPercent) progressPercent.textContent = `${percent}%`;
+            if (progressBar) progressBar.style.width = `${percent}%`;
         }
 
         function saveProgress() {
@@ -2578,8 +2710,11 @@
         }
 
         function updateStats() {
-            document.getElementById('xpDisplay').textContent = AppState.userProgress.xp;
-            document.getElementById('streakDisplay').textContent = AppState.userProgress.streak;
+            const xpDisplay = document.getElementById('xpDisplay');
+            const streakDisplay = document.getElementById('streakDisplay');
+            
+            if (xpDisplay) xpDisplay.textContent = AppState.userProgress.xp;
+            if (streakDisplay) streakDisplay.textContent = AppState.userProgress.streak;
         }
 
         // ==========================================
@@ -2592,6 +2727,8 @@
 
         function renderInterviewQuestions() {
             const container = document.getElementById('interviewQuestions');
+            if (!container) return;
+            
             container.innerHTML = '';
 
             const filtered = InterviewQuestions.filter(q => {
@@ -2642,6 +2779,8 @@
 
         function updateFilterChips(containerId, activeValue) {
             const container = document.getElementById(containerId);
+            if (!container) return;
+            
             const chips = container.querySelectorAll('.filter-chip');
             chips.forEach(chip => {
                 const chipValue = chip.textContent.toLowerCase();
@@ -2655,22 +2794,29 @@
             const q = InterviewQuestions.find(x => x.id === questionId);
             if (!q) return;
 
-            document.getElementById('modalTitle').textContent = `${q.companyName} - ${q.title}`;
-            document.getElementById('modalBody').innerHTML = `
-                <p><strong>Question:</strong></p>
-                <p>${q.question}</p>
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            if (modalTitle) modalTitle.textContent = `${q.companyName} - ${q.title}`;
+            if (modalBody) {
+                modalBody.innerHTML = `
+                    <p><strong>Question:</strong></p>
+                    <p>${q.question}</p>
 
-                <h3>Solution</h3>
-                <pre><code>${q.solution}</code></pre>
+                    <h3>Solution</h3>
+                    <pre><code>${q.solution}</code></pre>
 
-                <h3>Explanation</h3>
-                <p>${q.explanation}</p>
+                    <h3>Explanation</h3>
+                    <p>${q.explanation}</p>
 
-                <div style="margin-top:24px;padding:16px;background:var(--bg-primary);border-radius:8px;">
-                    <strong>Tip:</strong> Click "Try It" to practice this query with a sample database.
-                </div>
-            `;
-            document.getElementById('solutionModal').classList.add('active');
+                    <div style="margin-top:24px;padding:16px;background:var(--bg-primary);border-radius:8px;">
+                        <strong>Tip:</strong> Click "Try It" to practice this query with a sample database.
+                    </div>
+                `;
+            }
+            
+            const modal = document.getElementById('solutionModal');
+            if (modal) modal.classList.add('active');
         }
 
         function tryInPractice(questionId) {
@@ -2685,12 +2831,20 @@
 
             // Set up as custom question
             setTimeout(() => {
-                document.getElementById('qText').textContent = `[INTERVIEW] ${q.title}: ${q.question}`;
-                document.getElementById('qContext').textContent = `From ${q.companyName} - ${q.explanation}`;
-                document.getElementById('diffBadge').textContent = q.difficulty;
-                document.getElementById('diffBadge').className = `difficulty-badge diff-${q.difficulty}`;
-                document.getElementById('qNumber').textContent = 'Interview Practice';
-                document.getElementById('hintText').textContent = 'This is an interview question from ' + q.companyName + '. ' + q.explanation;
+                const qText = document.getElementById('qText');
+                const qContext = document.getElementById('qContext');
+                const diffBadge = document.getElementById('diffBadge');
+                const qNumber = document.getElementById('qNumber');
+                const hintText = document.getElementById('hintText');
+
+                if (qText) qText.textContent = `[INTERVIEW] ${q.title}: ${q.question}`;
+                if (qContext) qContext.textContent = `From ${q.companyName} - ${q.explanation}`;
+                if (diffBadge) {
+                    diffBadge.textContent = q.difficulty;
+                    diffBadge.className = `difficulty-badge diff-${q.difficulty}`;
+                }
+                if (qNumber) qNumber.textContent = 'Interview Practice';
+                if (hintText) hintText.textContent = 'This is an interview question from ' + q.companyName + '. ' + q.explanation;
 
                 // Store the solution temporarily
                 AppState.currentQuestion = {
@@ -2704,18 +2858,25 @@
                 };
 
                 // Clear outputs
-                document.getElementById('userOutput').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-play-circle" style="font-size:32px;opacity:0.3;"></i>
-                        <span>Run your query to see results</span>
-                    </div>
-                `;
-                document.getElementById('expectedOutput').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-table" style="font-size:32px;opacity:0.3;"></i>
-                        <span>Expected output will appear here</span>
-                    </div>
-                `;
+                const userOutput = document.getElementById('userOutput');
+                const expectedOutput = document.getElementById('expectedOutput');
+                
+                if (userOutput) {
+                    userOutput.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-play-circle" style="font-size:32px;opacity:0.3;"></i>
+                            <span>Run your query to see results</span>
+                        </div>
+                    `;
+                }
+                if (expectedOutput) {
+                    expectedOutput.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-table" style="font-size:32px;opacity:0.3;"></i>
+                            <span>Expected output will appear here</span>
+                        </div>
+                    `;
+                }
 
                 setEditorValue(`-- Write your solution here\n-- Hint: ${q.explanation.substring(0, 100)}...`);
 
@@ -2729,6 +2890,8 @@
 
         function setupProjectsSection() {
             const container = document.getElementById('projectsGrid');
+            if (!container) return;
+            
             container.innerHTML = '';
 
             Projects.forEach(proj => {
@@ -2759,49 +2922,56 @@
             const proj = Projects.find(p => p.id === projectId);
             if (!proj) return;
 
-            document.getElementById('modalTitle').textContent = proj.title;
-            document.getElementById('modalBody').innerHTML = `
-                <div style="margin-bottom: 24px;">
-                    <span style="display: inline-block; background: ${proj.color}22; color: ${proj.color}; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 12px;">
-                        ${proj.domain}
-                    </span>
-                    <p style="color: var(--text-secondary); line-height: 1.6;">${proj.description}</p>
-                </div>
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
 
-                <h3><i class="fas fa-database"></i> Database Schema</h3>
-                <div style="background: var(--bg-primary); padding: 16px; border-radius: 8px; margin: 16px 0;">
-                    ${proj.tables.map(t => `
-                        <div style="margin-bottom: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 6px; border-left: 3px solid ${proj.color};">
-                            <strong style="color: ${proj.color};">${t.name}</strong>
-                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${t.desc}</p>
-                        </div>
-                    `).join('')}
-                </div>
+            if (modalTitle) modalTitle.textContent = proj.title;
+            if (modalBody) {
+                modalBody.innerHTML = `
+                    <div style="margin-bottom: 24px;">
+                        <span style="display: inline-block; background: ${proj.color}22; color: ${proj.color}; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 12px;">
+                            ${proj.domain}
+                        </span>
+                        <p style="color: var(--text-secondary); line-height: 1.6;">${proj.description}</p>
+                    </div>
 
-                <h3><i class="fas fa-tasks"></i> Your Tasks</h3>
-                <ul class="task-list">
-                    ${proj.tasks.map((task, i) => `
-                        <li>
-                            <span style="color: var(--primary); font-weight: 600; min-width: 24px;">${i + 1}.</span>
-                            <span>${task}</span>
-                        </li>
-                    `).join('')}
-                </ul>
+                    <h3><i class="fas fa-database"></i> Database Schema</h3>
+                    <div style="background: var(--bg-primary); padding: 16px; border-radius: 8px; margin: 16px 0;">
+                        ${proj.tables.map(t => `
+                            <div style="margin-bottom: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 6px; border-left: 3px solid ${proj.color};">
+                                <strong style="color: ${proj.color};">${t.name}</strong>
+                                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${t.desc}</p>
+                            </div>
+                        `).join('')}
+                    </div>
 
-                <div style="background: linear-gradient(135deg, ${proj.color}11, ${proj.color}22); border: 1px solid ${proj.color}44; border-radius: 12px; padding: 20px; margin-top: 24px;">
-                    <h3 style="color: ${proj.color}; margin-top: 0;"><i class="fas fa-trophy"></i> Final Challenge</h3>
-                    <p style="margin-bottom: 16px;">${proj.challenge}</p>
-                    <button class="btn btn-primary" onclick="startProject('${proj.id}')" style="width: 100%; justify-content: center;">
-                        <i class="fas fa-rocket"></i> Start Project
-                    </button>
-                </div>
+                    <h3><i class="fas fa-tasks"></i> Your Tasks</h3>
+                    <ul class="task-list">
+                        ${proj.tasks.map((task, i) => `
+                            <li>
+                                <span style="color: var(--primary); font-weight: 600; min-width: 24px;">${i + 1}.</span>
+                                <span>${task}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
 
-                <div style="margin-top: 24px; padding: 16px; background: var(--bg-primary); border-radius: 8px; font-size: 13px; color: var(--text-secondary);">
-                    <i class="fas fa-lightbulb" style="color: var(--warning);"></i> 
-                    <strong>Pro Tip:</strong> This project simulates real-world scenarios. Take your time and think about performance!
-                </div>
-            `;
-            document.getElementById('solutionModal').classList.add('active');
+                    <div style="background: linear-gradient(135deg, ${proj.color}11, ${proj.color}22); border: 1px solid ${proj.color}44; border-radius: 12px; padding: 20px; margin-top: 24px;">
+                        <h3 style="color: ${proj.color}; margin-top: 0;"><i class="fas fa-trophy"></i> Final Challenge</h3>
+                        <p style="margin-bottom: 16px;">${proj.challenge}</p>
+                        <button class="btn btn-primary" onclick="startProject('${proj.id}')" style="width: 100%; justify-content: center;">
+                            <i class="fas fa-rocket"></i> Start Project
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 24px; padding: 16px; background: var(--bg-primary); border-radius: 8px; font-size: 13px; color: var(--text-secondary);">
+                        <i class="fas fa-lightbulb" style="color: var(--warning);"></i> 
+                        <strong>Pro Tip:</strong> This project simulates real-world scenarios. Take your time and think about performance!
+                    </div>
+                `;
+            }
+            
+            const modal = document.getElementById('solutionModal');
+            if (modal) modal.classList.add('active');
         }
 
         function startProject(projectId) {
@@ -2809,54 +2979,68 @@
             switchSection('practice');
 
             const proj = Projects.find(p => p.id === projectId);
+            if (!proj || !AppState.SQL) return;
 
             // Create project database
             AppState.currentDb = 'project_' + projectId;
             AppState.db = new AppState.SQL.Database();
 
             // Create tables based on project schema
-            if (projectId === 'proj1') {
-                // Netflix project
-                AppState.db.run(`CREATE TABLE users (user_id INTEGER, username TEXT, plan_type TEXT, join_date DATE)`);
-                AppState.db.run(`CREATE TABLE content (content_id INTEGER, title TEXT, genre TEXT, type TEXT, production_cost INTEGER)`);
-                AppState.db.run(`CREATE TABLE viewing_history (user_id INTEGER, content_id INTEGER, watch_date DATE, duration_minutes INTEGER)`);
-                AppState.db.run(`CREATE TABLE subscriptions (user_id INTEGER, month TEXT, revenue INTEGER)`);
+            try {
+                if (projectId === 'proj1') {
+                    // Netflix project
+                    AppState.db.run(`CREATE TABLE users (user_id INTEGER, username TEXT, plan_type TEXT, join_date DATE)`);
+                    AppState.db.run(`CREATE TABLE content (content_id INTEGER, title TEXT, genre TEXT, type TEXT, production_cost INTEGER)`);
+                    AppState.db.run(`CREATE TABLE viewing_history (user_id INTEGER, content_id INTEGER, watch_date DATE, duration_minutes INTEGER)`);
+                    AppState.db.run(`CREATE TABLE subscriptions (user_id INTEGER, month TEXT, revenue INTEGER)`);
 
-                // Insert sample data
-                const users = [[1, 'user1', 'Premium', '2023-01-01'], [2, 'user2', 'Basic', '2023-02-01'], [3, 'user3', 'Standard', '2023-03-01']];
-                const content = [[1, 'Stranger Things', 'Sci-Fi', 'Original', 10000000], [2, 'The Office', 'Comedy', 'Licensed', 5000000], [3, 'Wednesday', 'Horror', 'Original', 8000000]];
+                    // Insert sample data
+                    const users = [[1, 'user1', 'Premium', '2023-01-01'], [2, 'user2', 'Basic', '2023-02-01'], [3, 'user3', 'Standard', '2023-03-01']];
+                    const content = [[1, 'Stranger Things', 'Sci-Fi', 'Original', 10000000], [2, 'The Office', 'Comedy', 'Licensed', 5000000], [3, 'Wednesday', 'Horror', 'Original', 8000000]];
 
-                users.forEach(u => AppState.db.run(`INSERT INTO users VALUES (?, ?, ?, ?)`, u));
-                content.forEach(c => AppState.db.run(`INSERT INTO content VALUES (?, ?, ?, ?, ?)`, c));
-            } else if (projectId === 'proj2') {
-                // Shopify project
-                AppState.db.run(`CREATE TABLE sessions (session_id INTEGER, user_id INTEGER, source TEXT, start_time TIMESTAMP)`);
-                AppState.db.run(`CREATE TABLE events (event_id INTEGER, session_id INTEGER, event_type TEXT, product_id INTEGER, timestamp TIMESTAMP)`);
-                AppState.db.run(`CREATE TABLE products (product_id INTEGER, name TEXT, price INTEGER, category TEXT)`);
-                AppState.db.run(`CREATE TABLE customers (customer_id INTEGER, acquisition_channel TEXT, lifetime_value INTEGER)`);
+                    users.forEach(u => AppState.db.run(`INSERT INTO users VALUES (?, ?, ?, ?)`, u));
+                    content.forEach(c => AppState.db.run(`INSERT INTO content VALUES (?, ?, ?, ?, ?)`, c));
+                } else if (projectId === 'proj2') {
+                    // Shopify project
+                    AppState.db.run(`CREATE TABLE sessions (session_id INTEGER, user_id INTEGER, source TEXT, start_time TIMESTAMP)`);
+                    AppState.db.run(`CREATE TABLE events (event_id INTEGER, session_id INTEGER, event_type TEXT, product_id INTEGER, timestamp TIMESTAMP)`);
+                    AppState.db.run(`CREATE TABLE products (product_id INTEGER, name TEXT, price INTEGER, category TEXT)`);
+                    AppState.db.run(`CREATE TABLE customers (customer_id INTEGER, acquisition_channel TEXT, lifetime_value INTEGER)`);
 
-                const products = [[1, 'T-Shirt', 25, 'Apparel'], [2, 'Jeans', 60, 'Apparel'], [3, 'Sneakers', 100, 'Footwear']];
-                products.forEach(p => AppState.db.run(`INSERT INTO products VALUES (?, ?, ?, ?)`, p));
+                    const products = [[1, 'T-Shirt', 25, 'Apparel'], [2, 'Jeans', 60, 'Apparel'], [3, 'Sneakers', 100, 'Footwear']];
+                    products.forEach(p => AppState.db.run(`INSERT INTO products VALUES (?, ?, ?, ?)`, p));
+                }
+
+                // Update UI for project mode
+                const qText = document.getElementById('qText');
+                const qContext = document.getElementById('qContext');
+                const qNumber = document.getElementById('qNumber');
+                const diffBadge = document.getElementById('diffBadge');
+
+                if (qText) qText.textContent = `🚀 PROJECT: ${proj.title}`;
+                if (qContext) qContext.textContent = proj.tasks[0];
+                if (qNumber) qNumber.textContent = 'Task 1 of ' + proj.tasks.length;
+                if (diffBadge) {
+                    diffBadge.textContent = proj.difficulty;
+                    diffBadge.className = 'difficulty-badge diff-hard';
+                }
+
+                // Update schema panel
+                const schemaContent = document.getElementById('schemaContent');
+                if (schemaContent) {
+                    schemaContent.innerHTML = proj.tables.map(t => `
+                        <div class="schema-table">
+                            <div class="schema-header"><i class="fas fa-table"></i> ${t.name}</div>
+                            <div class="schema-row"><span class="col-name">${t.desc}</span></div>
+                        </div>
+                    `).join('');
+                }
+
+                setEditorValue(`-- Project: ${proj.title}\n-- Task 1: ${proj.tasks[0]}\n\n-- Write your query here`);
+                showToast('Project loaded! Complete all tasks to finish.', 'success');
+            } catch (error) {
+                showToast('Error loading project: ' + error.message, 'error');
             }
-
-            // Update UI for project mode
-            document.getElementById('qText').textContent = `🚀 PROJECT: ${proj.title}`;
-            document.getElementById('qContext').textContent = proj.tasks[0];
-            document.getElementById('qNumber').textContent = 'Task 1 of ' + proj.tasks.length;
-            document.getElementById('diffBadge').textContent = proj.difficulty;
-            document.getElementById('diffBadge').className = 'difficulty-badge diff-hard';
-
-            // Update schema panel
-            const schemaContent = document.getElementById('schemaContent');
-            schemaContent.innerHTML = proj.tables.map(t => `
-                <div class="schema-table">
-                    <div class="schema-header"><i class="fas fa-table"></i> ${t.name}</div>
-                    <div class="schema-row"><span class="col-name">${t.desc}</span></div>
-                </div>
-            `).join('');
-
-            setEditorValue(`-- Project: ${proj.title}\n-- Task 1: ${proj.tasks[0]}\n\n-- Write your query here`);
-            showToast('Project loaded! Complete all tasks to finish.', 'success');
         }
 
         // ==========================================
@@ -2875,37 +3059,44 @@
             document.querySelectorAll('.section-view').forEach(view => {
                 view.classList.remove('active');
             });
-            document.getElementById(section + 'Section').classList.add('active');
+            
+            const sectionEl = document.getElementById(section + 'Section');
+            if (sectionEl) sectionEl.classList.add('active');
         }
 
         function closeModal() {
-            document.getElementById('solutionModal').classList.remove('active');
+            const modal = document.getElementById('solutionModal');
+            if (modal) modal.classList.remove('active');
         }
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('successToast');
             const msgEl = document.getElementById('toastMessage');
 
-            msgEl.textContent = message;
-            toast.style.background = type === 'error' ? 'var(--danger)' : 
-                                   type === 'warning' ? 'var(--warning)' : 'var(--success)';
-
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            if (msgEl) msgEl.textContent = message;
+            
+            if (toast) {
+                toast.style.background = type === 'error' ? 'var(--danger)' : 
+                                       type === 'warning' ? 'var(--warning)' : 'var(--success)';
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
         }
 
         function toggleAssistant() {
             const panel = document.getElementById('assistantPanel');
-            panel.classList.toggle('open');
+            if (panel) panel.classList.toggle('open');
         }
 
         function sendToAssistant() {
             const input = document.getElementById('assistantInput');
             const body = document.getElementById('assistantBody');
+            
+            if (!input || !body) return;
+            
             const question = input.value.trim();
-
             if (!question) return;
 
             // Add user message
@@ -2975,7 +3166,7 @@
         }
 
         function renderTable(result) {
-            if (!result || !result.values) {
+            if (!result || !result.values || result.values.length === 0) {
                 return '<div class="empty-state">No results</div>';
             }
 
