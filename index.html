@@ -950,12 +950,14 @@
     </div>
 
     <!-- Header -->
-    <header class="header">
+     <header class="header">
         <div class="brand" onclick="switchSection('practice')">
             <i class="fas fa-database"></i>
-            <span>SQL Mastery Pro</span>
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span>SQL Mastery Pro</span>
+                <span style="font-size: 11px; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase;">Created by Kunal Kumar</span>
+            </div>
         </div>
-
         <nav class="nav-tabs">
             <button class="nav-tab active" data-section="practice" onclick="switchSection('practice')">
                 <i class="fas fa-code"></i>
