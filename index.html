@@ -6,9 +6,10 @@
     <title>SQL Mastery Pro - Complete Learning Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -38,7 +39,6 @@
             flex-direction: column;
         }
 
-        /* Loading Screen */
         .loading-screen {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -67,7 +67,6 @@
             font-size: 14px;
         }
 
-        /* Header */
         .header {
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border);
@@ -137,7 +136,6 @@
 
         .stat-badge i { color: var(--warning); }
 
-        /* Main Container */
         .main-container {
             flex: 1;
             display: flex;
@@ -145,7 +143,6 @@
             position: relative;
         }
 
-        /* Section Views */
         .section-view {
             display: none;
             width: 100%;
@@ -156,7 +153,6 @@
 
         .section-view.active { display: block; }
 
-        /* PRACTICE SECTION LAYOUT */
         .practice-layout {
             display: grid;
             grid-template-columns: 320px 1fr;
@@ -309,6 +305,16 @@
             line-height: 1.5;
         }
 
+        .generated-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
         .editor-panel {
             background: var(--bg-secondary);
             border-radius: var(--radius);
@@ -363,23 +369,9 @@
             color: white; 
         }
 
-        .sql-editor {
+        #editorContainer {
             flex: 1;
-            position: relative;
-        }
-
-        .sql-editor textarea {
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border: none;
-            padding: 16px;
-            font-family: 'Fira Code', 'Consolas', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
+            min-height: 200px;
         }
 
         .output-panel {
@@ -451,7 +443,6 @@
             font-size: 13px;
         }
 
-        /* INTERVIEW SECTION */
         .interview-layout {
             max-width: 1400px;
             margin: 0 auto;
@@ -564,7 +555,6 @@
             gap: 12px;
         }
 
-        /* PROJECTS SECTION */
         .projects-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
@@ -647,7 +637,6 @@
             gap: 6px;
         }
 
-        /* MODAL */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -749,7 +738,6 @@
             font-weight: bold;
         }
 
-        /* SUCCESS NOTIFICATION */
         .success-toast {
             position: fixed;
             top: 24px;
@@ -770,7 +758,6 @@
 
         .success-toast.show { transform: translateX(0); }
 
-        /* ASSISTANT PANEL */
         .assistant-panel {
             position: fixed;
             bottom: 24px;
@@ -854,7 +841,6 @@
 
         .fab:hover { transform: scale(1.1); }
 
-        /* HINT PANEL */
         .hint-panel {
             background: rgba(245, 158, 11, 0.1);
             border: 1px solid var(--warning);
@@ -874,39 +860,25 @@
 
         .hint-text { color: var(--text-secondary); font-size: 14px; }
 
-        /* PROGRESS BAR */
-        .progress-ring {
-            width: 60px;
-            height: 60px;
-            position: relative;
+        .navigation-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
         }
 
-        .progress-ring svg {
-            transform: rotate(-90deg);
-        }
-
-        .progress-ring circle {
-            fill: none;
-            stroke-width: 4;
-        }
-
-        .progress-bg {
-            stroke: var(--bg-tertiary);
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
         }
 
         .progress-fill {
-            stroke: var(--primary);
-            stroke-linecap: round;
-            transition: stroke-dashoffset 0.5s;
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 14px;
-            font-weight: 700;
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s;
         }
     </style>
 </head>
@@ -914,7 +886,7 @@
     <!-- Loading Screen -->
     <div id="loadingScreen" class="loading-screen">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Initializing SQL Engine...</div>
+        <div class="loading-text" id="loadingText">Initializing SQL Engine...</div>
     </div>
 
     <!-- Success Toast -->
@@ -976,11 +948,11 @@
 
         <div class="user-stats">
             <div class="stat-badge">
-                <i class="fas fa-fire"></i>
+                <i class="fas fa-fire" style="color: var(--warning);"></i>
                 <span id="streakDisplay">0</span>
             </div>
             <div class="stat-badge">
-                <i class="fas fa-star"></i>
+                <i class="fas fa-star" style="color: var(--warning);"></i>
                 <span id="xpDisplay">0</span>
                 <span style="color:var(--text-secondary);font-size:11px;margin-left:4px;">XP</span>
             </div>
@@ -1011,6 +983,12 @@
                                 <span id="progressText">0/0 Completed</span>
                                 <span id="progressPercent" style="color:var(--primary);font-weight:700;">0%</span>
                             </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressBar" style="width:0%"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;font-size:11px;color:var(--text-secondary);text-align:center;">
+                            <i class="fas fa-infinity"></i> Infinite questions after static set
                         </div>
                     </div>
                 </aside>
@@ -1021,21 +999,38 @@
                     <div class="question-panel">
                         <div class="question-header">
                             <div class="question-meta">
-                                <span class="difficulty-badge" id="diffBadge">Easy</span>
+                                <span class="difficulty-badge diff-easy" id="diffBadge">Easy</span>
                                 <span class="question-number" id="qNumber">Question 1</span>
                             </div>
-                            <button class="btn btn-secondary" onclick="showHint()">
-                                <i class="fas fa-lightbulb"></i> Hint
-                            </button>
+                            <div style="display:flex;gap:8px;">
+                                <button class="btn btn-secondary" onclick="showHint()">
+                                    <i class="fas fa-lightbulb"></i> Hint
+                                </button>
+                                <button class="btn btn-secondary" onclick="skipQuestion()">
+                                    <i class="fas fa-forward"></i> Skip
+                                </button>
+                            </div>
                         </div>
                         <div class="question-text" id="qText">
                             Select a database to start practicing SQL.
                         </div>
                         <div class="question-context" id="qContext"></div>
-                        
+                        <div id="generatedBadge" style="display:none;" class="generated-badge">
+                            <i class="fas fa-magic"></i> AI-Generated Question
+                        </div>
+
                         <div id="hintContainer" class="hint-panel" style="display:none;">
                             <div class="hint-title"><i class="fas fa-lightbulb"></i> Hint</div>
                             <div class="hint-text" id="hintText"></div>
+                        </div>
+
+                        <div class="navigation-buttons">
+                            <button class="btn btn-secondary" onclick="previousQuestion()" id="prevBtn" style="display:none;">
+                                <i class="fas fa-arrow-left"></i> Previous
+                            </button>
+                            <button class="btn btn-primary" onclick="nextQuestion()" id="nextBtn" style="display:none;">
+                                Next Question <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -1060,10 +1055,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="sql-editor">
-                            <textarea id="sqlInput" placeholder="-- Write your SQL query here
--- Example: SELECT * FROM users;"></textarea>
-                        </div>
+                        <div id="editorContainer"></div>
                     </div>
 
                     <!-- Output Panel -->
@@ -1135,14 +1127,14 @@
             <div style="max-width:1600px;margin:0 auto;">
                 <h1 class="section-title">Real-World Projects</h1>
                 <p class="section-subtitle">Role-based simulations to build job-ready skills</p>
-                
+
                 <div class="projects-grid" id="projectsGrid"></div>
             </div>
         </section>
     </main>
 
     <!-- Solution Modal -->
-    <div id="solutionModal" class="modal-overlay">
+    <div id="solutionModal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 class="modal-title" id="modalTitle">Solution</h2>
@@ -1155,16 +1147,18 @@
     </div>
 
     <script>
+
         // ==========================================
         // GLOBAL STATE
         // ==========================================
-        
+
         const AppState = {
             SQL: null,
             db: null,
             currentSection: 'practice',
             currentDb: null,
             currentQuestion: null,
+            editor: null,
             userProgress: {
                 xp: parseInt(localStorage.getItem('sql_xp')) || 0,
                 streak: parseInt(localStorage.getItem('sql_streak')) || 0,
@@ -1172,11 +1166,457 @@
                 accuracy: { 
                     correct: parseInt(localStorage.getItem('sql_correct')) || 0, 
                     total: parseInt(localStorage.getItem('sql_total')) || 0 
-                }
+                },
+                history: JSON.parse(localStorage.getItem('sql_history') || '[]')
             },
             filters: {
                 company: 'all',
                 difficulty: 'all'
+            }
+        };
+
+        // ==========================================
+        // MUTATION ENGINE - INFINITE QUESTION GENERATOR
+        // ==========================================
+
+        const MutationEngine = {
+            dnaBank: [
+                { id: 'T001', difficulty: 1, genes: ['count', 'single_table'], template: "How many {table} are in the database?", sql: "SELECT COUNT(*) as total FROM {table}" },
+                { id: 'T002', difficulty: 1, genes: ['select', 'single_table'], template: "List all {table} with their {col1} and {col2}", sql: "SELECT {col1}, {col2} FROM {table}" },
+                { id: 'T003', difficulty: 1, genes: ['distinct', 'single_table'], template: "Show all unique {col} values from {table}", sql: "SELECT DISTINCT {col} FROM {table}" },
+                { id: 'T004', difficulty: 1, genes: ['filter', 'single_table'], template: "Find {table} where {col} equals '{val}'", sql: "SELECT * FROM {table} WHERE {col} = '{val}'" },
+                { id: 'T005', difficulty: 1, genes: ['sort', 'single_table'], template: "List {table} sorted by {col} in descending order", sql: "SELECT * FROM {table} ORDER BY {col} DESC" },
+                { id: 'T006', difficulty: 2, genes: ['sum', 'group_by'], template: "Calculate total {agg_col} for each {group_col} in {table}", sql: "SELECT {group_col}, SUM({agg_col}) as total FROM {table} GROUP BY {group_col}" },
+                { id: 'T007', difficulty: 2, genes: ['avg', 'group_by'], template: "Find average {agg_col} per {group_col} in {table}", sql: "SELECT {group_col}, AVG({agg_col}) as average FROM {table} GROUP BY {group_col}" },
+                { id: 'T008', difficulty: 2, genes: ['count', 'group_by'], template: "Count how many {table} exist per {group_col}", sql: "SELECT {group_col}, COUNT(*) as count FROM {table} GROUP BY {group_col}" },
+                { id: 'T009', difficulty: 2, genes: ['max', 'group_by'], template: "Find maximum {agg_col} for each {group_col} in {table}", sql: "SELECT {group_col}, MAX({agg_col}) as maximum FROM {table} GROUP BY {group_col}" },
+                { id: 'T010', difficulty: 2, genes: ['having', 'group_by'], template: "Show {group_col} having more than {n} {table}", sql: "SELECT {group_col}, COUNT(*) as count FROM {table} GROUP BY {group_col} HAVING COUNT(*) > {n}" },
+                { id: 'T011', difficulty: 3, genes: ['inner_join', 'two_table'], template: "List all {t1} with their matching {t2} details", sql: "SELECT a.*, b.* FROM {t1} a INNER JOIN {t2} b ON a.{fk} = b.{pk}" },
+                { id: 'T012', difficulty: 3, genes: ['left_join', 'two_table'], template: "Find all {t1} including those without {t2}", sql: "SELECT a.*, b.* FROM {t1} a LEFT JOIN {t2} b ON a.{fk} = b.{pk}" },
+                { id: 'T013', difficulty: 3, genes: ['join_aggregate', 'two_table'], template: "Calculate total {agg_col} per {t1} using {t2} data", sql: "SELECT a.{name_col}, SUM(b.{agg_col}) as total FROM {t1} a JOIN {t2} b ON a.{pk} = b.{fk} GROUP BY a.{pk}, a.{name_col}" },
+                { id: 'T014', difficulty: 3, genes: ['join_filter', 'two_table'], template: "Find {t1} that have at least one {t2} in {date_range}", sql: "SELECT DISTINCT a.* FROM {t1} a JOIN {t2} b ON a.{pk} = b.{fk} WHERE b.{date_col} BETWEEN '{start}' AND '{end}'" },
+                { id: 'T015', difficulty: 3, genes: ['self_join', 'single_table'], template: "Find pairs of {table} with same {col}", sql: "SELECT a.*, b.* FROM {table} a JOIN {table} b ON a.{col} = b.{col} AND a.{pk} < b.{pk}" },
+                { id: 'T016', difficulty: 4, genes: ['subquery_in', 'two_table'], template: "Find {t1} that exist in {t2} with specific criteria", sql: "SELECT * FROM {t1} WHERE {pk} IN (SELECT {fk} FROM {t2} WHERE {condition})" },
+                { id: 'T017', difficulty: 4, genes: ['subquery_not_in', 'two_table'], template: "Find {t1} that have no matching {t2}", sql: "SELECT * FROM {t1} WHERE {pk} NOT IN (SELECT DISTINCT {fk} FROM {t2} WHERE {fk} IS NOT NULL)" },
+                { id: 'T018', difficulty: 4, genes: ['correlated_subquery', 'two_table'], template: "Find {t1} where {agg} exceeds the average of their group", sql: "SELECT * FROM {t1} a WHERE {agg_col} > (SELECT AVG({agg_col}) FROM {t1} b WHERE b.{group_col} = a.{group_col})" },
+                { id: 'T019', difficulty: 4, genes: ['exists', 'two_table'], template: "List {t1} that have at least 3 related {t2}", sql: "SELECT * FROM {t1} a WHERE EXISTS (SELECT 1 FROM {t2} b WHERE b.{fk} = a.{pk} GROUP BY b.{fk} HAVING COUNT(*) >= 3)" },
+                { id: 'T020', difficulty: 4, genes: ['case', 'single_table'], template: "Categorize {table} into tiers based on {col} values", sql: "SELECT *, CASE WHEN {col} >= {high} THEN 'High' WHEN {col} >= {medium} THEN 'Medium' ELSE 'Low' END as tier FROM {table}" },
+                { id: 'T021', difficulty: 5, genes: ['row_number', 'window_func'], template: "Assign row numbers to {table} ordered by {col}", sql: "SELECT *, ROW_NUMBER() OVER (ORDER BY {col} DESC) as row_num FROM {table}" },
+                { id: 'T022', difficulty: 5, genes: ['rank', 'window_func'], template: "Rank {table} by {col} with gaps for ties", sql: "SELECT *, RANK() OVER (ORDER BY {col} DESC) as ranking FROM {table}" },
+                { id: 'T023', difficulty: 5, genes: ['dense_rank', 'window_func'], template: "Rank {table} by {col} without gaps", sql: "SELECT *, DENSE_RANK() OVER (ORDER BY {col} DESC) as ranking FROM {table}" },
+                { id: 'T024', difficulty: 5, genes: ['running_total', 'window_func'], template: "Calculate running total of {col} in {table}", sql: "SELECT *, SUM({col}) OVER (ORDER BY {order_col}) as running_total FROM {table}" },
+                { id: 'T025', difficulty: 5, genes: ['partition', 'window_func'], template: "Rank {table} within each {group_col} by {col}", sql: "SELECT *, RANK() OVER (PARTITION BY {group_col} ORDER BY {col} DESC) as group_rank FROM {table}" },
+                { id: 'T026', difficulty: 5, genes: ['cte', 'join', 'aggregate'], template: "Find {t1} with above-average {t2} activity using CTE", sql: "WITH stats AS (SELECT {fk}, AVG({agg_col}) as avg_activity FROM {t2} GROUP BY {fk}) SELECT a.*, b.avg_activity FROM {t1} a JOIN stats b ON a.{pk} = b.{fk} WHERE b.avg_activity > (SELECT AVG(avg_activity) FROM stats)" },
+                { id: 'T027', difficulty: 5, genes: ['recursive', 'cte'], template: "Find all levels of {relation} hierarchy in {table}", sql: "WITH RECURSIVE hierarchy AS (SELECT {pk}, {name_col}, {fk}, 0 as level FROM {table} WHERE {fk} IS NULL UNION ALL SELECT t.{pk}, t.{name_col}, t.{fk}, h.level + 1 FROM {table} t JOIN hierarchy h ON t.{fk} = h.{pk}) SELECT * FROM hierarchy" },
+                { id: 'T028', difficulty: 5, genes: ['pivot', 'case_aggregate'], template: "Create pivot table showing {col1} vs {col2} counts", sql: "SELECT {col1}, SUM(CASE WHEN {col2} = '{val1}' THEN 1 ELSE 0 END) as {val1}_count, SUM(CASE WHEN {col2} = '{val2}' THEN 1 ELSE 0 END) as {val2}_count FROM {table} GROUP BY {col1}" },
+                { id: 'T029', difficulty: 5, genes: ['top_n_per_group', 'window_join'], template: "Find top {n} {t2} for each {t1} category", sql: "WITH ranked AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY {group_col} ORDER BY {order_col} DESC) as rn FROM {t2}) SELECT a.*, b.* FROM {t1} a JOIN ranked b ON a.{pk} = b.{fk} WHERE b.rn <= {n}" },
+                { id: 'T030', difficulty: 5, genes: ['gaps_islands', 'window_logic'], template: "Find gaps in {col} sequence in {table}", sql: "SELECT {col}, LEAD({col}) OVER (ORDER BY {col}) as next_{col}, (LEAD({col}) OVER (ORDER BY {col}) - {col}) as gap FROM {table} HAVING gap > 1" }
+            ],
+
+            userGenome: {
+                conqueredGenes: new Set(),
+                weakGenes: new Map(),
+                recentPatterns: [],
+                difficultyTrend: [],
+                mutationLevel: 1
+            },
+
+            crossBreed(template1, template2, userLevel) {
+                const child = {
+                    id: `HYB_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                    parents: [template1.id, template2.id],
+                    genes: [...new Set([...template1.genes, ...template2.genes])],
+                    difficulty: Math.min(5, Math.max(template1.difficulty, template2.difficulty) + 1),
+                    weight: 0.8
+                };
+
+                child.template = this.mergeTemplates(template1.template, template2.template);
+                child.sql = this.mergeSQL(template1.sql, template2.sql);
+
+                const weakGene = this.findWeakestGene();
+                if (weakGene && Math.random() < 0.5) {
+                    child.genes.push(weakGene);
+                    child.template += ` (Note: involves ${weakGene})`;
+                }
+
+                return child;
+            },
+
+            mergeTemplates(t1, t2) {
+                const parts1 = t1.split(/[.?]/);
+                const parts2 = t2.split(/[.?]/);
+                const mixed = parts1[0] + ' and ' + parts2[parts2.length - 2] + '?';
+                return this.obfuscatePattern(mixed);
+            },
+
+            mergeSQL(s1, s2) {
+                const getClause = (sql, keyword) => {
+                    const regex = new RegExp(`${keyword}.*?(?=(SELECT|FROM|WHERE|GROUP|ORDER|LIMIT|$))`, 'i');
+                    const match = sql.match(regex);
+                    return match ? match[0].trim() : '';
+                };
+
+                let hybrid = '';
+                if (s1.includes('WITH') || s2.includes('WITH')) {
+                    hybrid = `WITH combined AS (${s1}) ${s2.replace('FROM {table}', 'FROM combined')}`;
+                } else {
+                    hybrid = `${getClause(s1, 'SELECT')} FROM (${s1}) as subq ${getClause(s2, 'WHERE') || ''} ${getClause(s2, 'GROUP') || ''} ${getClause(s2, 'ORDER') || ''}`;
+                }
+                return hybrid;
+            },
+
+            obfuscatePattern(text) {
+                const synonyms = {
+                    'How many': ['Count the total', 'What is the number of', 'Calculate how many', 'Determine the count of', 'Find the quantity of'],
+                    'Find': ['Identify', 'Locate', 'Retrieve', 'Select', 'Get', 'Extract'],
+                    'List all': ['Show every', 'Display all', 'Retrieve complete list of', 'Output all', 'Present all'],
+                    'Show': ['Display', 'Present', 'Output', 'Render'],
+                    'Calculate': ['Compute', 'Determine', 'Figure out', 'Work out'],
+                    'total': ['combined', 'aggregate', 'cumulative', 'overall', 'sum total'],
+                    'where': ['with', 'having', 'that meet', 'satisfying', 'for which'],
+                    'per': ['for each', 'by every', 'grouped by'],
+                    'by': ['using', 'via', 'through']
+                };
+
+                let result = text;
+                Object.entries(synonyms).forEach(([word, alts]) => {
+                    const regex = new RegExp(`\b${word}\b`, 'gi');
+                    if (regex.test(result)) {
+                        result = result.replace(regex, alts[Math.floor(Math.random() * alts.length)]);
+                    }
+                });
+                return result;
+            },
+
+            generate(dbKey, userLevel, performanceHistory) {
+                this.updateGenome(performanceHistory);
+
+                const roll = Math.random();
+                let candidate;
+
+                if (roll < 0.4 || userLevel < 3) {
+                    candidate = this.selectWeightedTemplate(userLevel);
+                    candidate = this.mutateTemplate(candidate, userLevel);
+                } else if (roll < 0.7) {
+                    const t1 = this.selectWeightedTemplate(userLevel);
+                    const t2 = this.selectWeightedTemplate(userLevel);
+                    candidate = this.crossBreed(t1, t2, userLevel);
+                } else if (roll < 0.9) {
+                    candidate = this.createAdvancedMutant(userLevel);
+                } else {
+                    candidate = this.createChallengeQuestion(userLevel);
+                }
+
+                if (this.userGenome.recentPatterns.includes(candidate.id)) {
+                    return this.generate(dbKey, userLevel, performanceHistory);
+                }
+
+                this.userGenome.recentPatterns.push(candidate.id);
+                if (this.userGenome.recentPatterns.length > 15) {
+                    this.userGenome.recentPatterns.shift();
+                }
+
+                return this.instantiateQuestion(candidate, dbKey);
+            },
+
+            selectWeightedTemplate(userLevel) {
+                const eligible = this.dnaBank.filter(t => {
+                    const diffMatch = t.difficulty <= userLevel + 1 && t.difficulty >= Math.max(1, userLevel - 1);
+                    return diffMatch;
+                });
+
+                const weights = eligible.map(t => {
+                    let w = 1.0;
+
+                    const hasWeakGene = t.genes.some(g => this.userGenome.weakGenes.has(g));
+                    if (hasWeakGene) w *= 3;
+
+                    if (this.userGenome.recentPatterns.includes(t.id)) w *= 0.1;
+
+                    const hasNewGene = t.genes.some(g => !this.userGenome.conqueredGenes.has(g));
+                    if (hasNewGene) w *= 1.5;
+
+                    return w;
+                });
+
+                const total = weights.reduce((a, b) => a + b, 0);
+                let random = Math.random() * total;
+
+                for (let i = 0; i < eligible.length; i++) {
+                    random -= weights[i];
+                    if (random <= 0) return eligible[i];
+                }
+
+                return eligible[0] || this.dnaBank[0];
+            },
+
+            mutateTemplate(template, userLevel) {
+                const mutated = { ...template, id: `MUT_${Date.now()}` };
+
+                if (userLevel > 2 && Math.random() < 0.3) {
+                    const twists = [
+                        { text: ' (showing only top {n})', sql: ' LIMIT {n}' },
+                        { text: ' (excluding null values)', sql: ' WHERE {col} IS NOT NULL' },
+                        { text: ' with percentage of total', sql: ', SUM({col}) * 100.0 / SUM(SUM({col})) OVER () as pct' },
+                        { text: ' ranked by result', sql: ', RANK() OVER (ORDER BY result DESC) as rank' }
+                    ];
+                    const twist = twists[Math.floor(Math.random() * twists.length)];
+                    mutated.template = mutated.template.replace('?', twist.text + '?');
+                    if (!mutated.sql.includes('LIMIT') && twist.sql.includes('LIMIT')) {
+                        mutated.sql += twist.sql;
+                    }
+                }
+
+                mutated.template = this.obfuscatePattern(mutated.template);
+
+                return mutated;
+            },
+
+            createAdvancedMutant(userLevel) {
+                const templates = [
+                    this.selectWeightedTemplate(userLevel),
+                    this.selectWeightedTemplate(Math.max(1, userLevel - 1)),
+                    this.selectWeightedTemplate(Math.min(5, userLevel + 1))
+                ];
+
+                return {
+                    id: `ADV_${Date.now()}`,
+                    genes: [...new Set(templates.flatMap(t => t.genes))],
+                    difficulty: Math.min(5, userLevel + 1),
+                    template: this.mergeMultiTemplates(templates),
+                    sql: this.mergeMultiSQL(templates),
+                    weight: 0.5
+                };
+            },
+
+            createChallengeQuestion(userLevel) {
+                const challenges = [
+                    {
+                        template: "Find the {nth} highest {col} in each {group} without using window functions",
+                        sql: "SELECT a.{group_col}, a.{col} FROM {table} a WHERE (SELECT COUNT(DISTINCT b.{col}) FROM {table} b WHERE b.{group_col} = a.{group_col} AND b.{col} > a.{col}) = {n} - 1",
+                        genes: ['correlated_subquery', 'ranking_alternative', 'no_window']
+                    },
+                    {
+                        template: "Calculate running total of {col} without using window functions",
+                        sql: "SELECT a.*, (SELECT SUM(b.{col}) FROM {table} b WHERE b.{order_col} <= a.{order_col}) as running_total FROM {table} a ORDER BY a.{order_col}",
+                        genes: ['correlated_subquery', 'running_total_alternative', 'no_window']
+                    }
+                ];
+
+                return {
+                    ...challenges[Math.floor(Math.random() * challenges.length)],
+                    id: `CH_${Date.now()}`,
+                    difficulty: Math.min(5, userLevel + 1)
+                };
+            },
+
+            mergeMultiTemplates(templates) {
+                const parts = templates.map((t, i) => {
+                    let part = t.template.replace(/[.?]$/, '').toLowerCase();
+                    if (i === 0) return `First, ${part}`;
+                    if (i === templates.length - 1) return `then finally, ${part}`;
+                    return `then ${part}`;
+                });
+                return parts.join(', ') + '?';
+            },
+
+            mergeMultiSQL(templates) {
+                let sql = '';
+                templates.forEach((t, i) => {
+                    const alias = `step${i + 1}`;
+                    if (i === 0) {
+                        sql += `WITH ${alias} AS (${t.sql}) `;
+                    } else if (i === templates.length - 1) {
+                        sql += `${t.sql.replace(/FROM\s+\{?\w+\}?/i, `FROM step${i}`)}`;
+                    } else {
+                        sql += `, ${alias} AS (${t.sql.replace(/FROM\s+\{?\w+\}?/i, `FROM step${i}`)}) `;
+                    }
+                });
+                return sql;
+            },
+
+            instantiateQuestion(template, dbKey) {
+                const db = DatabaseContent[dbKey];
+                const tables = Object.keys(db.tables);
+
+                let text = template.template;
+                let sql = template.sql;
+
+                const mainTable = tables[Math.floor(Math.random() * tables.length)];
+                const shuffled = [...tables].sort(() => Math.random() - 0.5);
+
+                text = text.replace(/{table}/g, mainTable);
+                text = text.replace(/{t1}/g, shuffled[0] || mainTable);
+                text = text.replace(/{t2}/g, shuffled[1] || mainTable);
+                text = text.replace(/{t3}/g, shuffled[2] || mainTable);
+
+                sql = sql.replace(/{table}/g, mainTable);
+                sql = sql.replace(/{t1}/g, shuffled[0] || mainTable);
+                sql = sql.replace(/{t2}/g, shuffled[1] || mainTable);
+                sql = sql.replace(/{t3}/g, shuffled[2] || mainTable);
+
+                const tableData = db.tables[mainTable];
+                const cols = tableData.columns.map(c => c.name);
+                const colTypes = {};
+                tableData.columns.forEach(c => colTypes[c.name] = c.type);
+
+                const getCol = (pattern) => {
+                    const matches = cols.filter(c => {
+                        const lower = c.toLowerCase();
+                        if (pattern === 'pk') return lower.includes('id') && !lower.includes('_');
+                        if (pattern === 'fk') return lower.includes('_id');
+                        if (pattern === 'date') return lower.includes('date') || lower.includes('time');
+                        if (pattern === 'amount' || pattern === 'val') return colTypes[c] === 'INTEGER' || colTypes[c] === 'DECIMAL' || lower.includes('price') || lower.includes('amount') || lower.includes('salary');
+                        if (pattern === 'name') return lower.includes('name') || lower.includes('title');
+                        if (pattern === 'col') return true;
+                        return true;
+                    });
+                    return matches[Math.floor(Math.random() * matches.length)] || cols[0];
+                };
+
+                const patterns = ['pk', 'fk', 'col', 'col1', 'col2', 'group_col', 'agg_col', 'date_col', 'val_col', 'name_col', 'order_col', 'amount_col'];
+                patterns.forEach(p => {
+                    const regex = new RegExp(`{${p}}`, 'g');
+                    const replacement = getCol(p.replace('_col', '').replace('group', '').replace('agg', '').replace('order', ''));
+                    text = text.replace(regex, replacement);
+                    sql = sql.replace(regex, replacement);
+                });
+
+                const replacements = {
+                    '{n}': Math.floor(Math.random() * 5) + 2,
+                    '{val}': ['Active', 'Pending', 'Completed', 'New York', 'Electronics'][Math.floor(Math.random() * 5)],
+                    '{val1}': 'A',
+                    '{val2}': 'B',
+                    '{threshold}': Math.floor(Math.random() * 1000) + 100,
+                    '{start}': '2024-01-01',
+                    '{end}': '2024-12-31',
+                    '{date_range}': '2024',
+                    '{high}': '1000',
+                    '{medium}': '500',
+                    '{low}': '100',
+                    '{nth}': ['first', 'second', 'third'][Math.floor(Math.random() * 3)],
+                    '{prefix}': 'Pro',
+                    '{list}': "'A', 'B', 'C'",
+                    '{offset}': '10',
+                    '{default}': 'Unknown',
+                    '{excluded_category}': 'Other',
+                    '{relation}': 'manager',
+                    '{user_type}': 'active',
+                    '{min_freq}': '3',
+                    '{event}': 'purchase',
+                    '{step_col}': 'step',
+                    '{as_of_date}': '2024-06-01',
+                    '{component}': 'part_id',
+                    '{quantity}': 'qty',
+                    '{parent}': 'parent_id',
+                    '{seq_col}': 'sequence',
+                    '{bin1}': '100',
+                    '{bin2}': '500',
+                    '{bin3}': '1000',
+                    '{start_node}': '1',
+                    '{max_degree}': '3',
+                    '{from_col}': 'from_id',
+                    '{to_col}': 'to_id'
+                };
+
+                Object.entries(replacements).forEach(([key, val]) => {
+                    text = text.replace(new RegExp(key, 'g'), val);
+                    sql = sql.replace(new RegExp(key, 'g'), val);
+                });
+
+                const diffLabel = template.difficulty <= 2 ? 'easy' : template.difficulty <= 3 ? 'medium' : 'hard';
+
+                return {
+                    id: template.id,
+                    text: text,
+                    solution: sql,
+                    hint: this.generateHint(template.genes),
+                    difficulty: diffLabel,
+                    complexity: template.difficulty,
+                    genes: template.genes,
+                    isGenerated: true,
+                    context: this.generateContext(template.genes, mainTable)
+                };
+            },
+
+            generateContext(genes, table) {
+                const contexts = {
+                    'count': `The team needs to understand the volume of ${table} records.`,
+                    'sum': `Finance requires the total aggregation for reporting.`,
+                    'avg': `Analytics is looking for performance benchmarks.`,
+                    'join': `Data from multiple sources needs to be combined for this analysis.`,
+                    'subquery': `This requires nested logic to filter based on related data.`,
+                    'window_func': `Advanced ranking and partitioning is needed for this request.`,
+                    'cte': `A multi-step calculation using Common Table Expressions is required.`,
+                    'correlated_subquery': `Row-by-row comparison against aggregate values is needed.`
+                };
+
+                const relevant = genes.map(g => contexts[g]).filter(Boolean);
+                return relevant[0] || `Practice your SQL skills with this ${table} query.`;
+            },
+
+            generateHint(genes) {
+                const hints = [];
+
+                if (genes.includes('count')) hints.push('Use COUNT(*) or COUNT(column) for aggregations');
+                if (genes.includes('sum')) hints.push('SUM() adds up numeric values');
+                if (genes.includes('avg')) hints.push('AVG() calculates the mean value');
+                if (genes.includes('join')) hints.push('Use JOIN to combine tables on matching keys');
+                if (genes.includes('left_join')) hints.push('LEFT JOIN keeps all rows from the left table');
+                if (genes.includes('group_by')) hints.push('GROUP BY collapses rows with same values');
+                if (genes.includes('having')) hints.push('HAVING filters groups after aggregation');
+                if (genes.includes('subquery')) hints.push('Subquery goes in WHERE, FROM, or SELECT');
+                if (genes.includes('correlated_subquery')) hints.push('Correlated subquery references outer table');
+                if (genes.includes('window_func')) hints.push('Use OVER() clause for window functions');
+                if (genes.includes('cte')) hints.push('Start with WITH clause for CTEs');
+                if (genes.includes('case')) hints.push('CASE WHEN condition THEN value ELSE value END');
+                if (genes.includes('distinct')) hints.push('DISTINCT removes duplicate values');
+
+                return hints.join('. ') || 'Break this into smaller steps and test each part';
+            },
+
+            updateGenome(history) {
+                const recent = history.slice(-20);
+
+                recent.forEach(h => {
+                    if (!h.genes) return;
+
+                    if (h.correct) {
+                        h.genes.forEach(g => {
+                            const failures = this.userGenome.weakGenes.get(g) || 0;
+                            const successesNeeded = failures > 0 ? 5 : 3;
+                            const successes = recent.filter(r => r.correct && r.genes?.includes(g)).length;
+
+                            if (successes >= successesNeeded) {
+                                this.userGenome.conqueredGenes.add(g);
+                                this.userGenome.weakGenes.delete(g);
+                            }
+                        });
+                    } else {
+                        h.genes.forEach(g => {
+                            const count = (this.userGenome.weakGenes.get(g) || 0) + 1;
+                            this.userGenome.weakGenes.set(g, count);
+                            this.userGenome.conqueredGenes.delete(g);
+                        });
+                    }
+                });
+
+                const uniqueGenes = new Set(recent.flatMap(h => h.genes || [])).size;
+                this.userGenome.mutationLevel = Math.min(5, Math.floor(uniqueGenes / 5) + 1);
+            },
+
+            findWeakestGene() {
+                let weakest = null;
+                let maxFailures = 2;
+
+                this.userGenome.weakGenes.forEach((count, gene) => {
+                    if (count > maxFailures && !this.userGenome.conqueredGenes.has(gene)) {
+                        maxFailures = count;
+                        weakest = gene;
+                    }
+                });
+
+                return weakest;
             }
         };
 
@@ -1639,30 +2079,172 @@
 
         async function initializeApp() {
             try {
+                document.getElementById('loadingText').textContent = 'Loading SQL.js...';
+
                 // Initialize SQL.js
                 const SQL = await initSqlJs({
                     locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/${file}`
                 });
                 AppState.SQL = SQL;
-                
+
+                document.getElementById('loadingText').textContent = 'Initializing Monaco Editor...';
+
+                // Initialize Monaco Editor
+                await initMonacoEditor();
+
+                document.getElementById('loadingText').textContent = 'Setting up databases...';
+
                 // Setup UI
                 setupPracticeSection();
                 setupInterviewSection();
                 setupProjectsSection();
-                
-                // Update stats display
+
+                // Update stats
                 updateStats();
-                
+
                 // Hide loading
                 document.getElementById('loadingScreen').style.display = 'none';
-                
+
                 // Load first database
                 loadDatabase('ecommerce');
-                
+
             } catch (error) {
                 console.error('Initialization error:', error);
-                document.querySelector('.loading-text').textContent = 'Error loading SQL engine. Please refresh.';
-                document.querySelector('.loading-text').style.color = 'var(--danger)';
+                document.getElementById('loadingText').textContent = 'Error: ' + error.message;
+                document.getElementById('loadingText').style.color = 'var(--danger)';
+            }
+        }
+
+        // ==========================================
+        // MONACO EDITOR INITIALIZATION
+        // ==========================================
+
+        async function initMonacoEditor() {
+            return new Promise((resolve, reject) => {
+                require.config({ 
+                    paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }
+                });
+
+                require(['vs/editor/editor.main'], function() {
+                    try {
+                        // Create editor
+                        const container = document.getElementById('editorContainer');
+
+                        AppState.editor = monaco.editor.create(container, {
+                            value: '-- Write your SQL query here\n-- Press Ctrl+Enter to run\n',
+                            language: 'sql',
+                            theme: 'vs-dark',
+                            automaticLayout: true,
+                            minimap: { enabled: false },
+                            fontSize: 14,
+                            lineNumbers: 'on',
+                            roundedSelection: false,
+                            scrollBeyondLastLine: false,
+                            readOnly: false,
+                            wordWrap: 'on',
+                            tabSize: 2,
+                            insertSpaces: true,
+                            suggestOnTriggerCharacters: true,
+                            quickSuggestions: true,
+                            snippetSuggestions: 'top',
+                            folding: true,
+                            renderLineHighlight: 'all',
+                            matchBrackets: 'always',
+                            autoIndent: 'full',
+                            formatOnPaste: true,
+                            formatOnType: true
+                        });
+
+                        // SQL Keywords for autocomplete
+                        const sqlKeywords = [
+                            'SELECT', 'FROM', 'WHERE', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'TABLE',
+                            'DROP', 'ALTER', 'INDEX', 'VIEW', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'OUTER',
+                            'ON', 'GROUP', 'BY', 'ORDER', 'HAVING', 'LIMIT', 'OFFSET', 'UNION', 'ALL',
+                            'DISTINCT', 'AS', 'AND', 'OR', 'NOT', 'NULL', 'IS', 'IN', 'BETWEEN', 'LIKE',
+                            'EXISTS', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'IF', 'COUNT', 'SUM', 'AVG',
+                            'MIN', 'MAX', 'ROUND', 'CAST', 'COALESCE', 'NULLIF', 'DATE', 'TIME',
+                            'DATETIME', 'CURRENT_DATE', 'CURRENT_TIME', 'STRFTIME', 'JULIANDAY',
+                            'WITH', 'RECURSIVE', 'OVER', 'PARTITION', 'ROW_NUMBER', 'RANK', 'DENSE_RANK',
+                            'LEAD', 'LAG', 'FIRST_VALUE', 'LAST_VALUE', 'NTILE', 'PERCENT_RANK',
+                            'CUME_DIST', 'ROWS', 'RANGE', 'PRECEDING', 'FOLLOWING', 'UNBOUNDED',
+                            'CURRENT', 'ROW', 'EXCLUDE', 'TIES', 'GROUPS', 'WINDOW'
+                        ];
+
+                        // Register SQL completion provider
+                        monaco.languages.registerCompletionItemProvider('sql', {
+                            provideCompletionItems: function(model, position) {
+                                const suggestions = sqlKeywords.map(keyword => ({
+                                    label: keyword,
+                                    kind: monaco.languages.CompletionItemKind.Keyword,
+                                    insertText: keyword,
+                                    detail: 'SQL Keyword',
+                                    documentation: { value: `SQL keyword: ${keyword}` }
+                                }));
+
+                                // Add table names from current database
+                                if (AppState.currentDb && DatabaseContent[AppState.currentDb]) {
+                                    const tables = Object.keys(DatabaseContent[AppState.currentDb].tables);
+                                    tables.forEach(table => {
+                                        suggestions.push({
+                                            label: table,
+                                            kind: monaco.languages.CompletionItemKind.Class,
+                                            insertText: table,
+                                            detail: 'Table',
+                                            documentation: { value: `Table: ${table}` }
+                                        });
+
+                                        // Add columns for this table
+                                        const cols = DatabaseContent[AppState.currentDb].tables[table].columns;
+                                        cols.forEach(col => {
+                                            suggestions.push({
+                                                label: `${table}.${col.name}`,
+                                                kind: monaco.languages.CompletionItemKind.Field,
+                                                insertText: `${table}.${col.name}`,
+                                                detail: `${col.type} - ${table}`,
+                                                documentation: { value: `Column: ${col.name} (${col.type})` }
+                                            });
+                                        });
+                                    });
+                                }
+
+                                return { suggestions: suggestions };
+                            },
+                            triggerCharacters: [' ', '.', ',']
+                        });
+
+                        // Add keyboard shortcut for Ctrl+Enter
+                        AppState.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+                            runQuery();
+                        });
+
+                        // Add format command
+                        AppState.editor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF, function() {
+                            AppState.editor.getAction('editor.action.formatDocument').run();
+                        });
+
+                        // Handle resize
+                        window.addEventListener('resize', function() {
+                            if (AppState.editor) {
+                                AppState.editor.layout();
+                            }
+                        });
+
+                        resolve();
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+            });
+        }
+
+        // Helper functions for editor
+        function getEditorValue() {
+            return AppState.editor ? AppState.editor.getValue() : '';
+        }
+
+        function setEditorValue(text) {
+            if (AppState.editor) {
+                AppState.editor.setValue(text);
             }
         }
 
@@ -1672,7 +2254,7 @@
 
         function setupPracticeSection() {
             const dbList = document.getElementById('dbList');
-            
+
             Object.entries(DatabaseContent).forEach(([key, db]) => {
                 const item = document.createElement('div');
                 item.className = 'db-item';
@@ -1689,35 +2271,35 @@
         function loadDatabase(dbKey) {
             AppState.currentDb = dbKey;
             const dbConfig = DatabaseContent[dbKey];
-            
+
             // Update UI
             document.querySelectorAll('.db-item').forEach(item => {
                 item.classList.toggle('active', item.dataset.db === dbKey);
             });
-            
+
             // Create new database
             AppState.db = new AppState.SQL.Database();
-            
+
             // Create tables and insert data
             Object.entries(dbConfig.tables).forEach(([tableName, tableData]) => {
                 const cols = tableData.columns.map(c => `${c.name} ${c.type}`).join(', ');
                 AppState.db.run(`CREATE TABLE ${tableName} (${cols})`);
-                
+
                 const placeholders = tableData.columns.map(() => '?').join(', ');
                 const stmt = AppState.db.prepare(`INSERT INTO ${tableName} VALUES (${placeholders})`);
-                
+
                 tableData.data.forEach(row => {
                     stmt.run(row);
                 });
                 stmt.free();
             });
-            
+
             // Show schema
             showSchema(dbConfig);
-            
+
             // Load first question
             loadQuestion(0);
-            
+
             // Update progress
             updateProgress();
         }
@@ -1725,47 +2307,66 @@
         function showSchema(dbConfig) {
             const container = document.getElementById('schemaContent');
             container.innerHTML = '';
-            
+
             Object.entries(dbConfig.tables).forEach(([tableName, tableData]) => {
                 const tableEl = document.createElement('div');
                 tableEl.className = 'schema-table';
-                
+
                 let rowsHtml = tableData.columns.map(col => `
                     <div class="schema-row">
                         <span class="col-name">${col.name}</span>
                         <span class="col-type">${col.type}</span>
                     </div>
                 `).join('');
-                
+
                 tableEl.innerHTML = `
                     <div class="schema-header">
                         <i class="fas fa-table"></i> ${tableName}
                     </div>
                     ${rowsHtml}
                 `;
-                
+
                 container.appendChild(tableEl);
             });
         }
 
         function loadQuestion(index) {
             const dbConfig = DatabaseContent[AppState.currentDb];
-            if (!dbConfig.questions[index]) index = 0;
-            
-            const question = dbConfig.questions[index];
-            AppState.currentQuestion = { ...question, index };
-            
+            const staticCount = dbConfig.questions.length;
+
+            let question;
+
+            if (index < staticCount) {
+                // Use static question
+                question = dbConfig.questions[index];
+                AppState.currentQuestion = { ...question, index, isGenerated: false };
+
+                // Hide generated badge
+                document.getElementById('generatedBadge').style.display = 'none';
+            } else {
+                // Generate infinite question using MutationEngine
+                const userLevel = calculateUserLevel();
+                const performance = getRecentPerformance();
+
+                question = MutationEngine.generate(AppState.currentDb, userLevel, performance);
+                AppState.currentQuestion = { ...question, index, isGenerated: true };
+
+                // Show generated badge
+                document.getElementById('generatedBadge').style.display = 'inline-block';
+            }
+
             // Update UI
             document.getElementById('qText').textContent = question.text;
-            document.getElementById('qContext').textContent = question.context;
-            document.getElementById('qNumber').textContent = `Question ${index + 1} of ${dbConfig.questions.length}`;
-            
+            document.getElementById('qContext').textContent = question.context || '';
+            document.getElementById('qNumber').textContent = question.isGenerated ? 
+                `Question ${index + 1} (AI-Generated)` : `Question ${index + 1} of ${staticCount}`;
+
             const diffBadge = document.getElementById('diffBadge');
             diffBadge.textContent = question.difficulty;
             diffBadge.className = `difficulty-badge diff-${question.difficulty}`;
-            
+
             document.getElementById('hintContainer').style.display = 'none';
-            
+
             // Show expected output
             try {
                 const result = AppState.db.exec(question.solution);
@@ -1773,7 +2374,7 @@
             } catch (e) {
                 document.getElementById('expectedOutput').innerHTML = '<div class="error-message">Error loading expected output</div>';
             }
-            
+
             // Clear user output
             document.getElementById('userOutput').innerHTML = `
                 <div class="empty-state">
@@ -1781,15 +2382,52 @@
                     <span>Run your query to see results</span>
                 </div>
             `;
-            
+
             // Clear editor
-            document.getElementById('sqlInput').value = '';
+            setEditorValue('');
+
+            // Update navigation buttons
+            document.getElementById('prevBtn').style.display = index > 0 ? 'flex' : 'none';
+            document.getElementById('nextBtn').style.display = 'flex';
+        }
+
+        function calculateUserLevel() {
+            const xp = AppState.userProgress.xp;
+            if (xp < 100) return 1;
+            if (xp < 300) return 2;
+            if (xp < 600) return 3;
+            if (xp < 1000) return 4;
+            return 5;
+        }
+
+        function getRecentPerformance() {
+            return AppState.userProgress.history.slice(-20);
+        }
+
+        function nextQuestion() {
+            const currentIdx = AppState.currentQuestion ? AppState.currentQuestion.index : 0;
+            loadQuestion(currentIdx + 1);
+        }
+
+        function previousQuestion() {
+            const currentIdx = AppState.currentQuestion ? AppState.currentQuestion.index : 0;
+            if (currentIdx > 0) {
+                loadQuestion(currentIdx - 1);
+            }
+        }
+
+        function skipQuestion() {
+            showToast('Question skipped', 'warning');
+            nextQuestion();
         }
 
         function runQuery() {
-            const sql = document.getElementById('sqlInput').value.trim();
-            if (!sql) return;
-            
+            const sql = getEditorValue().trim();
+            if (!sql) {
+                showToast('Please enter a SQL query', 'error');
+                return;
+            }
+
             try {
                 const result = AppState.db.exec(sql);
                 if (result.length > 0) {
@@ -1803,24 +2441,30 @@
         }
 
         function submitAnswer() {
-            const userSql = document.getElementById('sqlInput').value.trim();
-            if (!userSql || !AppState.currentQuestion) return;
-            
+            const userSql = getEditorValue().trim();
+            if (!userSql || !AppState.currentQuestion) {
+                showToast('Please enter a SQL query', 'error');
+                return;
+            }
+
             // First run the query to show output
             runQuery();
-            
+
             try {
                 const userResult = AppState.db.exec(userSql);
                 const expectedResult = AppState.db.exec(AppState.currentQuestion.solution);
-                
+
                 const isCorrect = compareResults(userResult, expectedResult);
-                
+
+                // Track performance for MutationEngine learning
+                trackPerformance(isCorrect);
+
                 if (isCorrect) {
                     handleCorrectAnswer();
                 } else {
                     handleWrongAnswer();
                 }
-                
+
             } catch (error) {
                 showToast('Error in query: ' + error.message, 'error');
             }
@@ -1828,48 +2472,67 @@
 
         function compareResults(user, expected) {
             if (!user.length || !expected.length) return false;
-            
+
             const u = user[0];
             const e = expected[0];
-            
+
             if (u.columns.length !== e.columns.length) return false;
             if (u.values.length !== e.values.length) return false;
-            
-            // Sort both for comparison
+
+            // Sort both for comparison (order doesn't matter for most queries)
             const sortFn = (a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1;
             const uSorted = [...u.values].sort(sortFn);
             const eSorted = [...e.values].sort(sortFn);
-            
+
             return JSON.stringify(uSorted) === JSON.stringify(eSorted);
+        }
+
+        function trackPerformance(isCorrect) {
+            const record = {
+                timestamp: Date.now(),
+                questionId: AppState.currentQuestion.id,
+                genes: AppState.currentQuestion.genes || [],
+                difficulty: AppState.currentQuestion.difficulty,
+                complexity: AppState.currentQuestion.complexity || 1,
+                correct: isCorrect,
+                isGenerated: AppState.currentQuestion.isGenerated || false
+            };
+
+            AppState.userProgress.history.push(record);
+            if (AppState.userProgress.history.length > 50) {
+                AppState.userProgress.history.shift();
+            }
+
+            localStorage.setItem('sql_history', JSON.stringify(AppState.userProgress.history));
         }
 
         function handleCorrectAnswer() {
             const qid = `${AppState.currentDb}_${AppState.currentQuestion.id}`;
-            
+
             if (!AppState.userProgress.completed.has(qid)) {
                 AppState.userProgress.completed.add(qid);
                 AppState.userProgress.xp += 25;
                 AppState.userProgress.streak++;
                 AppState.userProgress.accuracy.correct++;
+
+                // Bonus XP for generated questions
+                if (AppState.currentQuestion.isGenerated) {
+                    AppState.userProgress.xp += 10;
+                }
+
                 saveProgress();
-                showToast(`Correct! +25 XP (Streak: ${AppState.userProgress.streak})`, 'success');
+                showToast(`Correct! +${AppState.currentQuestion.isGenerated ? '35' : '25'} XP (Streak: ${AppState.userProgress.streak})`, 'success');
             } else {
                 showToast('Correct! (Already completed)', 'success');
             }
-            
+
             AppState.userProgress.accuracy.total++;
             updateStats();
             updateProgress();
-            
+
             // Auto advance after delay
             setTimeout(() => {
-                const nextIndex = AppState.currentQuestion.index + 1;
-                const dbConfig = DatabaseContent[AppState.currentDb];
-                if (nextIndex < dbConfig.questions.length) {
-                    loadQuestion(nextIndex);
-                } else {
-                    showToast('Database completed! Great job.', 'success');
-                }
+                nextQuestion();
             }, 2000);
         }
 
@@ -1890,19 +2553,20 @@
         function updateProgress() {
             const dbConfig = DatabaseContent[AppState.currentDb];
             if (!dbConfig) return;
-            
+
             let completed = 0;
             dbConfig.questions.forEach(q => {
                 if (AppState.userProgress.completed.has(`${AppState.currentDb}_${q.id}`)) {
                     completed++;
                 }
             });
-            
+
             const total = dbConfig.questions.length;
             const percent = Math.round((completed / total) * 100);
-            
-            document.getElementById('progressText').textContent = `${completed}/${total} Completed`;
+
+            document.getElementById('progressText').textContent = `${completed}/${total} Static Completed`;
             document.getElementById('progressPercent').textContent = `${percent}%`;
+            document.getElementById('progressBar').style.width = `${percent}%`;
         }
 
         function saveProgress() {
@@ -1929,13 +2593,13 @@
         function renderInterviewQuestions() {
             const container = document.getElementById('interviewQuestions');
             container.innerHTML = '';
-            
+
             const filtered = InterviewQuestions.filter(q => {
                 const companyMatch = AppState.filters.company === 'all' || q.company === AppState.filters.company;
                 const diffMatch = AppState.filters.difficulty === 'all' || q.difficulty === AppState.filters.difficulty;
                 return companyMatch && diffMatch;
             });
-            
+
             filtered.forEach(q => {
                 const card = document.createElement('div');
                 card.className = 'question-card';
@@ -1976,12 +2640,13 @@
             renderInterviewQuestions();
         }
 
-                   function updateFilterChips(containerId, activeValue) {
+        function updateFilterChips(containerId, activeValue) {
             const container = document.getElementById(containerId);
             const chips = container.querySelectorAll('.filter-chip');
             chips.forEach(chip => {
                 const chipValue = chip.textContent.toLowerCase();
-                const isActive = activeValue === 'all' ? chip.textContent === 'All' : chipValue.includes(activeValue);
+                const isActive = activeValue === 'all' ? chip.textContent === 'All' : 
+                                chipValue.includes(activeValue.toLowerCase());
                 chip.classList.toggle('active', isActive);
             });
         }
@@ -1989,18 +2654,18 @@
         function showSolution(questionId) {
             const q = InterviewQuestions.find(x => x.id === questionId);
             if (!q) return;
-            
+
             document.getElementById('modalTitle').textContent = `${q.companyName} - ${q.title}`;
             document.getElementById('modalBody').innerHTML = `
                 <p><strong>Question:</strong></p>
                 <p>${q.question}</p>
-                
+
                 <h3>Solution</h3>
                 <pre><code>${q.solution}</code></pre>
-                
+
                 <h3>Explanation</h3>
                 <p>${q.explanation}</p>
-                
+
                 <div style="margin-top:24px;padding:16px;background:var(--bg-primary);border-radius:8px;">
                     <strong>Tip:</strong> Click "Try It" to practice this query with a sample database.
                 </div>
@@ -2011,52 +2676,51 @@
         function tryInPractice(questionId) {
             const q = InterviewQuestions.find(x => x.id === questionId);
             if (!q) return;
-            
+
             // Switch to practice section
             switchSection('practice');
-            
+
             // Load HR database (most compatible with interview questions)
             loadDatabase('hr');
-            
-            // Set a custom question based on interview question
+
+            // Set up as custom question
             setTimeout(() => {
-                document.getElementById('qText').textContent = `[INTERVIEW PREP] ${q.title}: ${q.question}`;
+                document.getElementById('qText').textContent = `[INTERVIEW] ${q.title}: ${q.question}`;
                 document.getElementById('qContext').textContent = `From ${q.companyName} - ${q.explanation}`;
                 document.getElementById('diffBadge').textContent = q.difficulty;
                 document.getElementById('diffBadge').className = `difficulty-badge diff-${q.difficulty}`;
                 document.getElementById('qNumber').textContent = 'Interview Practice';
-                
-                // Store as current question for validation
+                document.getElementById('hintText').textContent = 'This is an interview question from ' + q.companyName + '. ' + q.explanation;
+
+                // Store the solution temporarily
                 AppState.currentQuestion = {
-                    text: q.question,
-                    solution: q.solution,
-                    hint: 'Check the solution in Interview section if needed',
+                    id: 'interview_' + q.id,
+                    text: `[INTERVIEW] ${q.title}: ${q.question}`,
+                    context: `From ${q.companyName} - ${q.explanation}`,
                     difficulty: q.difficulty,
-                    id: `int_${q.id}`,
-                    index: 0
+                    solution: q.solution,
+                    hint: q.explanation,
+                    isInterview: true
                 };
-                
-                // Show expected output
-                try {
-                    const result = AppState.db.exec(q.solution);
-                    document.getElementById('expectedOutput').innerHTML = renderTable(result[0]);
-                } catch (e) {
-                    document.getElementById('expectedOutput').innerHTML = '<div class="error-message">Create tables first to see expected output</div>';
-                }
-                
+
+                // Clear outputs
                 document.getElementById('userOutput').innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-play-circle" style="font-size:32px;opacity:0.3;"></i>
-                        <span>Write your query based on this interview question</span>
+                        <span>Run your query to see results</span>
                     </div>
                 `;
-                
-                showToast(`Loaded: ${q.title} from ${q.companyName}`, 'success');
-            }, 100);
-        }
+                document.getElementById('expectedOutput').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-table" style="font-size:32px;opacity:0.3;"></i>
+                        <span>Expected output will appear here</span>
+                    </div>
+                `;
 
-        function closeModal() {
-            document.getElementById('solutionModal').classList.remove('active');
+                setEditorValue(`-- Write your solution here\n-- Hint: ${q.explanation.substring(0, 100)}...`);
+
+                showToast('Interview question loaded! Write your solution.', 'success');
+            }, 500);
         }
 
         // ==========================================
@@ -2066,17 +2730,15 @@
         function setupProjectsSection() {
             const container = document.getElementById('projectsGrid');
             container.innerHTML = '';
-            
+
             Projects.forEach(proj => {
                 const card = document.createElement('div');
                 card.className = 'project-card';
                 card.onclick = () => openProject(proj.id);
                 card.innerHTML = `
-                    <div class="project-banner" style="background:${proj.color};">
-                        <i class="fas ${proj.icon}"></i>
-                        <span class="project-difficulty" style="background:rgba(255,255,255,0.2);color:white;">
-                            ${proj.difficulty}
-                        </span>
+                    <div class="project-banner" style="background: linear-gradient(135deg, ${proj.color}22, ${proj.color}44);">
+                        <i class="fas ${proj.icon}" style="color: ${proj.color};"></i>
+                        <span class="project-difficulty" style="background: ${proj.color};color: white;">${proj.difficulty}</span>
                     </div>
                     <div class="project-body">
                         <div class="project-role">${proj.role}</div>
@@ -2084,7 +2746,7 @@
                         <div class="project-desc">${proj.description}</div>
                         <div class="project-meta">
                             <span><i class="fas fa-clock"></i> ${proj.duration}</span>
-                            <span><i class="fas fa-table"></i> ${proj.tables.length} Tables</span>
+                            <span><i class="fas fa-database"></i> ${proj.tables.length} Tables</span>
                             <span><i class="fas fa-tasks"></i> ${proj.tasks.length} Tasks</span>
                         </div>
                     </div>
@@ -2096,162 +2758,139 @@
         function openProject(projectId) {
             const proj = Projects.find(p => p.id === projectId);
             if (!proj) return;
-            
+
             document.getElementById('modalTitle').textContent = proj.title;
             document.getElementById('modalBody').innerHTML = `
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-                    <div style="width:48px;height:48px;border-radius:12px;background:${proj.color};display:flex;align-items:center;justify-content:center;color:white;font-size:24px;">
-                        <i class="fas ${proj.icon}"></i>
-                    </div>
-                    <div>
-                        <div style="font-weight:600;">${proj.role}</div>
-                        <div style="font-size:13px;color:var(--text-secondary);">${proj.domain} • ${proj.difficulty}</div>
-                    </div>
+                <div style="margin-bottom: 24px;">
+                    <span style="display: inline-block; background: ${proj.color}22; color: ${proj.color}; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 12px;">
+                        ${proj.domain}
+                    </span>
+                    <p style="color: var(--text-secondary); line-height: 1.6;">${proj.description}</p>
                 </div>
-                
-                <p>${proj.description}</p>
-                
-                <h3>Database Tables</h3>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+
+                <h3><i class="fas fa-database"></i> Database Schema</h3>
+                <div style="background: var(--bg-primary); padding: 16px; border-radius: 8px; margin: 16px 0;">
                     ${proj.tables.map(t => `
-                        <div style="background:var(--bg-primary);padding:12px;border-radius:8px;">
-                            <div style="font-weight:600;">${t.name}</div>
-                            <div style="font-size:12px;color:var(--text-secondary);">${t.desc}</div>
+                        <div style="margin-bottom: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 6px; border-left: 3px solid ${proj.color};">
+                            <strong style="color: ${proj.color};">${t.name}</strong>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${t.desc}</p>
                         </div>
                     `).join('')}
                 </div>
-                
-                <h3>Your Tasks</h3>
+
+                <h3><i class="fas fa-tasks"></i> Your Tasks</h3>
                 <ul class="task-list">
-                    ${proj.tasks.map(t => `<li>${t}</li>`).join('')}
+                    ${proj.tasks.map((task, i) => `
+                        <li>
+                            <span style="color: var(--primary); font-weight: 600; min-width: 24px;">${i + 1}.</span>
+                            <span>${task}</span>
+                        </li>
+                    `).join('')}
                 </ul>
-                
-                <h3>Final Challenge</h3>
-                <div style="background:var(--bg-primary);padding:16px;border-radius:8px;border-left:4px solid var(--primary);">
-                    <strong>${proj.challenge}</strong>
-                </div>
-                
-                <div style="margin-top:24px;display:flex;gap:12px;">
-                    <button class="btn btn-primary" onclick="startProjectPractice('${proj.id}')">
+
+                <div style="background: linear-gradient(135deg, ${proj.color}11, ${proj.color}22); border: 1px solid ${proj.color}44; border-radius: 12px; padding: 20px; margin-top: 24px;">
+                    <h3 style="color: ${proj.color}; margin-top: 0;"><i class="fas fa-trophy"></i> Final Challenge</h3>
+                    <p style="margin-bottom: 16px;">${proj.challenge}</p>
+                    <button class="btn btn-primary" onclick="startProject('${proj.id}')" style="width: 100%; justify-content: center;">
                         <i class="fas fa-rocket"></i> Start Project
                     </button>
-                    <button class="btn btn-secondary" onclick="showProjectSolution('${proj.id}')">
-                        <i class="fas fa-eye"></i> View Solution Approach
-                    </button>
+                </div>
+
+                <div style="margin-top: 24px; padding: 16px; background: var(--bg-primary); border-radius: 8px; font-size: 13px; color: var(--text-secondary);">
+                    <i class="fas fa-lightbulb" style="color: var(--warning);"></i> 
+                    <strong>Pro Tip:</strong> This project simulates real-world scenarios. Take your time and think about performance!
                 </div>
             `;
             document.getElementById('solutionModal').classList.add('active');
         }
 
-        function startProjectPractice(projectId) {
-            const proj = Projects.find(p => p.id === projectId);
-            if (!proj) return;
-            
+        function startProject(projectId) {
             closeModal();
             switchSection('practice');
-            
-            // Create project database
-            AppState.db = new AppState.SQL.Database();
-            AppState.currentDb = 'project_' + projectId;
-            
-            // Create sample tables for project
-            proj.tables.forEach(table => {
-                try {
-                    AppState.db.run(`CREATE TABLE ${table.name} (id INTEGER PRIMARY KEY, data TEXT)`);
-                } catch(e) {}
-            });
-            
-            setTimeout(() => {
-                document.getElementById('qText').textContent = `[PROJECT] ${proj.title}: ${proj.tasks[0]}`;
-                document.getElementById('qContext').textContent = `You are: ${proj.role}. ${proj.description}`;
-                document.getElementById('diffBadge').textContent = proj.difficulty;
-                document.getElementById('diffBadge').className = `difficulty-badge diff-${proj.difficulty.toLowerCase()}`;
-                document.getElementById('qNumber').textContent = 'Project Task 1';
-                
-                document.getElementById('schemaContent').innerHTML = `
-                    <div class="schema-table">
-                        <div class="schema-header"><i class="fas fa-info-circle"></i> Project Tables</div>
-                        ${proj.tables.map(t => `<div class="schema-row"><span class="col-name">${t.name}</span></div>`).join('')}
-                    </div>
-                    <div style="padding:12px;background:var(--bg-primary);border-radius:8px;margin-top:12px;font-size:12px;color:var(--text-secondary);">
-                        Create tables based on project requirements and complete all ${proj.tasks.length} tasks.
-                    </div>
-                `;
-                
-                showToast(`Started: ${proj.title}`, 'success');
-            }, 100);
-        }
 
-        function showProjectSolution(projectId) {
             const proj = Projects.find(p => p.id === projectId);
-            if (!proj) return;
-            
-            document.getElementById('modalBody').innerHTML += `
-                <h3>Solution Approach</h3>
-                <div style="background:var(--bg-primary);padding:16px;border-radius:8px;">
-                    <p>${proj.solution}</p>
+
+            // Create project database
+            AppState.currentDb = 'project_' + projectId;
+            AppState.db = new AppState.SQL.Database();
+
+            // Create tables based on project schema
+            if (projectId === 'proj1') {
+                // Netflix project
+                AppState.db.run(`CREATE TABLE users (user_id INTEGER, username TEXT, plan_type TEXT, join_date DATE)`);
+                AppState.db.run(`CREATE TABLE content (content_id INTEGER, title TEXT, genre TEXT, type TEXT, production_cost INTEGER)`);
+                AppState.db.run(`CREATE TABLE viewing_history (user_id INTEGER, content_id INTEGER, watch_date DATE, duration_minutes INTEGER)`);
+                AppState.db.run(`CREATE TABLE subscriptions (user_id INTEGER, month TEXT, revenue INTEGER)`);
+
+                // Insert sample data
+                const users = [[1, 'user1', 'Premium', '2023-01-01'], [2, 'user2', 'Basic', '2023-02-01'], [3, 'user3', 'Standard', '2023-03-01']];
+                const content = [[1, 'Stranger Things', 'Sci-Fi', 'Original', 10000000], [2, 'The Office', 'Comedy', 'Licensed', 5000000], [3, 'Wednesday', 'Horror', 'Original', 8000000]];
+
+                users.forEach(u => AppState.db.run(`INSERT INTO users VALUES (?, ?, ?, ?)`, u));
+                content.forEach(c => AppState.db.run(`INSERT INTO content VALUES (?, ?, ?, ?, ?)`, c));
+            } else if (projectId === 'proj2') {
+                // Shopify project
+                AppState.db.run(`CREATE TABLE sessions (session_id INTEGER, user_id INTEGER, source TEXT, start_time TIMESTAMP)`);
+                AppState.db.run(`CREATE TABLE events (event_id INTEGER, session_id INTEGER, event_type TEXT, product_id INTEGER, timestamp TIMESTAMP)`);
+                AppState.db.run(`CREATE TABLE products (product_id INTEGER, name TEXT, price INTEGER, category TEXT)`);
+                AppState.db.run(`CREATE TABLE customers (customer_id INTEGER, acquisition_channel TEXT, lifetime_value INTEGER)`);
+
+                const products = [[1, 'T-Shirt', 25, 'Apparel'], [2, 'Jeans', 60, 'Apparel'], [3, 'Sneakers', 100, 'Footwear']];
+                products.forEach(p => AppState.db.run(`INSERT INTO products VALUES (?, ?, ?, ?)`, p));
+            }
+
+            // Update UI for project mode
+            document.getElementById('qText').textContent = `🚀 PROJECT: ${proj.title}`;
+            document.getElementById('qContext').textContent = proj.tasks[0];
+            document.getElementById('qNumber').textContent = 'Task 1 of ' + proj.tasks.length;
+            document.getElementById('diffBadge').textContent = proj.difficulty;
+            document.getElementById('diffBadge').className = 'difficulty-badge diff-hard';
+
+            // Update schema panel
+            const schemaContent = document.getElementById('schemaContent');
+            schemaContent.innerHTML = proj.tables.map(t => `
+                <div class="schema-table">
+                    <div class="schema-header"><i class="fas fa-table"></i> ${t.name}</div>
+                    <div class="schema-row"><span class="col-name">${t.desc}</span></div>
                 </div>
-            `;
+            `).join('');
+
+            setEditorValue(`-- Project: ${proj.title}\n-- Task 1: ${proj.tasks[0]}\n\n-- Write your query here`);
+            showToast('Project loaded! Complete all tasks to finish.', 'success');
         }
 
         // ==========================================
         // UTILITY FUNCTIONS
         // ==========================================
 
-        function renderTable(data) {
-            if (!data || !data.values || data.values.length === 0) {
-                return '<div class="empty-state">No data returned</div>';
-            }
-            
-            const columns = data.columns;
-            const rows = data.values.slice(0, 50); // Limit to 50 rows
-            
-            let html = '<table class="data-table"><thead><tr>';
-            columns.forEach(col => {
-                html += `<th>${col}</th>`;
-            });
-            html += '</tr></thead><tbody>';
-            
-            rows.forEach(row => {
-                html += '<tr>';
-                row.forEach(cell => {
-                    html += `<td>${cell !== null ? cell : 'NULL'}</td>`;
-                });
-                html += '</tr>';
-            });
-            
-            html += '</tbody></table>';
-            
-            if (data.values.length > 50) {
-                html += `<div style="text-align:center;padding:8px;color:var(--text-secondary);font-size:12px;">
-                    Showing 50 of ${data.values.length} rows
-                </div>`;
-            }
-            
-            return html;
-        }
-
         function switchSection(section) {
             AppState.currentSection = section;
-            
+
             // Update nav tabs
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.toggle('active', tab.dataset.section === section);
             });
-            
-            // Update sections
+
+            // Update section visibility
             document.querySelectorAll('.section-view').forEach(view => {
-                view.classList.toggle('active', view.id === section + 'Section');
+                view.classList.remove('active');
             });
+            document.getElementById(section + 'Section').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('solutionModal').classList.remove('active');
         }
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('successToast');
-            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-            toast.style.background = type === 'success' ? 'var(--success)' : 'var(--danger)';
-            toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+            const msgEl = document.getElementById('toastMessage');
+
+            msgEl.textContent = message;
+            toast.style.background = type === 'error' ? 'var(--danger)' : 
+                                   type === 'warning' ? 'var(--warning)' : 'var(--success)';
+
             toast.classList.add('show');
-            
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
@@ -2265,118 +2904,128 @@
         function sendToAssistant() {
             const input = document.getElementById('assistantInput');
             const body = document.getElementById('assistantBody');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
+            const question = input.value.trim();
+
+            if (!question) return;
+
             // Add user message
             const userMsg = document.createElement('div');
             userMsg.className = 'assistant-message';
             userMsg.style.background = 'var(--primary)';
-            userMsg.style.color = 'white';
-            userMsg.textContent = message;
+            userMsg.style.marginLeft = '20%';
+            userMsg.textContent = question;
             body.appendChild(userMsg);
-            
-            // Generate response
-            let response = generateAssistantResponse(message);
-            
+
+            input.value = '';
+
+            // Generate response based on context
             setTimeout(() => {
+                const response = generateAssistantResponse(question);
                 const botMsg = document.createElement('div');
                 botMsg.className = 'assistant-message';
-                botMsg.innerHTML = response;
+                botMsg.textContent = response;
                 body.appendChild(botMsg);
                 body.scrollTop = body.scrollHeight;
             }, 500);
-            
-            input.value = '';
+
             body.scrollTop = body.scrollHeight;
         }
 
-        function generateAssistantResponse(message) {
-            const lower = message.toLowerCase();
-            
+        function generateAssistantResponse(question) {
+            const lower = question.toLowerCase();
+
             if (lower.includes('hint') || lower.includes('help')) {
                 if (AppState.currentQuestion) {
-                    return `<strong>Hint:</strong> ${AppState.currentQuestion.hint}<br><br>Need more help? Try breaking the problem into smaller steps.`;
+                    return AppState.currentQuestion.hint || 'Try breaking the problem into smaller steps. Start with a basic SELECT and add clauses one by one.';
                 }
-                return "I can provide hints for practice questions. Select a database and question first!";
+                return 'Start by selecting a database from the sidebar, then I can help with specific questions!';
             }
-            
-            if (lower.includes('error') || lower.includes('wrong') || lower.includes('not working')) {
-                return `<strong>Debugging Tips:</strong><br>
-                • Check your table names match exactly<br>
-                • Verify column names in the schema<br>
-                • Ensure proper JOIN conditions<br>
-                • Test with SELECT * first to see data<br>
-                • Check for missing semicolons or quotes`;
-            }
-            
+
             if (lower.includes('join')) {
-                return `<strong>JOIN Guide:</strong><br>
-                • <code>INNER JOIN</code> - matching rows only<br>
-                • <code>LEFT JOIN</code> - all from left, matching from right<br>
-                • <code>RIGHT JOIN</code> - all from right, matching from left<br>
-                • Syntax: <code>FROM table1 JOIN table2 ON table1.id = table2.id</code>`;
+                return 'JOINs combine tables based on related columns. Use INNER JOIN for matching rows only, LEFT JOIN to keep all rows from the left table. Syntax: SELECT * FROM table1 JOIN table2 ON table1.id = table2.foreign_id';
             }
-            
-            if (lower.includes('group by') || lower.includes('aggregate')) {
-                return `<strong>Aggregation Guide:</strong><br>
-                • <code>COUNT(*)</code> - count rows<br>
-                • <code>SUM(column)</code> - total value<br>
-                • <code>AVG(column)</code> - average value<br>
-                • <code>MAX/MIN(column)</code> - extreme values<br>
-                Always include non-aggregated columns in GROUP BY!`;
+
+            if (lower.includes('group by')) {
+                return 'GROUP BY collapses rows with the same values into summary rows. Use it with aggregate functions like COUNT(), SUM(), AVG(). Remember: any column in SELECT that is not aggregated must be in GROUP BY.';
             }
-            
-            return `<strong>SQL Assistant:</strong><br>
-            I can help with:<br>
-            • Query hints (type "hint")<br>
-            • Debugging errors (type "error")<br>
-            • JOIN explanations (type "join")<br>
-            • Aggregation help (type "group by")<br>
-            <br>
-            What would you like to learn about?`;
+
+            if (lower.includes('error') || lower.includes('wrong')) {
+                return "Let's debug! Check: 1) Table names are correct, 2) Column names exist, 3) Quotes around strings, 4) Proper JOIN conditions. Try running a simple SELECT * first to see the data.";
+            }
+
+            if (lower.includes('count') || lower.includes('sum') || lower.includes('avg')) {
+                return 'Aggregate functions: COUNT(*) counts rows, SUM(column) adds values, AVG(column) calculates mean. Use GROUP BY when aggregating per category.';
+            }
+
+            if (lower.includes('subquery') || lower.includes('nested')) {
+                return 'Subqueries are queries inside queries. They can be in SELECT, FROM, or WHERE. Example: SELECT * FROM table WHERE id IN (SELECT id FROM other_table). Try to keep them simple!';
+            }
+
+            return "That's a great question! I'm here to help with SQL concepts, debugging, and hints. What specific part are you struggling with?";
         }
 
         function formatSQL() {
-            const textarea = document.getElementById('sqlInput');
-            let sql = textarea.value;
-            
-            // Basic formatting
-            sql = sql.replace(/\s+/g, ' ');
-            sql = sql.replace(/SELECT/gi, '\nSELECT');
-            sql = sql.replace(/FROM/gi, '\nFROM');
-            sql = sql.replace(/WHERE/gi, '\nWHERE');
-            sql = sql.replace(/JOIN/gi, '\nJOIN');
-            sql = sql.replace(/GROUP BY/gi, '\nGROUP BY');
-            sql = sql.replace(/ORDER BY/gi, '\nORDER BY');
-            sql = sql.replace(/LIMIT/gi, '\nLIMIT');
-            
-            textarea.value = sql.trim();
+            if (AppState.editor) {
+                AppState.editor.getAction('editor.action.formatDocument').run();
+            }
         }
 
         function clearEditor() {
-            document.getElementById('sqlInput').value = '';
+            setEditorValue('');
         }
 
-        // Keyboard shortcuts
+        function renderTable(result) {
+            if (!result || !result.values) {
+                return '<div class="empty-state">No results</div>';
+            }
+
+            let html = '<table class="data-table">';
+
+            // Header
+            html += '<thead><tr>';
+            result.columns.forEach(col => {
+                html += `<th>${col}</th>`;
+            });
+            html += '</tr></thead>';
+
+            // Body
+            html += '<tbody>';
+            result.values.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => {
+                    html += `<td>${cell !== null ? cell : '<span style="color:var(--text-secondary)">NULL</span>'}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+
+            return html;
+        }
+
+        // ==========================================
+        // KEYBOARD SHORTCUTS
+        // ==========================================
+
         document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
+            // Ctrl/Cmd + Enter to run query
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                 if (AppState.currentSection === 'practice') {
                     runQuery();
                 }
             }
-        });
 
-        // Close modal on outside click
-        document.getElementById('solutionModal').addEventListener('click', (e) => {
-            if (e.target.id === 'solutionModal') {
+            // Escape to close modal
+            if (e.key === 'Escape') {
                 closeModal();
             }
         });
 
-        // Initialize app when DOM is ready
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // ==========================================
+        // INITIALIZE ON LOAD
+        // ==========================================
+
+        window.addEventListener('DOMContentLoaded', initializeApp);
+
     </script>
 </body>
 </html>
