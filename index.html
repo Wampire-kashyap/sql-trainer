@@ -3,38 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SQL Interview Pro - Master SQL for Top Tech Jobs</title>
+    <title>SQL Mastery Pro - Three Engines, One Goal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/sql-wasm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
             --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
             --success: #22c55e;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --info: #3b82f6;
             --bg-primary: #fafafa;
             --bg-secondary: #ffffff;
             --bg-tertiary: #f3f4f6;
             --text-primary: #111827;
             --text-secondary: #6b7280;
-            --text-tertiary: #9ca3af;
             --border: #e5e7eb;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --radius-sm: 8px;
             --radius: 12px;
-            --radius-lg: 16px;
         }
 
         body {
@@ -43,7 +31,6 @@
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
-            line-height: 1.5;
             display: flex;
             flex-direction: column;
         }
@@ -57,16 +44,7 @@
             align-items: center;
             justify-content: space-between;
             height: 64px;
-            box-shadow: var(--shadow-sm);
-            z-index: 100;
-            position: relative;
             flex-shrink: 0;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
         }
 
         .logo {
@@ -79,103 +57,21 @@
             cursor: pointer;
         }
 
-        .logo i {
-            font-size: 24px;
-        }
-
-        /* Database Dropdown */
-        .db-dropdown-container {
-            position: relative;
-        }
-
-        .database-selector {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: var(--bg-tertiary);
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            font-weight: 500;
-            border: 1px solid transparent;
-            min-width: 180px;
-        }
-
-        .database-selector:hover {
-            background: var(--border);
-        }
-
-        .database-selector.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .db-dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            margin-top: 8px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            min-width: 220px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.2s;
-            z-index: 1000;
-            overflow: hidden;
-        }
-
-        .db-dropdown-menu.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .db-dropdown-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-
-        .db-dropdown-item:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .db-dropdown-item.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .db-dropdown-item i {
-            width: 20px;
-            text-align: center;
-        }
-
-        .difficulty-badge {
+        .engine-indicator {
             padding: 6px 12px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .difficulty-easy { background: #dcfce7; color: #166534; }
-        .difficulty-medium { background: #fef3c7; color: #92400e; }
-        .difficulty-hard { background: #fee2e2; color: #991b1b; }
+        .engine-practice { background: #dbeafe; color: #1e40af; }
+        .engine-interview { background: #fce7f3; color: #be185d; }
+        .engine-project { background: #d1fae5; color: #065f46; }
 
-        .header-center {
+        .nav-tabs {
             display: flex;
-            align-items: center;
             gap: 4px;
             background: var(--bg-tertiary);
             padding: 4px;
@@ -184,7 +80,7 @@
 
         .nav-tab {
             padding: 8px 16px;
-            border-radius: var(--radius-sm);
+            border-radius: 8px;
             cursor: pointer;
             font-size: 13px;
             font-weight: 500;
@@ -192,36 +88,13 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            white-space: nowrap;
         }
 
-        .nav-tab:hover {
-            background: var(--bg-secondary);
-        }
-
-        .nav-tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .nav-tab .badge {
-            background: var(--danger);
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 4px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
+        .nav-tab:hover { background: var(--bg-secondary); }
+        .nav-tab.active { background: var(--primary); color: white; }
 
         .stats-bar {
             display: flex;
-            align-items: center;
             gap: 12px;
         }
 
@@ -236,28 +109,18 @@
             border-radius: 20px;
         }
 
-        .stat-value {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
+        .stat-value { font-weight: 600; color: var(--text-primary); }
 
         /* Main Layout */
-        .main-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
         .main-container {
-            display: flex;
             flex: 1;
+            display: flex;
             overflow: hidden;
         }
 
         .left-panel {
-            width: 38%;
-            min-width: 380px;
+            width: 35%;
+            min-width: 350px;
             background: var(--bg-secondary);
             border-right: 1px solid var(--border);
             display: flex;
@@ -265,134 +128,74 @@
             overflow: hidden;
         }
 
-        .right-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background: var(--bg-primary);
-        }
-
-        /* Panel Sections */
         .panel-section {
             flex: 1;
             overflow: auto;
             padding: 16px;
             border-bottom: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
         }
 
-        .panel-section:last-child {
-            border-bottom: none;
-        }
+        .panel-section:last-child { border-bottom: none; }
 
         .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px;
-            flex-shrink: 0;
         }
 
         .section-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-        }
-
-        .section-title i {
-            color: var(--primary);
-        }
-
-        .section-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .icon-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: var(--radius-sm);
-            border: none;
-            background: var(--bg-tertiary);
-            cursor: pointer;
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            transition: all 0.2s;
+            gap: 6px;
         }
 
-        .icon-btn:hover {
-            background: var(--border);
-            color: var(--text-primary);
-        }
-
-        /* Schema Table */
-        .schema-container {
+        .right-panel {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            overflow: hidden;
+            padding: 20px;
         }
 
+        /* Schema */
         .schema-table {
             background: var(--bg-primary);
-            border-radius: var(--radius);
+            border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border);
+            margin-bottom: 10px;
         }
 
-        .schema-table-header {
+        .schema-header {
             background: var(--bg-tertiary);
-            padding: 10px 12px;
+            padding: 8px 12px;
             font-weight: 600;
             font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .schema-table-header i {
-            color: var(--primary);
-            font-size: 12px;
-        }
-
-        .schema-columns {
-            padding: 6px 0;
+            gap: 6px;
         }
 
         .schema-column {
             padding: 5px 12px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
             font-size: 11px;
         }
 
-        .schema-column:nth-child(even) {
-            background: rgba(0,0,0,0.02);
-        }
-
-        .column-name {
-            font-family: 'Monaco', 'Menlo', monospace;
-            color: var(--text-primary);
-        }
-
-        .column-type {
-            color: var(--text-tertiary);
-            font-size: 10px;
-        }
+        .col-name { font-family: monospace; }
+        .col-type { color: var(--text-secondary); font-size: 10px; }
 
         /* Data Table */
         .data-table-container {
             overflow: auto;
-            border-radius: var(--radius);
+            border-radius: 8px;
             border: 1px solid var(--border);
             flex: 1;
             background: var(--bg-primary);
@@ -406,31 +209,18 @@
 
         .data-table th {
             background: var(--bg-tertiary);
-            padding: 8px 10px;
+            padding: 8px;
             text-align: left;
             font-weight: 600;
-            color: var(--text-secondary);
-            border-bottom: 1px solid var(--border);
-            white-space: nowrap;
-            position: sticky;
-            top: 0;
-            z-index: 10;
             font-size: 10px;
             text-transform: uppercase;
+            position: sticky;
+            top: 0;
         }
 
         .data-table td {
-            padding: 6px 10px;
+            padding: 6px 8px;
             border-bottom: 1px solid var(--border);
-            color: var(--text-primary);
-        }
-
-        .data-table tr:hover td {
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        .data-table tr:last-child td {
-            border-bottom: none;
         }
 
         /* Question Card */
@@ -450,28 +240,21 @@
             margin-bottom: 12px;
         }
 
-        .question-meta {
+        .question-context {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .question-company {
+        .context-badge {
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 12px;
             color: var(--text-secondary);
-            font-weight: 500;
         }
 
-        .question-company i {
-            color: var(--primary);
-        }
-
-        .question-number {
-            background: var(--primary);
-            color: white;
+        .difficulty-badge {
             padding: 4px 10px;
             border-radius: 12px;
             font-size: 11px;
@@ -481,31 +264,20 @@
         .question-text {
             font-size: 15px;
             line-height: 1.6;
-            color: var(--text-primary);
             margin-bottom: 12px;
         }
 
-        .question-tags {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            padding: 4px 10px;
+        .question-narrative {
             background: var(--bg-tertiary);
-            border-radius: 4px;
-            font-size: 11px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
             color: var(--text-secondary);
-            font-weight: 500;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--primary);
         }
 
-        .tag.company {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        /* Editor Container */
+        /* Editor */
         .editor-container {
             flex: 1;
             display: flex;
@@ -513,10 +285,8 @@
             background: var(--bg-secondary);
             border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: var(--shadow);
             border: 1px solid var(--border);
             margin-bottom: 16px;
-            min-height: 200px;
         }
 
         .editor-toolbar {
@@ -528,171 +298,89 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .toolbar-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        #sql-editor { flex: 1; }
 
-        .toolbar-btn {
-            padding: 6px 12px;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-size: 12px;
-            color: var(--text-secondary);
-            border-radius: var(--radius-sm);
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .toolbar-btn:hover {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-
-        .toolbar-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        #sql-editor {
-            flex: 1;
-            min-height: 200px;
-        }
-
-        /* Action Buttons */
-        .action-bar {
-            display: flex;
-            gap: 10px;
-            padding: 0 4px;
-        }
+        /* Buttons */
+        .action-bar { display: flex; gap: 10px; }
 
         .btn {
             padding: 10px 20px;
-            border-radius: var(--radius);
+            border-radius: 8px;
             border: none;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 6px;
+            transition: all 0.2s;
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); }
 
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
+        /* Views */
+        .view { display: none; width: 100%; height: 100%; overflow: auto; }
+        .view.active { display: flex; }
 
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: var(--border);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        /* Interview Section Styles */
+        /* Interview Grid */
         .interview-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 16px;
-            padding: 20px;
-            overflow: auto;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 24px;
         }
 
-        .interview-card {
+        .company-card {
             background: var(--bg-secondary);
             border-radius: var(--radius);
-            padding: 20px;
+            padding: 24px;
             border: 1px solid var(--border);
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .interview-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+        .company-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
             border-color: var(--primary);
         }
 
-        .interview-card-header {
+        .company-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 12px;
             margin-bottom: 12px;
         }
 
-        .interview-company {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .company-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius);
-            background: var(--bg-tertiary);
+        .company-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 24px;
         }
 
-        .company-name {
-            font-weight: 600;
-            font-size: 16px;
-        }
+        .company-name { font-size: 18px; font-weight: 700; }
+        .company-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
 
-        .question-count {
-            background: var(--primary);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .interview-stats {
+        .company-stats {
             display: flex;
             gap: 16px;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--border);
             font-size: 12px;
             color: var(--text-secondary);
         }
 
-        /* Project Section Styles */
+        /* Project Grid */
         .project-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
             padding: 24px;
-            overflow: auto;
         }
 
         .project-card {
@@ -700,51 +388,28 @@
             border-radius: var(--radius);
             overflow: hidden;
             border: 1px solid var(--border);
-            transition: all 0.3s;
             cursor: pointer;
+            transition: all 0.3s;
         }
 
         .project-card:hover {
             transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
         }
 
-        .project-header-bg {
-            height: 120px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        .project-banner {
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-size: 48px;
+            color: white;
         }
 
-        .project-content {
-            padding: 20px;
-        }
-
-        .project-week {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .project-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .project-desc {
-            font-size: 13px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: 16px;
-        }
+        .project-body { padding: 20px; }
+        .project-week { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .project-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .project-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px; }
 
         .project-meta {
             display: flex;
@@ -753,34 +418,10 @@
             color: var(--text-secondary);
         }
 
-        .project-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .project-progress-bar {
-            height: 6px;
-            background: var(--bg-tertiary);
-            border-radius: 3px;
-            margin-top: 12px;
-            overflow: hidden;
-        }
-
-        .project-progress-fill {
-            height: 100%;
-            background: var(--success);
-            border-radius: 3px;
-            transition: width 0.3s;
-        }
-
-        /* Success Animation */
+        /* Success Overlay */
         .success-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(34, 197, 94, 0.95);
             display: none;
             align-items: center;
@@ -788,115 +429,33 @@
             flex-direction: column;
             z-index: 3000;
             color: white;
-            text-align: center;
         }
 
-        .success-overlay.show {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
+        .success-overlay.show { display: flex; }
+        .success-icon { font-size: 64px; margin-bottom: 16px; }
+        .success-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .success-xp { font-size: 18px; margin-bottom: 24px; opacity: 0.9; }
 
-        .success-icon {
-            font-size: 60px;
-            margin-bottom: 16px;
-        }
-
-        .success-text {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .success-xp {
-            font-size: 18px;
-            opacity: 0.9;
-            margin-bottom: 24px;
-        }
-
-        .success-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .success-btn {
-            background: white;
-            color: var(--success);
-            border: none;
-            padding: 12px 24px;
-            border-radius: var(--radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .success-btn:hover {
-            transform: scale(1.05);
-        }
-
-        /* Feedback Panel */
+        /* Feedback */
         .feedback-panel {
             position: fixed;
             bottom: 80px;
             right: 24px;
             padding: 16px 20px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow);
             display: flex;
             align-items: center;
             gap: 12px;
             transform: translateY(100px);
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             z-index: 1000;
-            max-width: 400px;
         }
 
-        .feedback-panel.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .feedback-success {
-            background: #dcfce7;
-            border: 1px solid #86efac;
-            color: #166534;
-        }
-
-        .feedback-error {
-            background: #fee2e2;
-            border: 1px solid #fca5a5;
-            color: #991b1b;
-        }
-
-        /* Hint Panel */
-        .hint-panel {
-            background: #fef3c7;
-            border: 1px solid #fcd34d;
-            border-radius: var(--radius);
-            padding: 14px;
-            margin-top: 12px;
-            display: none;
-        }
-
-        .hint-panel.show {
-            display: block;
-        }
-
-        .hint-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #92400e;
-            margin-bottom: 6px;
-            font-size: 13px;
-        }
-
-        .hint-text {
-            color: #78350f;
-            font-size: 13px;
-            line-height: 1.5;
-        }
+        .feedback-panel.show { transform: translateY(0); opacity: 1; }
+        .feedback-success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
+        .feedback-error { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
 
         /* Footer */
         .footer {
@@ -908,117 +467,25 @@
             justify-content: space-between;
             font-size: 12px;
             color: var(--text-secondary);
-            flex-shrink: 0;
         }
 
-        .footer-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .footer-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .footer-creator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .footer-creator a {
+        .footer a {
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
-            position: relative;
-        }
-
-        .footer-creator a:hover {
-            text-decoration: underline;
-        }
-
-        .copy-tooltip {
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--text-primary);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s;
-            margin-bottom: 4px;
-        }
-
-        .copy-tooltip.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .footer-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .footer-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer-link:hover {
-            color: var(--primary);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Empty State */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: var(--text-secondary);
-            text-align: center;
-            padding: 40px;
-        }
-
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 16px;
-            color: var(--border);
         }
 
         /* Loading */
         .loading-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.9);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.95);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
             flex-direction: column;
-            gap: 16px;
+            z-index: 5000;
         }
 
         .spinner {
@@ -1030,178 +497,62 @@
             animation: spin 1s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Project Detail View */
-        .project-detail {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            padding: 24px;
-            overflow: auto;
-        }
-
-        .project-detail.show {
+        /* Complexity Indicator */
+        .complexity-meter {
             display: flex;
+            gap: 4px;
+            margin-top: 8px;
         }
 
-        .project-nav {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .back-btn {
-            padding: 8px 16px;
-            background: var(--bg-tertiary);
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-        }
-
-        .project-question-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .pq-item {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .pq-item:hover {
-            border-color: var(--primary);
-        }
-
-        .pq-item.active {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.05);
-        }
-
-        .pq-number {
-            width: 32px;
-            height: 32px;
+        .complexity-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: var(--bg-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 13px;
+            background: var(--border);
         }
 
-        .pq-item.completed .pq-number {
-            background: var(--success);
-            color: white;
-        }
-
-        .pq-content {
-            flex: 1;
-        }
-
-        .pq-title {
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .pq-difficulty {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .left-panel {
-                width: 40%;
-            }
-        }
-
-        @media (max-width: 900px) {
-            .main-container {
-                flex-direction: column;
-            }
-            .left-panel {
-                width: 100%;
-                height: 35%;
-            }
-        }
+        .complexity-dot.active { background: var(--primary); }
+        .complexity-dot.hard { background: var(--danger); }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
+    <!-- Loading -->
     <div id="loading" class="loading-overlay">
         <div class="spinner"></div>
-        <div>Loading SQL Interview Pro...</div>
+        <div>Initializing SQL Engines...</div>
     </div>
 
     <!-- Success Overlay -->
     <div id="successOverlay" class="success-overlay">
         <div class="success-icon"><i class="fas fa-check-circle"></i></div>
-        <div class="success-text">Correct Answer!</div>
+        <div class="success-title">Correct!</div>
         <div class="success-xp" id="successXP">+25 XP</div>
-        <div class="success-actions">
-            <button class="success-btn" onclick="uiEngine.nextQuestion()">Next Question</button>
-            <button class="success-btn" onclick="uiEngine.showSolution()" style="background: transparent; color: white; border: 2px solid white;">View Solution</button>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn" style="background: white; color: var(--success);" onclick="uiEngine.nextQuestion()">Next Question</button>
+            <button class="btn" style="background: transparent; color: white; border: 2px solid white;" onclick="uiEngine.showSolution()">View Solution</button>
         </div>
     </div>
 
     <!-- Header -->
     <header class="header">
-        <div class="header-left">
+        <div style="display: flex; align-items: center; gap: 16px;">
             <div class="logo" onclick="uiEngine.switchMode('practice')">
                 <i class="fas fa-database"></i>
-                <span>SQL Interview Pro</span>
+                <span>SQL Mastery Pro</span>
             </div>
-            
-            <div class="db-dropdown-container">
-                <div class="database-selector" id="dbSelector" onclick="uiEngine.toggleDbDropdown(event)">
-                    <i class="fas fa-server"></i>
-                    <span id="currentDb">Danny's Diner</span>
-                    <i class="fas fa-chevron-down" style="margin-left: auto;"></i>
-                </div>
-                <div class="db-dropdown-menu" id="dbDropdownMenu">
-                    <div class="db-dropdown-item active" data-db="dannys_diner" onclick="uiEngine.selectDatabase('dannys_diner')">
-                        <i class="fas fa-utensils"></i>
-                        <span>Danny's Diner</span>
-                    </div>
-                    <div class="db-dropdown-item" data-db="pizza_runner" onclick="uiEngine.selectDatabase('pizza_runner')">
-                        <i class="fas fa-pizza-slice"></i>
-                        <span>Pizza Runner</span>
-                    </div>
-                    <div class="db-dropdown-item" data-db="ecommerce" onclick="uiEngine.selectDatabase('ecommerce')">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>E-Commerce</span>
-                    </div>
-                </div>
-            </div>
-
-            <span class="difficulty-badge difficulty-easy" id="difficultyBadge">Easy</span>
+            <span class="engine-indicator engine-practice" id="engineBadge">Practice Engine</span>
         </div>
-        
-        <div class="header-center">
+
+        <div class="nav-tabs">
             <div class="nav-tab active" data-mode="practice" onclick="uiEngine.switchMode('practice')">
-                <i class="fas fa-code"></i>
+                <i class="fas fa-infinity"></i>
                 Practice
             </div>
             <div class="nav-tab" data-mode="interview" onclick="uiEngine.switchMode('interview')">
-                <i class="fas fa-briefcase"></i>
+                <i class="fas fa-building"></i>
                 Interviews
-                <span class="badge">Hot</span>
             </div>
             <div class="nav-tab" data-mode="project" onclick="uiEngine.switchMode('project')">
                 <i class="fas fa-graduation-cap"></i>
@@ -1213,220 +564,177 @@
             </div>
         </div>
 
-        <div class="header-right">
-            <div class="stats-bar">
-                <div class="stat-item">
-                    <i class="fas fa-fire" style="color: var(--warning);"></i>
-                    <span class="stat-value" id="statStreak">0</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-star" style="color: var(--warning);"></i>
-                    <span class="stat-value" id="statXP">0</span>
-                </div>
+        <div class="stats-bar">
+            <div class="stat-item">
+                <i class="fas fa-fire" style="color: var(--warning);"></i>
+                <span class="stat-value" id="statStreak">0</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-star" style="color: var(--warning);"></i>
+                <span class="stat-value" id="statXP">0</span>
             </div>
         </div>
     </header>
 
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <div class="main-container" id="mainContainer">
-            <!-- Practice Mode -->
-            <div class="left-panel" id="practiceLeftPanel">
-                <div class="panel-section">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <i class="fas fa-table"></i>
-                            Database Schema
-                        </div>
-                    </div>
-                    <div class="schema-container" id="schemaContainer"></div>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Panel (Schema & Output) -->
+        <div class="left-panel" id="leftPanel">
+            <div class="panel-section">
+                <div class="section-header">
+                    <div class="section-title"><i class="fas fa-table"></i> Database Schema</div>
                 </div>
-                
-                <div class="panel-section">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <i class="fas fa-eye"></i>
-                            Expected Output
-                        </div>
-                        <div class="section-actions">
-                            <button class="icon-btn" onclick="uiEngine.refreshExpectedOutput()" title="Refresh">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="data-table-container" id="expectedOutput">
-                        <div class="empty-state">
-                            <i class="fas fa-table"></i>
-                            <div>Expected output will appear here</div>
-                        </div>
-                    </div>
+                <div id="schemaContainer"></div>
+            </div>
+            
+            <div class="panel-section">
+                <div class="section-header">
+                    <div class="section-title"><i class="fas fa-eye"></i> Expected Output</div>
                 </div>
-                
-                <div class="panel-section">
-                    <div class="section-header">
-                        <div class="section-title">
-                            <i class="fas fa-terminal"></i>
-                            Your Output
-                        </div>
-                    </div>
-                    <div class="data-table-container" id="queryResult">
-                        <div class="empty-state">
-                            <i class="fas fa-code"></i>
-                            <div>Run your query to see results</div>
-                        </div>
+                <div class="data-table-container" id="expectedOutput">
+                    <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                        <i class="fas fa-table" style="font-size: 32px; margin-bottom: 12px; opacity: 0.3;"></i>
+                        <div>Expected output will appear here</div>
                     </div>
                 </div>
             </div>
-
-            <div class="right-panel" id="practiceRightPanel">
-                <div style="padding: 20px; height: 100%; display: flex; flex-direction: column;">
-                    <div class="question-card animate-fade-in">
-                        <div class="question-header">
-                            <div class="question-meta">
-                                <div class="question-company" id="questionCompany">
-                                    <i class="fas fa-building"></i>
-                                    <span>Danny's Diner</span>
-                                </div>
-                                <span class="question-number" id="questionNumber">Q1</span>
-                            </div>
-                        </div>
-                        <div class="question-text" id="questionText">
-                            Loading question...
-                        </div>
-                        <div class="question-tags" id="questionTags"></div>
-                    </div>
-
-                    <div class="editor-container">
-                        <div class="editor-toolbar">
-                            <div class="toolbar-left">
-                                <button class="toolbar-btn" onclick="uiEngine.formatCode()">
-                                    <i class="fas fa-align-left"></i>
-                                    Format
-                                </button>
-                                <button class="toolbar-btn" onclick="uiEngine.clearEditor()">
-                                    <i class="fas fa-trash"></i>
-                                    Clear
-                                </button>
-                            </div>
-                            <div class="toolbar-right">
-                                <span style="font-size: 11px; color: var(--text-tertiary);">Ctrl+Enter to run</span>
-                            </div>
-                        </div>
-                        <div id="sql-editor"></div>
-                    </div>
-
-                    <div class="hint-panel" id="hintPanel">
-                        <div class="hint-header">
-                            <i class="fas fa-lightbulb"></i>
-                            <span>Hint</span>
-                        </div>
-                        <div class="hint-text" id="hintText"></div>
-                    </div>
-
-                    <div class="action-bar">
-                        <button class="btn btn-primary" id="runBtn" onclick="uiEngine.runQuery()">
-                            <i class="fas fa-play"></i>
-                            Run
-                        </button>
-                        <button class="btn btn-success" id="submitBtn" onclick="uiEngine.submitAnswer()">
-                            <i class="fas fa-check"></i>
-                            Submit
-                        </button>
-                        <button class="btn btn-secondary" onclick="uiEngine.showHint()">
-                            <i class="fas fa-lightbulb"></i>
-                            Hint
-                        </button>
-                        <button class="btn btn-secondary" onclick="uiEngine.skipQuestion()">
-                            <i class="fas fa-forward"></i>
-                            Skip
-                        </button>
-                    </div>
+            
+            <div class="panel-section">
+                <div class="section-header">
+                    <div class="section-title"><i class="fas fa-terminal"></i> Your Output</div>
                 </div>
-            </div>
-
-            <!-- Interview Mode -->
-            <div class="interview-grid" id="interviewView" style="display: none; width: 100%;">
-                <!-- Interview cards rendered here -->
-            </div>
-
-            <!-- Project Mode (8-Week SQL Challenge) -->
-            <div class="project-grid" id="projectView" style="display: none; width: 100%;">
-                <!-- Project cards rendered here -->
-            </div>
-
-            <!-- Project Detail View -->
-            <div class="project-detail" id="projectDetailView" style="display: none; width: 100%;">
-                <div class="project-nav">
-                    <button class="back-btn" onclick="uiEngine.backToProjects()">
-                        <i class="fas fa-arrow-left"></i>
-                        Back to Projects
-                    </button>
-                    <h2 id="projectDetailTitle">Danny's Diner</h2>
-                </div>
-                <div class="project-question-list" id="projectQuestionList">
-                    <!-- Project questions rendered here -->
-                </div>
-            </div>
-
-            <!-- Dashboard -->
-            <div class="interview-grid" id="dashboardView" style="display: none; width: 100%;">
-                <div class="dashboard-card" style="grid-column: span 2; background: var(--bg-secondary); border-radius: var(--radius); padding: 24px; border: 1px solid var(--border);">
-                    <h3 style="margin-bottom: 16px;">Your Progress</h3>
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="dashSolved">0</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">Solved</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700; color: var(--success);" id="dashAccuracy">0%</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">Accuracy</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700; color: var(--warning);" id="dashStreak">0</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">Streak</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="dashXP">0</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">XP</div>
-                        </div>
+                <div class="data-table-container" id="yourOutput">
+                    <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                        <i class="fas fa-code" style="font-size: 32px; margin-bottom: 12px; opacity: 0.3;"></i>
+                        <div>Run your query to see results</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="footer-left">
-                <div class="footer-brand">
-                    <i class="fas fa-code"></i>
-                    <span>SQL Interview Pro</span>
+        <!-- Right Panel (Question & Editor) -->
+        <div class="right-panel" id="practicePanel">
+            <div class="question-card">
+                <div class="question-header">
+                    <div class="question-context">
+                        <span class="context-badge" id="questionContext">
+                            <i class="fas fa-infinity"></i>
+                            <span>Infinite Generator</span>
+                        </span>
+                        <span class="difficulty-badge difficulty-easy" id="difficultyBadge">Easy</span>
+                    </div>
+                    <span style="font-size: 12px; color: var(--text-secondary);">Q#<span id="qNumber">1</span></span>
                 </div>
-                <div class="footer-creator">
-                    Created by 
-                    <a onclick="uiEngine.copyEmail(event)" style="cursor: pointer;">
-                        KunalKumar
-                        <span class="copy-tooltip" id="copyTooltip">Click to copy email</span>
-                    </a>
+                
+                <div class="question-narrative" id="questionNarrative">
+                    Generate questions dynamically based on complexity analysis...
+                </div>
+                
+                <div class="question-text" id="questionText">
+                    Loading question...
+                </div>
+
+                <div class="complexity-meter" id="complexityMeter">
+                    <div class="complexity-dot active"></div>
+                    <div class="complexity-dot"></div>
+                    <div class="complexity-dot"></div>
+                    <div class="complexity-dot"></div>
+                    <div class="complexity-dot"></div>
                 </div>
             </div>
-            <div class="footer-right">
-                <span>8-Week SQL Challenge | Resume Ready</span>
-                <a href="#" class="footer-link" onclick="uiEngine.copyEmail(event)">Contact</a>
+
+            <div class="editor-container">
+                <div class="editor-toolbar">
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="uiEngine.formatCode()">
+                            <i class="fas fa-align-left"></i> Format
+                        </button>
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="uiEngine.clearEditor()">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                    <span style="font-size: 11px; color: var(--text-secondary);">Ctrl+Enter to run</span>
+                </div>
+                <div id="sql-editor"></div>
             </div>
-        </footer>
+
+            <div id="hintPanel" style="display: none; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                <div style="font-weight: 600; color: #92400e; margin-bottom: 4px; font-size: 12px;">
+                    <i class="fas fa-lightbulb"></i> Hint
+                </div>
+                <div style="color: #78350f; font-size: 13px;" id="hintText"></div>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn btn-primary" onclick="uiEngine.runQuery()">
+                    <i class="fas fa-play"></i> Run
+                </button>
+                <button class="btn btn-success" id="submitBtn" onclick="uiEngine.submitAnswer()">
+                    <i class="fas fa-check"></i> Submit
+                </button>
+                <button class="btn btn-secondary" onclick="uiEngine.showHint()">
+                    <i class="fas fa-lightbulb"></i> Hint
+                </button>
+                <button class="btn btn-secondary" onclick="uiEngine.skipQuestion()">
+                    <i class="fas fa-forward"></i> Skip
+                </button>
+            </div>
+        </div>
+
+        <!-- Interview View -->
+        <div class="view interview-grid" id="interviewView">
+            <!-- Companies rendered here -->
+        </div>
+
+        <!-- Project View -->
+        <div class="view project-grid" id="projectView">
+            <!-- 8-week projects rendered here -->
+        </div>
+
+        <!-- Dashboard View -->
+        <div class="view" id="dashboardView" style="padding: 24px;">
+            <div style="background: var(--bg-secondary); border-radius: var(--radius); padding: 24px; max-width: 800px;">
+                <h2 style="margin-bottom: 20px;">Your Progress</h2>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 700; color: var(--primary);" id="dashSolved">0</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Total Solved</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 700; color: var(--success);" id="dashAccuracy">0%</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Accuracy</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 700; color: var(--warning);" id="dashStreak">0</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Best Streak</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 36px; font-weight: 700; color: var(--primary);" id="dashXP">0</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Total XP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Feedback Panel -->
+    <!-- Footer -->
+    <footer class="footer">
+        <div>
+            <strong>SQL Mastery Pro</strong> • Created by 
+            <a onclick="navigator.clipboard.writeText('Kunalkumarshri47@gmail.com'); alert('Email copied!')">KunalKumar</a>
+        </div>
+        <div>Three Engines • One Goal • Master SQL</div>
+    </footer>
+
+    <!-- Feedback -->
     <div id="feedbackPanel" class="feedback-panel">
-        <i class="fas fa-check-circle" id="feedbackIcon"></i>
-        <div id="feedbackText"></div>
+        <i class="fas fa-check-circle"></i>
+        <span id="feedbackText"></span>
     </div>
 
     <script>
         // ==========================================
-        // SQL INTERVIEW PRO - COMPLETE REBUILD
-        // Created by: KunalKumar (Kunalkumarshri47@gmail.com)
-        // Features: Working Interview, 8-Week Projects, Expected Output, Copy Email
+        // THREE SEPARATE ENGINES - NO SHARED STATE
         // ==========================================
 
         const state = {
@@ -1434,412 +742,537 @@
             db: null,
             editor: null,
             currentMode: 'practice',
+            currentEngine: null,
             currentQuestion: null,
-            currentProject: null,
-            autocompleteEnabled: true,
             questionSolved: false,
-            userProgress: {
-                solved: 0,
-                correct: 0,
-                streak: 0,
-                xp: 0,
-                solvedQuestionIds: new Set(),
-                projectProgress: {}
-            },
-            difficulty: { current: 'easy', easyStreak: 0, mediumStreak: 0, hardStreak: 0 },
-            currentDatabase: 'dannys_diner'
-        };
-
-        // ==========================================
-        // DATABASE SCHEMAS - DANNY MA 8-WEEK STYLE
-        // ==========================================
-
-        const databaseSchemas = {
-            dannys_diner: {
-                name: "Danny's Diner",
-                tables: {
-                    sales: {
-                        columns: [
-                            { name: 'customer_id', type: 'VARCHAR(1)' },
-                            { name: 'order_date', type: 'DATE' },
-                            { name: 'product_id', type: 'INTEGER' }
-                        ]
-                    },
-                    menu: {
-                        columns: [
-                            { name: 'product_id', type: 'INTEGER', pk: true },
-                            { name: 'product_name', type: 'VARCHAR(50)' },
-                            { name: 'price', type: 'INTEGER' }
-                        ]
-                    },
-                    members: {
-                        columns: [
-                            { name: 'customer_id', type: 'VARCHAR(1)' },
-                            { name: 'join_date', type: 'DATE' }
-                        ]
-                    }
-                }
-            },
-            pizza_runner: {
-                name: "Pizza Runner",
-                tables: {
-                    runners: {
-                        columns: [
-                            { name: 'runner_id', type: 'INTEGER', pk: true },
-                            { name: 'registration_date', type: 'DATE' }
-                        ]
-                    },
-                    customer_orders: {
-                        columns: [
-                            { name: 'order_id', type: 'INTEGER' },
-                            { name: 'customer_id', type: 'INTEGER' },
-                            { name: 'pizza_id', type: 'INTEGER' },
-                            { name: 'order_date', type: 'TIMESTAMP' }
-                        ]
-                    },
-                    runner_orders: {
-                        columns: [
-                            { name: 'order_id', type: 'INTEGER' },
-                            { name: 'runner_id', type: 'INTEGER' },
-                            { name: 'pickup_time', type: 'TIMESTAMP' },
-                            { name: 'distance', type: 'VARCHAR(10)' },
-                            { name: 'duration', type: 'VARCHAR(10)' },
-                            { name: 'cancellation', type: 'VARCHAR(50)' }
-                        ]
-                    },
-                    pizza_names: {
-                        columns: [
-                            { name: 'pizza_id', type: 'INTEGER', pk: true },
-                            { name: 'pizza_name', type: 'VARCHAR(50)' }
-                        ]
-                    }
-                }
-            },
-            ecommerce: {
-                name: "E-Commerce",
-                tables: {
-                    customers: {
-                        columns: [
-                            { name: 'customer_id', type: 'INTEGER', pk: true },
-                            { name: 'first_name', type: 'VARCHAR(50)' },
-                            { name: 'last_name', type: 'VARCHAR(50)' },
-                            { name: 'email', type: 'VARCHAR(100)' },
-                            { name: 'registration_date', type: 'DATE' }
-                        ]
-                    },
-                    products: {
-                        columns: [
-                            { name: 'product_id', type: 'INTEGER', pk: true },
-                            { name: 'product_name', type: 'VARCHAR(100)' },
-                            { name: 'category', type: 'VARCHAR(50)' },
-                            { name: 'price', type: 'DECIMAL(10,2)' }
-                        ]
-                    },
-                    orders: {
-                        columns: [
-                            { name: 'order_id', type: 'INTEGER', pk: true },
-                            { name: 'customer_id', type: 'INTEGER' },
-                            { name: 'order_date', type: 'DATE' },
-                            { name: 'total_amount', type: 'DECIMAL(10,2)' }
-                        ]
-                    }
-                }
+            
+            // Progress tracking per engine
+            progress: {
+                practice: { solved: 0, correct: 0, streak: 0, xp: 0, level: 1 },
+                interview: { solved: 0, correct: 0, streak: 0, xp: 0, companies: {} },
+                project: { solved: 0, correct: 0, streak: 0, xp: 0, weeks: {} }
             }
         };
 
         // ==========================================
-        // 8-WEEK SQL CHALLENGE PROJECTS
+        // ENGINE 1: PRACTICE ENGINE
+        // Infinite generator with complexity-based difficulty
         // ==========================================
 
-        const projects = {
-            week1: {
-                id: 'week1',
-                week: 'Week 1',
-                title: "Danny's Diner",
-                description: "Help Danny understand customer visiting patterns, spending habits, and favorite menu items to improve his restaurant's loyalty program.",
-                icon: 'fa-utensils',
-                difficulty: 'Easy',
-                questions: 12,
-                database: 'dannys_diner',
-                color: '#f59e0b'
+        const PracticeEngine = {
+            name: 'Practice Engine',
+            badge: 'practice',
+            color: '#dbeafe',
+            
+            // Multiple database schemas for variety
+            schemas: {
+                ecommerce: {
+                    name: 'ShopDB',
+                    tables: {
+                        customers: { columns: [{name: 'customer_id', type: 'INT'}, {name: 'name', type: 'VARCHAR'}, {name: 'city', type: 'VARCHAR'}, {name: 'join_date', type: 'DATE'}] },
+                        orders: { columns: [{name: 'order_id', type: 'INT'}, {name: 'customer_id', type: 'INT'}, {name: 'amount', type: 'DECIMAL'}, {name: 'order_date', type: 'DATE'}] },
+                        products: { columns: [{name: 'product_id', type: 'INT'}, {name: 'name', type: 'VARCHAR'}, {name: 'category', type: 'VARCHAR'}, {name: 'price', type: 'DECIMAL'}] }
+                    }
+                },
+                social: {
+                    name: 'SocialDB',
+                    tables: {
+                        users: { columns: [{name: 'user_id', type: 'INT'}, {name: 'username', type: 'VARCHAR'}, {name: 'joined_date', type: 'DATE'}] },
+                        posts: { columns: [{name: 'post_id', type: 'INT'}, {name: 'user_id', type: 'INT'}, {name: 'likes', type: 'INT'}, {name: 'post_date', type: 'DATE'}] },
+                        comments: { columns: [{name: 'comment_id', type: 'INT'}, {name: 'post_id', type: 'INT'}, {name: 'user_id', type: 'INT'}] }
+                    }
+                }
             },
-            week2: {
-                id: 'week2',
-                week: 'Week 2',
-                title: "Pizza Runner",
-                description: "Analyze pizza delivery data to optimize runner operations, calculate delivery times, and understand customer ordering patterns.",
-                icon: 'fa-pizza-slice',
-                difficulty: 'Medium',
-                questions: 10,
-                database: 'pizza_runner',
-                color: '#ef4444'
-            },
-            week3: {
-                id: 'week3',
-                week: 'Week 3',
-                title: "Foodie-Fi",
-                description: "Analyze subscription data for a Netflix-style food streaming service. Understand churn, upgrades, and customer lifetime value.",
-                icon: 'fa-film',
-                difficulty: 'Medium',
-                questions: 12,
-                database: 'ecommerce',
-                color: '#8b5cf6'
-            },
-            week4: {
-                id: 'week4',
-                week: 'Week 4',
-                title: "Data Bank",
-                description: "Work with digital bank data to calculate interest, analyze customer nodes, and understand transaction patterns.",
-                icon: 'fa-university',
-                difficulty: 'Hard',
-                questions: 8,
-                database: 'ecommerce',
-                color: '#10b981'
-            }
-        };
 
-        // ==========================================
-        // QUESTION BANKS
-        // ==========================================
+            currentSchema: 'ecommerce',
 
-        const questionBanks = {
-            dannys_diner: [
+            // Complexity-based question templates (NOT function-based)
+            // Easy = Simple logic, Hard = Complex logic (regardless of SQL functions used)
+            questionTemplates: [
                 {
-                    id: 'dd1',
-                    text: "What is the total amount each customer spent at the restaurant?",
-                    hint: "Join sales with menu table, group by customer_id, sum the price.",
-                    solution: "SELECT s.customer_id, SUM(m.price) as total_spent FROM sales s JOIN menu m ON s.product_id = m.product_id GROUP BY s.customer_id",
-                    difficulty: 'easy',
-                    skill: 'joins'
+                    complexity: 1, // Easy
+                    narrative: "A manager wants a quick overview.",
+                    generate: function(db) {
+                        const tables = Object.keys(db.tables);
+                        const table = tables[0];
+                        return {
+                            text: `How many records exist in the ${table} table?`,
+                            hint: "Use COUNT(*) to get the total row count.",
+                            solution: `SELECT COUNT(*) as total FROM ${table}`,
+                            concepts: ['basic counting']
+                        };
+                    }
                 },
                 {
-                    id: 'dd2',
-                    text: "How many days has each customer visited the restaurant?",
-                    hint: "Use COUNT(DISTINCT order_date) to count unique visit days.",
-                    solution: "SELECT customer_id, COUNT(DISTINCT order_date) as visit_days FROM sales GROUP BY customer_id",
-                    difficulty: 'easy',
-                    skill: 'aggregation'
+                    complexity: 1,
+                    narrative: "The sales team needs basic filtering.",
+                    generate: function(db) {
+                        const tables = Object.keys(db.tables);
+                        const table = tables[0];
+                        const col = db.tables[table].columns[1];
+                        return {
+                            text: `Find all records from ${table} where ${col.name} starts with 'A'.`,
+                            hint: "Use LIKE operator with wildcard '%'",
+                            solution: `SELECT * FROM ${table} WHERE ${col.name} LIKE 'A%'`,
+                            concepts: ['filtering', 'pattern matching']
+                        };
+                    }
                 },
                 {
-                    id: 'dd3',
-                    text: "What was the first item from the menu purchased by each customer?",
-                    hint: "Use RANK() or ROW_NUMBER() window function partitioned by customer_id, ordered by order_date.",
-                    solution: "WITH ranked AS (SELECT s.customer_id, m.product_name, s.order_date, ROW_NUMBER() OVER (PARTITION BY s.customer_id ORDER BY s.order_date) as rn FROM sales s JOIN menu m ON s.product_id = m.product_id) SELECT customer_id, product_name FROM ranked WHERE rn = 1",
-                    difficulty: 'medium',
-                    skill: 'windowFunctions'
+                    complexity: 2, // Easy-Medium
+                    narrative: "Marketing needs customer segmentation.",
+                    generate: function(db) {
+                        const tables = Object.keys(db.tables);
+                        const table = tables[0];
+                        const groupCol = db.tables[table].columns[2] || db.tables[table].columns[1];
+                        return {
+                            text: `Count records grouped by ${groupCol.name}.`,
+                            hint: "Use GROUP BY with COUNT(*)",
+                            solution: `SELECT ${groupCol.name}, COUNT(*) as count FROM ${table} GROUP BY ${groupCol.name}`,
+                            concepts: ['grouping', 'aggregation']
+                        };
+                    }
                 },
                 {
-                    id: 'dd4',
-                    text: "What is the most purchased item on the menu and how many times was it purchased?",
-                    hint: "Join sales with menu, group by product_name, count orders, order by count desc, limit 1.",
-                    solution: "SELECT m.product_name, COUNT(*) as purchase_count FROM sales s JOIN menu m ON s.product_id = m.product_id GROUP BY m.product_name ORDER BY purchase_count DESC LIMIT 1",
-                    difficulty: 'easy',
-                    skill: 'joins'
+                    complexity: 3, // Medium
+                    narrative: "The analytics team needs trend analysis.",
+                    generate: function(db) {
+                        const tables = Object.keys(db.tables);
+                        if (tables.length < 2) return this.generate(db);
+                        const t1 = tables[0], t2 = tables[1];
+                        return {
+                            text: `Find all ${t1} records that have matching entries in ${t2}.`,
+                            hint: "Use INNER JOIN to find matching records between tables.",
+                            solution: `SELECT a.* FROM ${t1} a INNER JOIN ${t2} b ON a.${t1.slice(0,-1)}_id = b.${t1.slice(0,-1)}_id`,
+                            concepts: ['joins', 'relationships']
+                        };
+                    }
                 },
                 {
-                    id: 'dd5',
-                    text: "Which item was the most popular for each customer?",
-                    hint: "Use window function RANK() to rank products by purchase count for each customer.",
-                    solution: "WITH popular AS (SELECT s.customer_id, m.product_name, COUNT(*) as cnt, RANK() OVER (PARTITION BY s.customer_id ORDER BY COUNT(*) DESC) as rnk FROM sales s JOIN menu m ON s.product_id = m.product_id GROUP BY s.customer_id, m.product_name) SELECT customer_id, product_name FROM popular WHERE rnk = 1",
-                    difficulty: 'medium',
-                    skill: 'windowFunctions'
+                    complexity: 4, // Medium-Hard
+                    narrative: "Data science team needs ranking analysis.",
+                    generate: function(db) {
+                        const tables = Object.keys(db.tables);
+                        const table = tables[0];
+                        const numCol = db.tables[table].columns.find(c => c.type.includes('INT') || c.type.includes('DECIMAL'));
+                        if (!numCol) return this.generate(db);
+                        return {
+                            text: `Rank all ${table} by ${numCol.name} from highest to lowest.`,
+                            hint: "Use RANK() window function with ORDER BY",
+                            solution: `SELECT *, RANK() OVER (ORDER BY ${numCol.name} DESC) as rank FROM ${table}`,
+                            concepts: ['window functions', 'ranking']
+                        };
+                    }
+                },
+                {
+                    complexity: 5, // Hard
+                    narrative: "Engineering needs complex data validation.",
+                    generate: function(db) {
+                        const tables = Object.keys(db.tables);
+                        if (tables.length < 2) return this.generate(db);
+                        const t1 = tables[0], t2 = tables[1];
+                        return {
+                            text: `Find ${t1} records that have NO matching entries in ${t2} (orphaned records).`,
+                            hint: "Use LEFT JOIN with IS NULL check or NOT EXISTS",
+                            solution: `SELECT a.* FROM ${t1} a LEFT JOIN ${t2} b ON a.${t1.slice(0,-1)}_id = b.${t1.slice(0,-1)}_id WHERE b.${t1.slice(0,-1)}_id IS NULL`,
+                            concepts: ['anti-join', 'data validation', 'null handling']
+                        };
+                    }
                 }
             ],
-            interview: {
-                google: [
-                    {
-                        id: 'g1',
-                        company: 'Google',
-                        text: "Find the second highest salary from employees table without using LIMIT.",
-                        hint: "Use subquery with MAX() to exclude the highest salary.",
-                        solution: "SELECT MAX(salary) as second_highest FROM employees WHERE salary < (SELECT MAX(salary) FROM employees)",
-                        difficulty: 'hard',
-                        skill: 'subqueries'
-                    },
-                    {
-                        id: 'g2',
-                        company: 'Google',
-                        text: "Find employees who earn more than their managers.",
-                        hint: "Self-join employees table on manager_id.",
-                        solution: "SELECT e.name FROM employees e JOIN employees m ON e.manager_id = m.id WHERE e.salary > m.salary",
-                        difficulty: 'medium',
-                        skill: 'joins'
-                    }
-                ],
-                amazon: [
-                    {
-                        id: 'a1',
-                        company: 'Amazon',
-                        text: "Find top 3 products by revenue in each category.",
-                        hint: "Use DENSE_RANK() window function partitioned by category.",
-                        solution: "SELECT category, product_name, revenue FROM (SELECT category, product_name, SUM(price*qty) as revenue, DENSE_RANK() OVER (PARTITION BY category ORDER BY SUM(price*qty) DESC) as rnk FROM products GROUP BY category, product_name) WHERE rnk <= 3",
-                        difficulty: 'hard',
-                        skill: 'windowFunctions'
-                    }
-                ],
-                meta: [
-                    {
-                        id: 'm1',
-                        company: 'Meta',
-                        text: "Find friend recommendations based on mutual friends.",
-                        hint: "Self-join friendships table to find second-degree connections.",
-                        solution: "SELECT DISTINCT f1.user_id, f2.friend_id as recommended FROM friendships f1 JOIN friendships f2 ON f1.friend_id = f2.user_id WHERE f1.user_id != f2.friend_id",
-                        difficulty: 'hard',
-                        skill: 'joins'
-                    }
-                ]
-            }
-        };
 
-        // ==========================================
-        // DATABASE ENGINE
-        // ==========================================
-        const databaseEngine = {
-            async init() {
-                const SQL = await initSqlJs({
-                    locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/${file}`
-                });
-                state.SQL = SQL;
-                this.createDatabase();
-            },
-
-            createDatabase() {
+            initDatabase() {
                 state.db = new state.SQL.Database();
-                this.populateData();
-            },
-
-            populateData() {
-                const schema = databaseSchemas[state.currentDatabase];
-                if (!schema) return;
-
-                Object.entries(schema.tables).forEach(([tableName, tableData]) => {
-                    const columns = tableData.columns.map(c => 
-                        `${c.name} ${c.type}${c.pk ? ' PRIMARY KEY' : ''}`
-                    ).join(', ');
+                const schema = this.schemas[this.currentSchema];
+                
+                Object.entries(schema.tables).forEach(([name, table]) => {
+                    const cols = table.columns.map(c => `${c.name} ${c.type}`).join(', ');
+                    state.db.run(`CREATE TABLE ${name} (${cols})`);
                     
-                    state.db.run(`CREATE TABLE ${tableName} (${columns})`);
-                    this.generateSampleData(tableName, tableData, schema.name);
+                    // Generate sample data
+                    for (let i = 1; i <= 15; i++) {
+                        const vals = table.columns.map(c => {
+                            if (c.type.includes('INT')) return i;
+                            if (c.type.includes('DATE')) return `'2024-01-${String(i).padStart(2,'0')}'`;
+                            if (c.type.includes('DECIMAL')) return (i * 10.5).toString();
+                            return `'${c.name}_${i}'`;
+                        });
+                        state.db.run(`INSERT INTO ${name} VALUES (${vals.join(', ')})`);
+                    }
                 });
             },
 
-            generateSampleData(tableName, tableData, dbName) {
-                if (dbName === "Danny's Diner") {
-                    if (tableName === 'sales') {
-                        const data = [
-                            ['A', '2021-01-01', 1], ['A', '2021-01-01', 2], ['A', '2021-01-07', 2],
-                            ['A', '2021-01-10', 3], ['A', '2021-01-11', 3], ['A', '2021-01-11', 3],
-                            ['B', '2021-01-01', 2], ['B', '2021-01-02', 2], ['B', '2021-01-04', 1],
-                            ['B', '2021-01-11', 1], ['B', '2021-01-16', 3], ['B', '2021-02-01', 3],
-                            ['C', '2021-01-01', 3], ['C', '2021-01-01', 3], ['C', '2021-01-07', 3]
-                        ];
-                        data.forEach(row => {
-                            state.db.run(`INSERT INTO sales (customer_id, order_date, product_id) VALUES ('${row[0]}', '${row[1]}', ${row[2]})`);
-                        });
-                    } else if (tableName === 'menu') {
-                        state.db.run(`INSERT INTO menu VALUES (1, 'sushi', 10), (2, 'curry', 15), (3, 'ramen', 12)`);
-                    } else if (tableName === 'members') {
-                        state.db.run(`INSERT INTO members VALUES ('A', '2021-01-07'), ('B', '2021-01-09')`);
-                    }
-                } else {
-                    // Generic data for other databases
-                    for (let i = 1; i <= 10; i++) {
-                        const values = tableData.columns.map(col => {
-                            if (col.pk) return i;
-                            if (col.type.includes('VARCHAR')) return `'Item ${i}'`;
-                            if (col.type.includes('DATE')) return `'2024-01-${String(i).padStart(2, '0')}'`;
-                            if (col.type.includes('INTEGER')) return i * 10;
-                            if (col.type.includes('DECIMAL')) return (i * 10.5).toString();
-                            return 'NULL';
-                        });
-                        const cols = tableData.columns.map(c => c.name).join(', ');
-                        state.db.run(`INSERT INTO ${tableName} (${cols}) VALUES (${values.join(', ')})`);
-                    }
-                }
+            generateQuestion() {
+                // Select based on user's current level
+                const level = state.progress.practice.level;
+                const maxComplexity = Math.min(level + 1, 5);
+                const available = this.questionTemplates.filter(t => t.complexity <= maxComplexity);
+                const template = available[Math.floor(Math.random() * available.length)];
+                
+                const schema = this.schemas[this.currentSchema];
+                const generated = template.generate(schema);
+                
+                return {
+                    ...generated,
+                    complexity: template.complexity,
+                    narrative: template.narrative,
+                    difficulty: template.complexity <= 2 ? 'easy' : template.complexity <= 3 ? 'medium' : 'hard',
+                    engine: 'practice'
+                };
             },
 
-            execute(sql) {
+            checkAnswer(query, question) {
                 try {
-                    const result = state.db.exec(sql);
-                    return { success: true, data: result };
-                } catch (error) {
-                    return { success: false, error: error.message };
+                    const userResult = state.db.exec(query);
+                    const solutionResult = state.db.exec(question.solution);
+                    
+                    if (!userResult.length || !solutionResult.length) return false;
+                    
+                    // Compare results
+                    const u = userResult[0];
+                    const s = solutionResult[0];
+                    
+                    if (u.columns.length !== s.columns.length) return false;
+                    if (u.values.length !== s.values.length) return false;
+                    
+                    // Sort both for comparison
+                    const sort = (a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1;
+                    return JSON.stringify([...u.values].sort(sort)) === JSON.stringify([...s.values].sort(sort));
+                } catch (e) {
+                    return false;
                 }
             },
 
-            reset() {
-                this.createDatabase();
+            getSchemaHTML() {
+                const schema = this.schemas[this.currentSchema];
+                return Object.entries(schema.tables).map(([name, table]) => `
+                    <div class="schema-table">
+                        <div class="schema-header"><i class="fas fa-table"></i> ${name}</div>
+                        ${table.columns.map(c => `
+                            <div class="schema-column">
+                                <span class="col-name">${c.name}</span>
+                                <span class="col-type">${c.type}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
             }
         };
 
         // ==========================================
-        // UI ENGINE
+        // ENGINE 2: INTERVIEW ENGINE
+        // Company-specific real questions with dedicated schemas
         // ==========================================
+
+        const InterviewEngine = {
+            name: 'Interview Engine',
+            badge: 'interview',
+            color: '#fce7f3',
+
+            companies: {
+                google: {
+                    name: 'Google',
+                    color: '#4285F4',
+                    icon: 'fab fa-google',
+                    description: 'Complex algorithms, scaling challenges, and optimization problems.',
+                    schema: {
+                        employees: { columns: [{name: 'id', type: 'INT'}, {name: 'name', type: 'VARCHAR'}, {name: 'salary', type: 'INT'}, {name: 'manager_id', type: 'INT'}] }
+                    },
+                    questions: [
+                        {
+                            text: "Find the second highest salary without using LIMIT/OFFSET",
+                            solution: "SELECT MAX(salary) FROM employees WHERE salary < (SELECT MAX(salary) FROM employees)",
+                            hint: "Use subquery to exclude the maximum salary",
+                            difficulty: 'hard'
+                        },
+                        {
+                            text: "Find employees who earn more than their managers",
+                            solution: "SELECT e.name FROM employees e JOIN employees m ON e.manager_id = m.id WHERE e.salary > m.salary",
+                            hint: "Self-join on manager_id",
+                            difficulty: 'medium'
+                        }
+                    ]
+                },
+                amazon: {
+                    name: 'Amazon',
+                    color: '#FF9900',
+                    icon: 'fab fa-amazon',
+                    description: 'Customer-centric metrics, supply chain, and operational efficiency.',
+                    schema: {
+                        orders: { columns: [{name: 'order_id', type: 'INT'}, {name: 'customer_id', type: 'INT'}, {name: 'amount', type: 'DECIMAL'}, {name: 'order_date', type: 'DATE'}] },
+                        returns: { columns: [{name: 'return_id', type: 'INT'}, {name: 'order_id', type: 'INT'}, {name: 'return_date', type: 'DATE'}] }
+                    },
+                    questions: [
+                        {
+                            text: "Calculate monthly retention rate (customers who ordered in consecutive months)",
+                            solution: "WITH monthly AS (SELECT DISTINCT customer_id, DATE_TRUNC('month', order_date) as month FROM orders) SELECT m1.month, COUNT(DISTINCT m1.customer_id) * 100.0 / COUNT(DISTINCT m2.customer_id) as retention FROM monthly m1 LEFT JOIN monthly m2 ON m1.customer_id = m2.customer_id AND m2.month = m1.month - INTERVAL '1 month' GROUP BY m1.month",
+                            hint: "Use self-join on customer_id with month interval",
+                            difficulty: 'hard'
+                        }
+                    ]
+                },
+                meta: {
+                    name: 'Meta',
+                    color: '#0668E1',
+                    icon: 'fab fa-meta',
+                    description: 'Social graph analysis, engagement metrics, and network effects.',
+                    schema: {
+                        users: { columns: [{name: 'user_id', type: 'INT'}, {name: 'name', type: 'VARCHAR'}] },
+                        friendships: { columns: [{name: 'user_id', type: 'INT'}, {name: 'friend_id', type: 'INT'}] }
+                    },
+                    questions: [
+                        {
+                            text: "Find friend recommendations (mutual friends)",
+                            solution: "SELECT DISTINCT f1.user_id, f2.friend_id as recommended FROM friendships f1 JOIN friendships f2 ON f1.friend_id = f2.user_id WHERE f1.user_id != f2.friend_id",
+                            hint: "Find second-degree connections",
+                            difficulty: 'hard'
+                        }
+                    ]
+                }
+            },
+
+            currentCompany: null,
+
+            initDatabase(companyKey) {
+                this.currentCompany = companyKey;
+                const company = this.companies[companyKey];
+                state.db = new state.SQL.Database();
+                
+                Object.entries(company.schema).forEach(([name, table]) => {
+                    const cols = table.columns.map(c => `${c.name} ${c.type}`).join(', ');
+                    state.db.run(`CREATE TABLE ${name} (${cols})`);
+                    
+                    // Company-specific sample data
+                    for (let i = 1; i <= 10; i++) {
+                        const vals = table.columns.map(c => {
+                            if (c.name === 'salary') return (80000 + i * 10000).toString();
+                            if (c.name === 'manager_id') return i > 1 ? '1' : 'NULL';
+                            if (c.type.includes('INT')) return i;
+                            if (c.type.includes('DATE')) return `'2024-01-${String(i).padStart(2,'0')}'`;
+                            return `'${c.name}_${i}'`;
+                        });
+                        state.db.run(`INSERT INTO ${name} VALUES (${vals.join(', ')})`);
+                    }
+                });
+            },
+
+            getQuestion(index = 0) {
+                if (!this.currentCompany) return null;
+                const company = this.companies[this.currentCompany];
+                return company.questions[index] ? {...company.questions[index], engine: 'interview', company: company.name} : null;
+            },
+
+            checkAnswer(query, question) {
+                try {
+                    const userResult = state.db.exec(query);
+                    const solutionResult = state.db.exec(question.solution);
+                    return JSON.stringify(userResult) === JSON.stringify(solutionResult);
+                } catch (e) {
+                    return false;
+                }
+            },
+
+            getSchemaHTML() {
+                if (!this.currentCompany) return '';
+                const company = this.companies[this.currentCompany];
+                return Object.entries(company.schema).map(([name, table]) => `
+                    <div class="schema-table">
+                        <div class="schema-header" style="background: ${company.color}20; color: ${company.color};">
+                            <i class="fas fa-table"></i> ${name}
+                        </div>
+                        ${table.columns.map(c => `
+                            <div class="schema-column">
+                                <span class="col-name">${c.name}</span>
+                                <span class="col-type">${c.type}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
+            }
+        };
+
+        // ==========================================
+        // ENGINE 3: PROJECT ENGINE
+        // 8-week case studies with narrative-driven questions
+        // ==========================================
+
+        const ProjectEngine = {
+            name: 'Project Engine',
+            badge: 'project',
+            color: '#d1fae5',
+
+            weeks: {
+                week1: {
+                    title: "Danny's Diner",
+                    week: 'Week 1',
+                    color: '#f59e0b',
+                    icon: 'fa-utensils',
+                    narrative: "Danny wants to analyze customer visiting patterns, spending habits, and favorite menu items to improve his loyalty program.",
+                    schema: {
+                        sales: { columns: [{name: 'customer_id', type: 'VARCHAR'}, {name: 'order_date', type: 'DATE'}, {name: 'product_id', type: 'INT'}] },
+                        menu: { columns: [{name: 'product_id', type: 'INT'}, {name: 'product_name', type: 'VARCHAR'}, {name: 'price', type: 'INT'}] },
+                        members: { columns: [{name: 'customer_id', type: 'VARCHAR'}, {name: 'join_date', type: 'DATE'}] }
+                    },
+                    questions: [
+                        {
+                            id: 'dd1',
+                            narrative: "Danny wants to understand how much each customer spent.",
+                            text: "What is the total amount each customer spent at the restaurant?",
+                            solution: "SELECT s.customer_id, SUM(m.price) as total_spent FROM sales s JOIN menu m ON s.product_id = m.product_id GROUP BY s.customer_id",
+                            hint: "Join sales with menu, group by customer, sum prices",
+                            difficulty: 'easy'
+                        },
+                        {
+                            id: 'dd2',
+                            narrative: "Danny wants to know how often customers visit.",
+                            text: "How many days has each customer visited the restaurant?",
+                            solution: "SELECT customer_id, COUNT(DISTINCT order_date) as visit_days FROM sales GROUP BY customer_id",
+                            hint: "Count distinct order dates per customer",
+                            difficulty: 'easy'
+                        },
+                        {
+                            id: 'dd3',
+                            narrative: "Danny wants to know what item each customer tried first.",
+                            text: "What was the first item from the menu purchased by each customer?",
+                            solution: "WITH ranked AS (SELECT s.customer_id, m.product_name, ROW_NUMBER() OVER (PARTITION BY s.customer_id ORDER BY s.order_date) as rn FROM sales s JOIN menu m ON s.product_id = m.product_id) SELECT customer_id, product_name FROM ranked WHERE rn = 1",
+                            hint: "Use ROW_NUMBER() partitioned by customer, ordered by date",
+                            difficulty: 'medium'
+                        }
+                    ]
+                },
+                week2: {
+                    title: "Pizza Runner",
+                    week: 'Week 2',
+                    color: '#ef4444',
+                    icon: 'fa-pizza-slice',
+                    narrative: "Pizza Runner is a new startup delivering pizzas. Analyze delivery times, runner performance, and pizza popularity.",
+                    schema: {
+                        runners: { columns: [{name: 'runner_id', type: 'INT'}, {name: 'registration_date', type: 'DATE'}] },
+                        customer_orders: { columns: [{name: 'order_id', type: 'INT'}, {name: 'customer_id', type: 'INT'}, {name: 'order_date', type: 'TIMESTAMP'}] },
+                        runner_orders: { columns: [{name: 'order_id', type: 'INT'}, {name: 'runner_id', type: 'INT'}, {name: 'pickup_time', type: 'TIMESTAMP'}, {name: 'distance', type: 'VARCHAR'}, {name: 'duration', type: 'VARCHAR'}] }
+                    },
+                    questions: [
+                        {
+                            id: 'pr1',
+                            narrative: "Management wants to know how many pizzas were ordered.",
+                            text: "How many pizzas were ordered?",
+                            solution: "SELECT COUNT(*) as total_pizzas FROM customer_orders",
+                            hint: "Simple count of all orders",
+                            difficulty: 'easy'
+                        }
+                    ]
+                }
+            },
+
+            currentWeek: null,
+            currentQuestionIndex: 0,
+
+            initDatabase(weekKey) {
+                this.currentWeek = weekKey;
+                this.currentQuestionIndex = 0;
+                const week = this.weeks[weekKey];
+                state.db = new state.SQL.Database();
+                
+                Object.entries(week.schema).forEach(([name, table]) => {
+                    const cols = table.columns.map(c => `${c.name} ${c.type}`).join(', ');
+                    state.db.run(`CREATE TABLE ${name} (${cols})`);
+                    
+                    // Danny's Diner specific data
+                    if (weekKey === 'week1') {
+                        if (name === 'sales') {
+                            [[1,'A','2021-01-01'], [2,'A','2021-01-01'], [2,'A','2021-01-07'], [3,'A','2021-01-10'], [3,'A','2021-01-11'], [3,'A','2021-01-11'], [2,'B','2021-01-01'], [2,'B','2021-01-02'], [1,'B','2021-01-04'], [1,'B','2021-01-11'], [3,'B','2021-01-16'], [3,'B','2021-02-01'], [3,'C','2021-01-01'], [3,'C','2021-01-01'], [3,'C','2021-01-07']].forEach(r => {
+                                state.db.run(`INSERT INTO sales VALUES (${r[0]}, '${r[1]}', '${r[2]}')`);
+                            });
+                        } else if (name === 'menu') {
+                            state.db.run(`INSERT INTO menu VALUES (1, 'sushi', 10), (2, 'curry', 15), (3, 'ramen', 12)`);
+                        } else if (name === 'members') {
+                            state.db.run(`INSERT INTO members VALUES ('A', '2021-01-07'), ('B', '2021-01-09')`);
+                        }
+                    } else {
+                        // Generic data for other weeks
+                        for (let i = 1; i <= 10; i++) {
+                            const vals = table.columns.map(c => {
+                                if (c.type.includes('INT')) return i;
+                                if (c.type.includes('DATE')) return `'2024-01-${String(i).padStart(2,'0')}'`;
+                                if (c.type.includes('TIMESTAMP')) return `'2024-01-${String(i).padStart(2,'0')} 10:00:00'`;
+                                return `'${c.name}_${i}'`;
+                            });
+                            state.db.run(`INSERT INTO ${name} VALUES (${vals.join(', ')})`);
+                        }
+                    }
+                });
+            },
+
+            getCurrentQuestion() {
+                if (!this.currentWeek) return null;
+                const week = this.weeks[this.currentWeek];
+                const q = week.questions[this.currentQuestionIndex];
+                return q ? {...q, engine: 'project', week: week.title, narrative: q.narrative} : null;
+            },
+
+            nextQuestion() {
+                if (!this.currentWeek) return null;
+                const week = this.weeks[this.currentWeek];
+                this.currentQuestionIndex++;
+                if (this.currentQuestionIndex >= week.questions.length) {
+                    this.currentQuestionIndex = 0;
+                    return null; // Week complete
+                }
+                return this.getCurrentQuestion();
+            },
+
+            checkAnswer(query, question) {
+                try {
+                    const userResult = state.db.exec(query);
+                    const solutionResult = state.db.exec(question.solution);
+                    return JSON.stringify(userResult) === JSON.stringify(solutionResult);
+                } catch (e) {
+                    return false;
+                }
+            },
+
+            getSchemaHTML() {
+                if (!this.currentWeek) return '';
+                const week = this.weeks[this.currentWeek];
+                return Object.entries(week.schema).map(([name, table]) => `
+                    <div class="schema-table">
+                        <div class="schema-header" style="background: ${week.color}20; color: ${week.color};">
+                            <i class="fas fa-table"></i> ${name}
+                        </div>
+                        ${table.columns.map(c => `
+                            <div class="schema-column">
+                                <span class="col-name">${c.name}</span>
+                                <span class="col-type">${c.type}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
+            }
+        };
+
+        // ==========================================
+        // UI CONTROLLER
+        // ==========================================
+
         const uiEngine = {
             init() {
-                this.setupEventListeners();
-                this.updateSchemaDisplay();
-                this.loadQuestion();
+                PracticeEngine.initDatabase();
+                this.updateUIForEngine('practice');
+                this.renderInterviewView();
+                this.renderProjectView();
                 this.updateStats();
-                this.renderInterviewCards();
-                this.renderProjectCards();
-            },
-
-            setupEventListeners() {
-                document.addEventListener('click', (e) => {
-                    const dropdown = document.getElementById('dbDropdownMenu');
-                    const selector = document.getElementById('dbSelector');
-                    if (!dropdown.contains(e.target) && !selector.contains(e.target)) {
-                        dropdown.classList.remove('show');
-                        selector.classList.remove('active');
-                    }
-                });
-
-                document.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.key === 'Enter') this.runQuery();
-                });
-            },
-
-            initMonaco() {
-                require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
                 
+                // Init Monaco
+                require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
                 require(['vs/editor/editor.main'], () => {
-                    monaco.languages.registerCompletionItemProvider('sql', {
-                        provideCompletionItems: (model, position) => {
-                            if (!state.autocompleteEnabled) return { suggestions: [] };
-                            
-                            const word = model.getWordUntilPosition(position);
-                            const range = {
-                                startLineNumber: position.lineNumber,
-                                endLineNumber: position.lineNumber,
-                                startColumn: word.startColumn,
-                                endColumn: word.endColumn
-                            };
-                            
-                            const suggestions = [
-                                ...['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'JOIN', 'LEFT JOIN', 'GROUP BY', 'ORDER BY', 'HAVING', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'RANK', 'ROW_NUMBER', 'OVER', 'PARTITION BY'].map(k => ({
-                                    label: k,
-                                    kind: monaco.languages.CompletionItemKind.Keyword,
-                                    insertText: k,
-                                    range
-                                }))
-                            ];
-                            
-                            return { suggestions };
-                        }
-                    });
-
                     state.editor = monaco.editor.create(document.getElementById('sql-editor'), {
                         value: '-- Write your SQL query here\n',
                         language: 'sql',
                         theme: 'vs',
                         minimap: { enabled: false },
                         automaticLayout: true,
-                        fontSize: 14,
-                        lineNumbers: 'on',
-                        scrollBeyondLastLine: false,
-                        padding: { top: 16 }
+                        fontSize: 14
                     });
-                    
                     document.getElementById('loading').style.display = 'none';
                 });
             },
@@ -1847,232 +1280,186 @@
             switchMode(mode) {
                 state.currentMode = mode;
                 
-                document.querySelectorAll('.nav-tab').forEach(tab => {
-                    tab.classList.toggle('active', tab.dataset.mode === mode);
-                });
-
-                const panels = ['practiceLeftPanel', 'practiceRightPanel', 'interviewView', 'projectView', 'projectDetailView', 'dashboardView'];
-                panels.forEach(p => document.getElementById(p).style.display = 'none');
-
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+                
+                // Hide all views
+                document.getElementById('leftPanel').style.display = 'none';
+                document.getElementById('practicePanel').style.display = 'none';
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                
                 if (mode === 'practice') {
-                    document.getElementById('practiceLeftPanel').style.display = 'flex';
-                    document.getElementById('practiceRightPanel').style.display = 'flex';
+                    state.currentEngine = PracticeEngine;
+                    PracticeEngine.initDatabase();
+                    document.getElementById('leftPanel').style.display = 'flex';
+                    document.getElementById('practicePanel').style.display = 'flex';
+                    this.updateUIForEngine('practice');
                     this.loadQuestion();
                 } else if (mode === 'interview') {
-                    document.getElementById('interviewView').style.display = 'grid';
+                    document.getElementById('interviewView').classList.add('active');
                 } else if (mode === 'project') {
-                    document.getElementById('projectView').style.display = 'grid';
+                    document.getElementById('projectView').classList.add('active');
                 } else if (mode === 'dashboard') {
-                    document.getElementById('dashboardView').style.display = 'grid';
+                    document.getElementById('dashboardView').classList.add('active');
                 }
             },
 
-            toggleDbDropdown(e) {
-                e.stopPropagation();
-                const menu = document.getElementById('dbDropdownMenu');
-                const selector = document.getElementById('dbSelector');
-                menu.classList.toggle('show');
-                selector.classList.toggle('active');
-            },
-
-            selectDatabase(db) {
-                state.currentDatabase = db;
-                document.getElementById('currentDb').textContent = databaseSchemas[db].name;
-                
-                document.querySelectorAll('.db-dropdown-item').forEach(item => {
-                    item.classList.toggle('active', item.dataset.db === db);
-                });
-                
-                databaseEngine.reset();
-                this.updateSchemaDisplay();
-                this.loadQuestion();
-                this.toggleDbDropdown({ stopPropagation: () => {} });
-            },
-
-            updateSchemaDisplay() {
-                const container = document.getElementById('schemaContainer');
-                const schema = databaseSchemas[state.currentDatabase];
-                if (!schema) return;
-
-                container.innerHTML = Object.entries(schema.tables).map(([name, table]) => `
-                    <div class="schema-table">
-                        <div class="schema-table-header">
-                            <i class="fas fa-table"></i>
-                            ${name}
-                        </div>
-                        <div class="schema-columns">
-                            ${table.columns.map(col => `
-                                <div class="schema-column">
-                                    <span class="column-name">${col.name} ${col.pk ? '🔑' : ''}</span>
-                                    <span class="column-type">${col.type}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `).join('');
+            updateUIForEngine(engineType) {
+                const badge = document.getElementById('engineBadge');
+                badge.className = `engine-indicator engine-${engineType}`;
+                badge.textContent = engineType === 'practice' ? 'Practice Engine' : 
+                                   engineType === 'interview' ? 'Interview Engine' : 'Project Engine';
             },
 
             loadQuestion(question = null) {
                 if (!question) {
-                    const bank = questionBanks[state.currentDatabase] || questionBanks.dannys_diner;
-                    const available = bank.filter(q => !state.userProgress.solvedQuestionIds.has(q.id));
-                    const pool = available.length > 0 ? available : bank;
-                    question = pool[Math.floor(Math.random() * pool.length)];
+                    if (state.currentMode === 'practice') {
+                        question = PracticeEngine.generateQuestion();
+                    }
                 }
+                
+                if (!question) return;
                 
                 state.currentQuestion = question;
                 state.questionSolved = false;
-
+                
+                // Update UI
                 document.getElementById('questionText').textContent = question.text;
-                document.getElementById('questionCompany').innerHTML = `
-                    <i class="fas fa-building"></i>
-                    <span>${question.company || databaseSchemas[state.currentDatabase].name}</span>
-                `;
-                document.getElementById('questionNumber').textContent = `Q${state.userProgress.solved + 1}`;
                 document.getElementById('difficultyBadge').textContent = question.difficulty;
                 document.getElementById('difficultyBadge').className = `difficulty-badge difficulty-${question.difficulty}`;
                 
-                document.getElementById('questionTags').innerHTML = `
-                    <span class="tag">${question.skill}</span>
-                    <span class="tag company">${question.difficulty}</span>
-                `;
-
-                document.getElementById('hintPanel').classList.remove('show');
-                document.getElementById('submitBtn').disabled = false;
+                // Narrative
+                const narrativeEl = document.getElementById('questionNarrative');
+                if (question.narrative) {
+                    narrativeEl.textContent = question.narrative;
+                    narrativeEl.style.display = 'block';
+                } else {
+                    narrativeEl.style.display = 'none';
+                }
                 
-                if (state.editor) state.editor.setValue('-- Write your SQL query here\n');
+                // Complexity dots
+                const dots = document.querySelectorAll('.complexity-dot');
+                dots.forEach((d, i) => {
+                    d.className = 'complexity-dot';
+                    if (i < (question.complexity || 1)) d.classList.add('active');
+                    if (i >= 3 && question.difficulty === 'hard') d.classList.add('hard');
+                });
                 
+                // Schema
+                const engine = state.currentMode === 'practice' ? PracticeEngine :
+                              state.currentMode === 'interview' ? InterviewEngine : ProjectEngine;
+                document.getElementById('schemaContainer').innerHTML = engine.getSchemaHTML();
+                
+                // Expected output
                 this.refreshExpectedOutput();
+                
+                // Reset
+                document.getElementById('submitBtn').disabled = false;
+                if (state.editor) state.editor.setValue('-- Write your SQL query here\n');
+                document.getElementById('hintPanel').style.display = 'none';
             },
 
             refreshExpectedOutput() {
                 if (!state.currentQuestion) return;
                 
-                const result = databaseEngine.execute(state.currentQuestion.solution);
-                const container = document.getElementById('expectedOutput');
+                const engine = state.currentMode === 'practice' ? PracticeEngine :
+                              state.currentMode === 'interview' ? InterviewEngine : ProjectEngine;
                 
-                if (result.success && result.data.length > 0) {
-                    container.innerHTML = this.renderTable(result.data[0]);
-                } else {
-                    container.innerHTML = '<div class="empty-state" style="padding: 20px;"><i class="fas fa-table"></i><div>Run query to see expected format</div></div>';
+                try {
+                    const result = state.db.exec(state.currentQuestion.solution);
+                    document.getElementById('expectedOutput').innerHTML = result.length ? 
+                        this.renderTable(result[0]) : '<div style="padding: 20px;">No output</div>';
+                } catch (e) {
+                    document.getElementById('expectedOutput').innerHTML = '<div style="padding: 20px; color: var(--danger);">Error loading expected output</div>';
                 }
             },
 
             renderTable(data) {
-                if (!data || data.values.length === 0) {
-                    return '<div class="empty-state" style="padding: 20px;"><i class="fas fa-inbox"></i><div>No data</div></div>';
-                }
-
+                if (!data || !data.values.length) return '<div style="padding: 20px;">No data</div>';
+                
                 return `
                     <table class="data-table">
-                        <thead>
-                            <tr>${data.columns.map(col => `<th>${col}</th>`).join('')}</tr>
-                        </thead>
+                        <thead><tr>${data.columns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
                         <tbody>
                             ${data.values.slice(0, 10).map(row => 
                                 `<tr>${row.map(cell => `<td>${cell !== null ? cell : 'NULL'}</td>`).join('')}</tr>`
                             ).join('')}
                         </tbody>
                     </table>
-                    ${data.values.length > 10 ? `<div style="padding: 8px; text-align: center; color: var(--text-tertiary); font-size: 11px;">... ${data.values.length - 10} more rows</div>` : ''}
                 `;
             },
 
             runQuery() {
+                if (!state.editor) return;
                 const query = state.editor.getValue();
-                const result = databaseEngine.execute(query);
                 
-                document.getElementById('queryResult').innerHTML = result.success 
-                    ? (result.data.length > 0 ? this.renderTable(result.data[0]) : '<div class="empty-state" style="padding: 20px;"><i class="fas fa-check"></i><div>Query executed (0 rows)</div></div>')
-                    : `<div class="empty-state" style="padding: 20px; color: var(--danger);"><i class="fas fa-exclamation-circle"></i><div>${result.error}</div></div>`;
+                try {
+                    const result = state.db.exec(query);
+                    document.getElementById('yourOutput').innerHTML = result.length ? 
+                        this.renderTable(result[0]) : '<div style="padding: 20px;">Query executed (0 rows)</div>';
+                } catch (e) {
+                    document.getElementById('yourOutput').innerHTML = `<div style="padding: 20px; color: var(--danger);">${e.message}</div>`;
+                }
             },
 
             submitAnswer() {
+                if (!state.currentQuestion || state.questionSolved) return;
+                
                 const query = state.editor.getValue();
+                const engine = state.currentMode === 'practice' ? PracticeEngine :
+                              state.currentMode === 'interview' ? InterviewEngine : ProjectEngine;
                 
-                if (!state.currentQuestion) {
-                    this.showFeedback('No question loaded', 'error');
-                    return;
-                }
-
-                if (state.questionSolved) {
-                    this.showFeedback('Already solved! Click Next.', 'info');
-                    return;
-                }
-
-                const userResult = databaseEngine.execute(query);
-                if (!userResult.success) {
-                    this.handleWrongAnswer(userResult.error);
-                    return;
-                }
-
-                const solutionResult = databaseEngine.execute(state.currentQuestion.solution);
-                const correct = this.compareResults(userResult.data, solutionResult.data);
-
+                const correct = engine.checkAnswer(query, state.currentQuestion);
+                
                 if (correct) {
-                    this.handleCorrectAnswer();
+                    this.handleCorrect();
                 } else {
-                    this.handleWrongAnswer('Your output does not match expected results');
+                    this.handleWrong();
                 }
             },
 
-            compareResults(user, expected) {
-                if (!user || !expected || user.length === 0 || expected.length === 0) return false;
-                
-                const u = user[0];
-                const e = expected[0];
-                
-                if (u.columns.length !== e.columns.length) return false;
-                if (u.values.length !== e.values.length) return false;
-                
-                const sort = (a, b) => JSON.stringify(a) > JSON.stringify(b) ? 1 : -1;
-                return JSON.stringify([...u.values].sort(sort)) === JSON.stringify([...e.values].sort(sort));
-            },
-
-            handleCorrectAnswer() {
-                document.getElementById('submitBtn').disabled = true;
+            handleCorrect() {
                 state.questionSolved = true;
+                document.getElementById('submitBtn').disabled = true;
                 
-                const xp = { easy: 10, medium: 25, hard: 50 }[state.currentQuestion.difficulty] || 10;
-                state.userProgress.solved++;
-                state.userProgress.correct++;
-                state.userProgress.xp += xp;
-                state.userProgress.streak++;
-                state.userProgress.solvedQuestionIds.add(state.currentQuestion.id);
+                const prog = state.progress[state.currentMode];
+                prog.solved++;
+                prog.correct++;
+                prog.xp += 25;
+                prog.streak++;
                 
-                this.updateDifficulty(true);
-                this.saveProgress();
+                // Level up in practice
+                if (state.currentMode === 'practice' && prog.solved % 5 === 0) {
+                    prog.level++;
+                    this.showFeedback(`Level Up! Now at level ${prog.level}`, 'success');
+                }
+                
                 this.updateStats();
-
-                document.getElementById('successXP').textContent = `+${xp} XP`;
+                
+                document.getElementById('successXP').textContent = '+25 XP';
                 document.getElementById('successOverlay').classList.add('show');
             },
 
-            handleWrongAnswer(error) {
-                state.userProgress.streak = 0;
-                this.updateDifficulty(false);
+            handleWrong() {
+                state.progress[state.currentMode].streak = 0;
                 this.updateStats();
-                this.showFeedback(`❌ ${error}`, 'error');
-            },
-
-            updateDifficulty(correct) {
-                if (correct) {
-                    state.difficulty[`${state.difficulty.current}Streak`]++;
-                    if (state.difficulty.current === 'easy' && state.difficulty.easyStreak >= 2) {
-                        state.difficulty.current = 'medium';
-                        state.difficulty.easyStreak = 0;
-                    } else if (state.difficulty.current === 'medium' && state.difficulty.mediumStreak >= 2) {
-                        state.difficulty.current = 'hard';
-                        state.difficulty.mediumStreak = 0;
-                    }
-                } else {
-                    state.difficulty[`${state.difficulty.current}Streak`] = 0;
-                }
+                this.showFeedback('Incorrect. Check your query and try again.', 'error');
             },
 
             nextQuestion() {
                 document.getElementById('successOverlay').classList.remove('show');
-                this.loadQuestion();
+                
+                if (state.currentMode === 'project') {
+                    const next = ProjectEngine.nextQuestion();
+                    if (next) {
+                        this.loadQuestion(next);
+                    } else {
+                        this.showFeedback('Week completed! Great job.', 'success');
+                        this.switchMode('project');
+                    }
+                } else {
+                    this.loadQuestion();
+                }
             },
 
             showSolution() {
@@ -2084,213 +1471,105 @@
 
             showHint() {
                 document.getElementById('hintText').textContent = state.currentQuestion.hint;
-                document.getElementById('hintPanel').classList.add('show');
+                document.getElementById('hintPanel').style.display = 'block';
             },
 
             skipQuestion() {
-                state.userProgress.streak = 0;
+                state.progress[state.currentMode].streak = 0;
                 this.updateStats();
-                this.showFeedback('Skipped. Streak reset.', 'warning');
                 this.loadQuestion();
             },
 
             formatCode() {
+                if (!state.editor) return;
                 let code = state.editor.getValue();
                 code = code.replace(/\s+/g, ' ').trim();
                 code = code.replace(/SELECT/gi, '\nSELECT');
                 code = code.replace(/FROM/gi, '\nFROM');
                 code = code.replace(/WHERE/gi, '\nWHERE');
-                code = code.replace(/GROUP BY/gi, '\nGROUP BY');
-                code = code.replace(/ORDER BY/gi, '\nORDER BY');
-                code = code.replace(/JOIN/gi, '\nJOIN');
                 state.editor.setValue(code.trim());
             },
 
             clearEditor() {
-                state.editor.setValue('');
+                if (state.editor) state.editor.setValue('');
             },
 
             showFeedback(text, type) {
                 const panel = document.getElementById('feedbackPanel');
-                const icon = document.getElementById('feedbackIcon');
-                
                 panel.className = `feedback-panel feedback-${type} show`;
-                icon.className = type === 'success' ? 'fas fa-check-circle' : 
-                                type === 'error' ? 'fas fa-times-circle' : 'fas fa-info-circle';
                 document.getElementById('feedbackText').textContent = text;
-                
-                setTimeout(() => panel.classList.remove('show'), 4000);
+                setTimeout(() => panel.classList.remove('show'), 3000);
             },
 
             updateStats() {
-                document.getElementById('statStreak').textContent = state.userProgress.streak;
-                document.getElementById('statXP').textContent = state.userProgress.xp;
-                document.getElementById('dashSolved').textContent = state.userProgress.solved;
-                document.getElementById('dashAccuracy').textContent = 
-                    state.userProgress.solved > 0 ? Math.round((state.userProgress.correct / state.userProgress.solved) * 100) + '%' : '0%';
-                document.getElementById('dashStreak').textContent = state.userProgress.streak;
-                document.getElementById('dashXP').textContent = state.userProgress.xp;
+                const total = Object.values(state.progress).reduce((a, b) => a + b.xp, 0);
+                document.getElementById('statXP').textContent = total;
+                document.getElementById('statStreak').textContent = Math.max(...Object.values(state.progress).map(p => p.streak));
+                
+                document.getElementById('dashSolved').textContent = state.progress.practice.solved + state.progress.interview.solved + state.progress.project.solved;
+                document.getElementById('dashXP').textContent = total;
             },
 
-            saveProgress() {
-                const data = {
-                    ...state.userProgress,
-                    solvedQuestionIds: Array.from(state.userProgress.solvedQuestionIds)
-                };
-                localStorage.setItem('sqlInterviewPro', JSON.stringify(data));
-            },
-
-            loadProgress() {
-                const saved = localStorage.getItem('sqlInterviewPro');
-                if (saved) {
-                    const data = JSON.parse(saved);
-                    state.userProgress = {
-                        ...data,
-                        solvedQuestionIds: new Set(data.solvedQuestionIds || [])
-                    };
-                }
-            },
-
-            copyEmail(e) {
-                e.preventDefault();
-                const email = 'Kunalkumarshri47@gmail.com';
-                navigator.clipboard.writeText(email).then(() => {
-                    const tooltip = document.getElementById('copyTooltip');
-                    tooltip.textContent = 'Email copied!';
-                    tooltip.classList.add('show');
-                    setTimeout(() => {
-                        tooltip.classList.remove('show');
-                        setTimeout(() => tooltip.textContent = 'Click to copy email', 200);
-                    }, 2000);
-                });
-            },
-
-            renderInterviewCards() {
+            renderInterviewView() {
                 const container = document.getElementById('interviewView');
-                const companies = [
-                    { key: 'google', name: 'Google', icon: 'fab fa-google', color: '#4285F4', count: 15 },
-                    { key: 'amazon', name: 'Amazon', icon: 'fab fa-amazon', color: '#FF9900', count: 12 },
-                    { key: 'meta', name: 'Meta', icon: 'fab fa-meta', color: '#0668E1', count: 10 },
-                    { key: 'netflix', name: 'Netflix', icon: 'fas fa-play', color: '#E50914', count: 8 },
-                    { key: 'uber', name: 'Uber', icon: 'fab fa-uber', color: '#000000', count: 10 }
-                ];
-
-                container.innerHTML = companies.map(comp => `
-                    <div class="interview-card" onclick="uiEngine.startInterview('${comp.key}')">
-                        <div class="interview-card-header">
-                            <div class="interview-company">
-                                <div class="company-logo" style="color: ${comp.color};">
-                                    <i class="${comp.icon}"></i>
-                                </div>
-                                <div>
-                                    <div class="company-name">${comp.name}</div>
-                                    <div style="font-size: 12px; color: var(--text-secondary);">Real interview questions</div>
-                                </div>
+                container.innerHTML = Object.entries(InterviewEngine.companies).map(([key, comp]) => `
+                    <div class="company-card" onclick="uiEngine.startInterview('${key}')">
+                        <div class="company-header">
+                            <div class="company-icon" style="background: ${comp.color}20; color: ${comp.color};">
+                                <i class="${comp.icon}"></i>
                             </div>
-                            <span class="question-count">${comp.count}</span>
+                            <div class="company-name">${comp.name}</div>
                         </div>
-                        <div class="interview-stats">
-                            <span><i class="fas fa-fire"></i> Hot</span>
-                            <span><i class="fas fa-clock"></i> 30 min</span>
-                            <span><i class="fas fa-signal"></i> All levels</span>
+                        <div class="company-desc">${comp.description}</div>
+                        <div class="company-stats">
+                            <span><i class="fas fa-question-circle"></i> ${comp.questions.length} Questions</span>
+                            <span><i class="fas fa-signal"></i> Mixed</span>
                         </div>
                     </div>
                 `).join('');
             },
 
             startInterview(company) {
-                const questions = questionBanks.interview[company];
-                if (!questions || questions.length === 0) {
-                    this.showFeedback('Questions coming soon!', 'info');
-                    return;
-                }
-                
+                InterviewEngine.initDatabase(company);
                 this.switchMode('practice');
-                this.loadQuestion(questions[0]);
-                this.showFeedback(`Starting ${company.toUpperCase()} interview questions!`, 'success');
+                this.updateUIForEngine('interview');
+                const q = InterviewEngine.getQuestion(0);
+                if (q) this.loadQuestion(q);
+                this.showFeedback(`Starting ${InterviewEngine.companies[company].name} interview prep!`, 'success');
             },
 
-            renderProjectCards() {
+            renderProjectView() {
                 const container = document.getElementById('projectView');
-                const projectList = Object.values(projects);
-                
-                container.innerHTML = projectList.map(proj => {
-                    const progress = state.userProgress.projectProgress[proj.id] || 0;
-                    return `
-                    <div class="project-card" onclick="uiEngine.openProject('${proj.id}')">
-                        <div class="project-header-bg" style="background: linear-gradient(135deg, ${proj.color} 0%, ${proj.color}dd 100%);">
-                            <i class="fas ${proj.icon}"></i>
+                container.innerHTML = Object.entries(ProjectEngine.weeks).map(([key, week]) => `
+                    <div class="project-card" onclick="uiEngine.startProject('${key}')">
+                        <div class="project-banner" style="background: ${week.color};">
+                            <i class="fas ${week.icon}"></i>
                         </div>
-                        <div class="project-content">
-                            <div class="project-week">${proj.week}</div>
-                            <div class="project-title">${proj.title}</div>
-                            <div class="project-desc">${proj.description}</div>
+                        <div class="project-body">
+                            <div class="project-week" style="color: ${week.color};">${week.week}</div>
+                            <div class="project-title">${week.title}</div>
+                            <div class="project-desc">${week.narrative}</div>
                             <div class="project-meta">
-                                <span><i class="fas fa-signal"></i> ${proj.difficulty}</span>
-                                <span><i class="fas fa-list-ol"></i> ${proj.questions} Questions</span>
+                                <span><i class="fas fa-list"></i> ${week.questions.length} Questions</span>
+                                <span><i class="fas fa-clock"></i> 2-3 hours</span>
                             </div>
-                            <div class="project-progress-bar">
-                                <div class="project-progress-fill" style="width: ${(progress / proj.questions) * 100}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                `}).join('');
-            },
-
-            openProject(projectId) {
-                const project = projects[projectId];
-                if (!project) return;
-                
-                state.currentProject = project;
-                
-                document.getElementById('projectView').style.display = 'none';
-                document.getElementById('projectDetailView').style.display = 'flex';
-                document.getElementById('projectDetailTitle').textContent = project.title;
-                
-                // Load project questions
-                const questions = questionBanks[project.database] || [];
-                const list = document.getElementById('projectQuestionList');
-                
-                list.innerHTML = questions.map((q, i) => `
-                    <div class="pq-item" onclick="uiEngine.loadProjectQuestion(${i})">
-                        <div class="pq-number">${i + 1}</div>
-                        <div class="pq-content">
-                            <div class="pq-title">${q.text.substring(0, 60)}...</div>
-                            <div class="pq-difficulty">${q.difficulty} • ${q.skill}</div>
                         </div>
                     </div>
                 `).join('');
             },
 
-            loadProjectQuestion(index) {
-                const questions = questionBanks[state.currentProject.database] || [];
-                if (index >= questions.length) return;
-                
+            startProject(week) {
+                ProjectEngine.initDatabase(week);
                 this.switchMode('practice');
-                this.loadQuestion(questions[index]);
-                
-                // Mark as active in project view
-                document.querySelectorAll('.pq-item').forEach((el, i) => {
-                    el.classList.toggle('active', i === index);
-                });
-            },
-
-            backToProjects() {
-                document.getElementById('projectDetailView').style.display = 'none';
-                document.getElementById('projectView').style.display = 'grid';
-                state.currentProject = null;
+                this.updateUIForEngine('project');
+                const q = ProjectEngine.getCurrentQuestion();
+                if (q) this.loadQuestion(q);
+                this.showFeedback(`Starting ${ProjectEngine.weeks[week].title}!`, 'success');
             }
         };
 
-        // ==========================================
-        // INITIALIZATION
-        // ==========================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            uiEngine.loadProgress();
-            await databaseEngine.init();
-            uiEngine.initMonaco();
-            uiEngine.init();
-        });
+        // Start
+        document.addEventListener('DOMContentLoaded', () => uiEngine.init());
     </script>
 </body>
 </html>
