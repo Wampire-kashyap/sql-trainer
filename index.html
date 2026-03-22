@@ -521,7 +521,7 @@
     <!-- Loading -->
     <div id="loading" class="loading-overlay">
         <div class="spinner"></div>
-        <div>Initializing SQL Engines...</div>
+        <div id="loadingText">Initializing SQL Engines...</div>
     </div>
 
     <!-- Success Overlay -->
@@ -881,7 +881,8 @@
                 }
             ],
 
-            initDatabase() {
+            async initDatabase() {
+                // Create a new database using the initialized SQL constructor
                 state.db = new state.SQL.Database();
                 const schema = this.schemas[this.currentSchema];
                 
@@ -1033,7 +1034,7 @@
 
             currentCompany: null,
 
-            initDatabase(companyKey) {
+            async initDatabase(companyKey) {
                 this.currentCompany = companyKey;
                 const company = this.companies[companyKey];
                 state.db = new state.SQL.Database();
@@ -1167,7 +1168,7 @@
             currentWeek: null,
             currentQuestionIndex: 0,
 
-            initDatabase(weekKey) {
+            async initDatabase(weekKey) {
                 this.currentWeek = weekKey;
                 this.currentQuestionIndex = 0;
                 const week = this.weeks[weekKey];
@@ -1255,26 +1256,59 @@
         // ==========================================
 
         const uiEngine = {
-            init() {
-                PracticeEngine.initDatabase();
-                this.updateUIForEngine('practice');
-                this.renderInterviewView();
-                this.renderProjectView();
-                this.updateStats();
-                
-                // Init Monaco
-                require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
-                require(['vs/editor/editor.main'], () => {
-                    state.editor = monaco.editor.create(document.getElementById('sql-editor'), {
-                        value: '-- Write your SQL query here\n',
-                        language: 'sql',
-                        theme: 'vs',
-                        minimap: { enabled: false },
-                        automaticLayout: true,
-                        fontSize: 14
+            async init() {
+                try {
+                    // Update loading text
+                    document.getElementById('loadingText').textContent = 'Loading SQL.js WebAssembly...';
+                    
+                    // Initialize SQL.js with proper locateFile configuration
+                    // This is the CRITICAL FIX - we must call initSqlJs() and await it
+                    const SQL = await initSqlJs({
+                        locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.14.0/dist/${file}`
                     });
-                    document.getElementById('loading').style.display = 'none';
-                });
+                    
+                    // Store the SQL constructor in state
+                    state.SQL = SQL;
+                    
+                    document.getElementById('loadingText').textContent = 'Initializing Practice Engine...';
+                    await PracticeEngine.initDatabase();
+                    
+                    this.updateUIForEngine('practice');
+                    this.renderInterviewView();
+                    this.renderProjectView();
+                    this.updateStats();
+                    
+                    document.getElementById('loadingText').textContent = 'Loading Monaco Editor...';
+                    
+                    // Init Monaco
+                    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+                    require(['vs/editor/editor.main'], () => {
+                        state.editor = monaco.editor.create(document.getElementById('sql-editor'), {
+                            value: '-- Write your SQL query here\n',
+                            language: 'sql',
+                            theme: 'vs',
+                            minimap: { enabled: false },
+                            automaticLayout: true,
+                            fontSize: 14
+                        });
+                        
+                        // Add keyboard shortcut for Ctrl+Enter
+                        state.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+                            this.runQuery();
+                        });
+                        
+                        // Hide loading screen
+                        document.getElementById('loading').style.display = 'none';
+                        
+                        // Load first question
+                        this.loadQuestion();
+                    });
+                    
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    document.getElementById('loadingText').textContent = 'Error: ' + error.message;
+                    document.getElementById('loadingText').style.color = 'var(--danger)';
+                }
             },
 
             switchMode(mode) {
@@ -1529,8 +1563,8 @@
                 `).join('');
             },
 
-            startInterview(company) {
-                InterviewEngine.initDatabase(company);
+            async startInterview(company) {
+                await InterviewEngine.initDatabase(company);
                 this.switchMode('practice');
                 this.updateUIForEngine('interview');
                 const q = InterviewEngine.getQuestion(0);
@@ -1558,8 +1592,8 @@
                 `).join('');
             },
 
-            startProject(week) {
-                ProjectEngine.initDatabase(week);
+            async startProject(week) {
+                await ProjectEngine.initDatabase(week);
                 this.switchMode('practice');
                 this.updateUIForEngine('project');
                 const q = ProjectEngine.getCurrentQuestion();
